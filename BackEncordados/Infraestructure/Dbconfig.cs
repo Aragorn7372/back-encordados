@@ -79,7 +79,7 @@ public static class DbConfig
                 options.EnableDetailedErrors(); 
             }
         });
-        services.AddDbContext<PartidosDbContext>(options =>
+        services.AddDbContext<TalleresDbContext>(options =>
         {
             var isDevelopment = configuration.GetValue<bool?>("Development") ?? true;
             

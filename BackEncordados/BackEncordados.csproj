@@ -45,4 +45,10 @@
       </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Talleres\Controller\" />
+      <Folder Include="Talleres\Mapper\" />
+      <Folder Include="Talleres\Service\" />
+    </ItemGroup>
+
 </Project>
