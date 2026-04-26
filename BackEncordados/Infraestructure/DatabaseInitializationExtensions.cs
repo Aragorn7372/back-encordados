@@ -19,7 +19,7 @@ public static class DatabaseInitializationExtensions
 
         using var scope = app.Services.CreateScope();
         var user = scope.ServiceProvider.GetRequiredService<UserDbContext>();
-        var partidos = scope.ServiceProvider.GetRequiredService<PartidosDbContext>();
+        var partidos = scope.ServiceProvider.GetRequiredService<TalleresDbContext>();
         var pedidos = scope.ServiceProvider.GetRequiredService<PedidosDbContext>();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
         
