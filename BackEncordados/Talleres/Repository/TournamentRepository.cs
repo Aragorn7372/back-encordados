@@ -1,4 +1,5 @@
-﻿using BackEncordados.Common.Database.Config;
+﻿using System.Globalization;
+using BackEncordados.Common.Database.Config;
 using BackEncordados.Talleres.Dto;
 using BackEncordados.Talleres.Model;
 using Microsoft.EntityFrameworkCore;
@@ -8,9 +9,31 @@ namespace BackEncordados.Talleres.Repository;
 public class TournamentRepository(TalleresDbContext context, ILogger<TournamentRepository> logger)
     : ITournamentRepository
 {
-    public Task<(IEnumerable<Tournaments> Items, int TotalCount)> FindAllAsync(FilterTournamentDto filter)
+    public async Task<(IEnumerable<Tournaments> Items, int TotalCount)> FindAllAsync(FilterTournamentDto filter)
     {
-        throw new NotImplementedException();
+        var query = context.Partidos.AsQueryable();
+        query = query.Where(x => !x.IsDeleted );
+        var isId= long.TryParse(filter.Search, out var id) ? id : -1;
+        if (isId > 0)
+        {
+            query = query.Where(x => x.Id == isId);
+        }
+        if (filter.Search.Length > 0)
+        {
+            query = query.Where(x =>EF.Functions.Like(x.title, $"%{filter.Search}%"));
+        }
+        var totalCount = await query.CountAsync();
+        bool isDesc = filter.Direction.ToLower().Equals("desc");
+        query = filter.SortBy.ToLower() switch
+        {
+            "title" => isDesc ? query.OrderByDescending(x => x.title) : query.OrderBy(x => x.title),
+            "start" => isDesc ? query.OrderByDescending(x => x.StartTournament) : query.OrderBy(x => x.StartTournament),
+            "end" => isDesc ? query.OrderByDescending(x => x.EndTournament) : query.OrderBy(x => x.EndTournament),
+            "createdat" => isDesc ? query.OrderByDescending(x => x.CreatedAt) : query.OrderBy(x => x.CreatedAt),
+            _ => isDesc ? query.OrderByDescending(x => x.Id) : query.OrderBy(x => x.Id)
+         };
+        var items = await query.Skip(filter.Page * filter.Size).Take(filter.Size).ToListAsync();
+        return (items, totalCount);
     }
 
     public async Task<Tournaments?> FindByIdAsync(long id)
@@ -42,7 +65,6 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
         if (existingTournament == null || existingTournament.IsDeleted)
             return null;
 
-        // PATCH: solo campos simples (NO listas)
 
         if (!string.IsNullOrWhiteSpace(tournament.title))
             existingTournament.title = tournament.title;
