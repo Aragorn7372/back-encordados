@@ -23,9 +23,9 @@ public static class DatabaseInitializationExtensions
         var pedidos = scope.ServiceProvider.GetRequiredService<PedidosDbContext>();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
         
-        user.Database.EnsureCreatedAsync();
-        partidos.Database.EnsureCreatedAsync();
-        pedidos.Database.EnsureCreatedAsync();
+        await user.Database.EnsureCreatedAsync();
+        await partidos.Database.EnsureCreatedAsync();
+        await pedidos.Database.EnsureCreatedAsync();
         
         logger.LogInformation("Base de datos verificada (tablas creadas si no existían)");
         
