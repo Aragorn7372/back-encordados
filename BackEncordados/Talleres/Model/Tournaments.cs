@@ -2,10 +2,10 @@
 
 namespace BackEncordados.Talleres.Model;
 
-public record Tournaments(): ITimestamped
+public record Tournaments: ITimestamped
 {
     public long Id { get; set; }
-    public string title { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
 
     /// <summary>Fecha de creación en UTC.</summary>
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
@@ -15,7 +15,7 @@ public record Tournaments(): ITimestamped
     public DateTime StartTournament { get; set; }=DateTime.UtcNow;
     public DateTime EndTournament { get; set; }=DateTime.UtcNow;
     public List<Guid> PurchasedList {get; set;} = new ();
-    public string logotype { get; set; } = string.Empty;
+    public string Logotype { get; set; } = string.Empty;
     public List<Guid> WorkersList {get; set;} = new ();
     public List<WorkerMachineAssignment> WorkerMachineAssignments { get; set; } = new ();
     public bool IsDeleted { get; set; }=false;
