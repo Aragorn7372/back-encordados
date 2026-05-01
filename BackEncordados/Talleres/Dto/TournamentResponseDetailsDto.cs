@@ -1,0 +1,12 @@
+﻿using BackEncordados.Usuarios.Dto;
+
+namespace BackEncordados.Talleres.Dto;
+
+public record TournamentResponseDetailsDto(
+    long Id,
+    string Name,
+    DateTime StartDate,
+    DateTime EndDate,
+    string Logotype,
+    List<UserResponseDto> User
+    );

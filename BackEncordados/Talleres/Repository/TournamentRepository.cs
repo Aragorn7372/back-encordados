@@ -20,13 +20,13 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
         }
         if (filter.Search.Length > 0)
         {
-            query = query.Where(x =>EF.Functions.Like(x.title, $"%{filter.Search}%"));
+            query = query.Where(x =>EF.Functions.Like(x.Title, $"%{filter.Search}%"));
         }
         var totalCount = await query.CountAsync();
         bool isDesc = filter.Direction.ToLower().Equals("desc");
         query = filter.SortBy.ToLower() switch
         {
-            "title" => isDesc ? query.OrderByDescending(x => x.title) : query.OrderBy(x => x.title),
+            "title" => isDesc ? query.OrderByDescending(x => x.Title) : query.OrderBy(x => x.Title),
             "start" => isDesc ? query.OrderByDescending(x => x.StartTournament) : query.OrderBy(x => x.StartTournament),
             "end" => isDesc ? query.OrderByDescending(x => x.EndTournament) : query.OrderBy(x => x.EndTournament),
             "createdat" => isDesc ? query.OrderByDescending(x => x.CreatedAt) : query.OrderBy(x => x.CreatedAt),
@@ -45,7 +45,7 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
     public async Task<Tournaments?> FindByNameAsync(string name)
     {
         logger.LogInformation("Buscando torneo con Nombre {Nombre}", name);
-        return await context.Partidos.Include(x=>x.WorkerMachineAssignments).FirstOrDefaultAsync(t => t.title == name && t.IsDeleted == false);
+        return await context.Partidos.Include(x=>x.WorkerMachineAssignments).FirstOrDefaultAsync(t => t.Title == name && t.IsDeleted == false);
     }
 
     public async Task<Tournaments> SaveAsync(Tournaments tournament)
@@ -66,8 +66,8 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
             return null;
 
 
-        if (!string.IsNullOrWhiteSpace(tournament.title))
-            existingTournament.title = tournament.title;
+        if (!string.IsNullOrWhiteSpace(tournament.Title))
+            existingTournament.Title = tournament.Title;
 
         if (tournament.StartTournament != default)
             existingTournament.StartTournament = tournament.StartTournament;
@@ -75,8 +75,8 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
         if (tournament.EndTournament != default)
             existingTournament.EndTournament = tournament.EndTournament;
 
-        if (!string.IsNullOrWhiteSpace(tournament.logotype))
-            existingTournament.logotype = tournament.logotype;
+        if (!string.IsNullOrWhiteSpace(tournament.Logotype))
+            existingTournament.Logotype = tournament.Logotype;
 
         // bool no nullable → se actualiza siempre o puedes decidir lógica
         existingTournament.IsDeleted = tournament.IsDeleted;
@@ -167,5 +167,12 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
         var saved = context.Partidos.Update(existingTournament);
         await context.SaveChangesAsync();
         return saved.Entity;
+    }
+
+    public async Task<IEnumerable<WorkerMachineAssignment>?> GetAssignedWorkerMachinesAsync(long tournamentId)
+    {
+        logger.LogInformation("Obteniendo máquinas asignadas para el torneo con ID {Id}", tournamentId);
+        return await context.Partidos
+            .FirstOrDefaultAsync(x => x.Id == tournamentId && !x.IsDeleted) is { } tournament ? tournament.WorkerMachineAssignments : null;
     }
 }
