@@ -40,7 +40,7 @@ public class MailKitEmailService(
             }
 
             var mimeMessage = new MimeMessage();
-            mimeMessage.From.Add(new MailboxAddress(fromName, fromEmail));
+            if (fromEmail != null) mimeMessage.From.Add(new MailboxAddress(fromName, fromEmail));
             mimeMessage.To.Add(MailboxAddress.Parse(message.To));
             mimeMessage.Subject = message.Subject;
 
@@ -57,7 +57,7 @@ public class MailKitEmailService(
 
             using var client = new SmtpClient();
             await client.ConnectAsync(smtpHost, smtpPort, MailKit.Security.SecureSocketOptions.StartTls);
-            await client.AuthenticateAsync(smtpUser, smtpPassword);
+            if (smtpPassword != null) await client.AuthenticateAsync(smtpUser, smtpPassword);
             await client.SendAsync(mimeMessage);
             await client.DisconnectAsync(true);
 

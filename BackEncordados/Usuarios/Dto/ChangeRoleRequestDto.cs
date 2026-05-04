@@ -2,10 +2,11 @@
 
 namespace BackEncordados.Usuarios.Dto;
 
-public record ChangeRoleRequestDto
+public record ChangeRoleRequestDto()
 {
     public Guid UserId { get; set; }
+
     [Required]
     [RegularExpression("ADMIN|USER|OWNER|ENCORDER")]
-    public String RoleName { get; init; }
+    public string RoleName { get; init; } = null!;
 }
