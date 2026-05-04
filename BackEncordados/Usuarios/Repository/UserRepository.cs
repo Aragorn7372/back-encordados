@@ -60,8 +60,7 @@ public class UserRepository(
             "createdAt" => isDesc ? query.OrderByDescending(u => u.CreatedAt) : query.OrderBy(u => u.CreatedAt),
             _ => isDesc ? query.OrderByDescending(u => u.Id) : query.OrderBy(u => u.Id)
         };
-        int skip = filter.Page * filter.Size / filter.Size;
-        var items = await query.Skip(skip).Take(filter.Size).ToListAsync();
+        var items = await query.Skip(filter.Page * filter.Size).Take(filter.Size).ToListAsync();
         return (items, totalCount);
     }
 
