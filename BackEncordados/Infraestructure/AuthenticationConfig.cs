@@ -16,7 +16,7 @@ public static class AuthenticationConfig
     /// </summary>
     public static IServiceCollection AddAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
-        Log.Information("🔐 Configurando autenticación JWT...");
+        Log.Information("Configurando autenticación JWT...");
 
         // Lee primero las variables de entorno directas, luego las jerárquicas
         var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") 

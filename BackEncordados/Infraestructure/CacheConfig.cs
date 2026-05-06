@@ -22,7 +22,7 @@ public static class CacheConfig
         var cacheUrl = Environment.GetEnvironmentVariable("REDIS_CACHE_URL") ?? configuration["redis:url"];
         services.AddStackExchangeRedisCache(options =>
         {
-            options.Configuration = cacheUrl ?? "redis://red-d630v77gi27c7382gq10:6379";
+            options.Configuration = cacheUrl ?? throw new InvalidOperationException("Redis cache URL no configurada");
             options.InstanceName = "Encordados:";
         });
 
