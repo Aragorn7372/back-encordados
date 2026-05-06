@@ -13,7 +13,7 @@ public interface IPurchasedService
     Task<Result<PurchasedResponseDto, DomainErrors>> FindByIdAsync(Guid id);
     Task<Result<PurchasedResponseDto, DomainErrors>> CreatePurchasedAsync(PurchasedRequestDto request);
     Task<Result<PurchasedResponseDto, DomainErrors>> UpdatePurchasedAsync(Guid id, PurchasedPatchDto request);
-    Task<Result<PurchasedResponseDto, DomainErrors>> CancelPurchasedAsync(Guid id);
+    Task<Result<PurchasedResponseDto, DomainErrors>> CancelPurchasedAsync(Guid id, bool isUser, string? idUser);
     Task<Result<PurchasedResponseDto, DomainErrors>> ChangeStatusPurchasedAsync(Guid id, string status);
     Task<Result<PurchasedResponseDto, DomainErrors>> ChangePaymentStatusPurchasedAsync(Guid id, string payStatus);
 }
