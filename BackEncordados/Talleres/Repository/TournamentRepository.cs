@@ -156,22 +156,6 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
         return saved.Entity;
     }
 
-    public async Task<Tournaments?> PurchaseTournament(long id, Guid purchasedId)
-    {
-        logger.LogInformation(
-            "Compran en torneo con ID {Id}, id de compra {PurchasedId}",
-            id, purchasedId);
-        var existingTournament = await context.Partidos
-            .FirstOrDefaultAsync(x => x.Id == id);
-        if (existingTournament == null || existingTournament.IsDeleted ||
-            existingTournament.EndTournament < DateTime.UtcNow)
-            return null;
-        existingTournament.PurchasedList.Add(purchasedId);
-        var saved = context.Partidos.Update(existingTournament);
-        await context.SaveChangesAsync();
-        return saved.Entity;
-    }
-
     public async Task<IEnumerable<WorkerMachineAssignment>?> GetAssignedWorkerMachinesAsync(long tournamentId)
     {
         logger.LogInformation("Obteniendo máquinas asignadas para el torneo con ID {Id}", tournamentId);

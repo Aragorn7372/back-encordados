@@ -55,11 +55,6 @@ public class TalleresDbContext(DbContextOptions<TalleresDbContext> options)
             entity.Property(x => x.EndTournament)
                 .IsRequired();
 
-            // List<Guid> -> string
-            entity.Property(x => x.PurchasedList)
-                .HasConversion(guidListConverter)
-                .HasColumnType("text");
-
             entity.Property(x => x.WorkersList)
                 .HasConversion(guidListConverter)
                 .HasColumnType("text");

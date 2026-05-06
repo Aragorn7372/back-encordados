@@ -14,7 +14,7 @@ public record Tournaments: ITimestamped
     public DateTime UpdatedAt { get; init; } = DateTime.UtcNow;
     public DateTime StartTournament { get; set; }=DateTime.UtcNow;
     public DateTime EndTournament { get; set; }=DateTime.UtcNow;
-    public List<Guid> PurchasedList {get; set;} = new ();
+
     public string Logotype { get; set; } = string.Empty;
     public List<Guid> WorkersList {get; set;} = new ();
     public List<WorkerMachineAssignment> WorkerMachineAssignments { get; set; } = new ();
