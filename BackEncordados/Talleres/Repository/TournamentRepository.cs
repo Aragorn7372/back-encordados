@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using BackEncordados.Common.Database.Config;
+﻿using BackEncordados.Common.Database.Config;
 using BackEncordados.Talleres.Dto;
 using BackEncordados.Talleres.Model;
 using Microsoft.EntityFrameworkCore;
@@ -9,23 +8,27 @@ namespace BackEncordados.Talleres.Repository;
 public class TournamentRepository(TalleresDbContext context, ILogger<TournamentRepository> logger)
     : ITournamentRepository
 {
-    public async Task<(IEnumerable<Tournaments> Items, int TotalCount)> FindAllAsync(FilterTournamentDto filter)
-    {
+    public async Task<(IEnumerable<Tournaments> Items, int TotalCount)> FindAllAsync(FilterTournamentDto filter) {
+        logger.LogInformation("Buscando torneos");
         var query = context.Partidos.AsQueryable();
         query = query.Where(x => !x.IsDeleted );
-        var isId= long.TryParse(filter.Search, out var id) ? id : -1;
-        if (isId > 0)
-        {
-            query = query.Where(x => x.Id == isId);
+        if(filter.UserId != null) {
+            query = query.Where(x => x.WorkersList.Contains(filter.UserId.Value));
         }
-        if (filter.Search.Length > 0)
-        {
-            query = query.Where(x =>EF.Functions.Like(x.Title, $"%{filter.Search}%"));
+        if (!string.IsNullOrWhiteSpace(filter.Search)) {
+            var isId = long.TryParse(filter.Search, out var id) ? id : -1;
+            if (isId > 0) {
+                query = query.Where(x => x.Id == isId);
+            }
+
+            if (filter.Search.Length > 0) {
+                query = query.Where(x => EF.Functions.Like(x.Title, $"%{filter.Search}%"));
+            }
         }
+
         var totalCount = await query.CountAsync();
         bool isDesc = filter.Direction.ToLower().Equals("desc");
-        query = filter.SortBy.ToLower() switch
-        {
+        query = filter.SortBy.ToLower() switch {
             "title" => isDesc ? query.OrderByDescending(x => x.Title) : query.OrderBy(x => x.Title),
             "start" => isDesc ? query.OrderByDescending(x => x.StartTournament) : query.OrderBy(x => x.StartTournament),
             "end" => isDesc ? query.OrderByDescending(x => x.EndTournament) : query.OrderBy(x => x.EndTournament),
@@ -39,13 +42,13 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
     public async Task<Tournaments?> FindByIdAsync(long id)
     {
         logger.LogInformation("Buscando torneo con ID {Id}", id);
-        return await context.Partidos.Include(x=>x.WorkerMachineAssignments).FirstOrDefaultAsync(t => t.Id == id && t.IsDeleted == false);
+        return await context.Partidos.Include(x=>x.WorkerMachineAssignments).FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
     }
 
     public async Task<Tournaments?> FindByNameAsync(string name)
     {
         logger.LogInformation("Buscando torneo con Nombre {Nombre}", name);
-        return await context.Partidos.Include(x=>x.WorkerMachineAssignments).FirstOrDefaultAsync(t => t.Title == name && t.IsDeleted == false);
+        return await context.Partidos.Include(x=>x.WorkerMachineAssignments).FirstOrDefaultAsync(t => t.Title == name && !t.IsDeleted);
     }
 
     public async Task<Tournaments> SaveAsync(Tournaments tournament)
@@ -102,7 +105,7 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
     public async Task<Tournaments?> AsignWorker(long id, Guid workerId, string machineName)
     {
         logger.LogInformation(
-            "Asignando trabajador con guid {workerId} al torneo con ID {Id}",
+            "Asignando trabajador con guid {WorkerId} al torneo con ID {Id}",
             workerId, id);
 
         var existingTournament = await context.Partidos
@@ -134,7 +137,7 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
     public async Task<Tournaments?> RemoveWorker(long id, Guid workerId)
     {
         logger.LogInformation(
-            "Eliminando trabajador con guid {workerId} del torneo con ID {Id}",
+            "Eliminando trabajador con guid {WorkerId} del torneo con ID {Id}",
             workerId, id);
 
         var existingTournament = await context.Partidos
@@ -156,7 +159,7 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
     public async Task<Tournaments?> PurchaseTournament(long id, Guid purchasedId)
     {
         logger.LogInformation(
-            "Compran en torneo con ID {Id}, id de compra {purchasedId}",
+            "Compran en torneo con ID {Id}, id de compra {PurchasedId}",
             id, purchasedId);
         var existingTournament = await context.Partidos
             .FirstOrDefaultAsync(x => x.Id == id);

@@ -1,4 +1,5 @@
 ﻿using BackEncordados.Common.Database.Config;
+using BackEncordados.Common.Database.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -17,7 +18,7 @@ namespace BackEncordados.Infraestructure;
 /// 
 /// <para><b>Características:</b></para>
 /// <list type="bullet">
-///     <item>Productos: InMemory (dev) o PostgreSQL (prod)</li>
+///     <item>Productos: InMemory (dev) o PostgreSQL (prod)</item>
 ///     <item>Usuarios: Entity Framework Core con Identity</item>
 /// </list>
 /// 
@@ -47,54 +48,60 @@ public static class DbConfig
     public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
         //BBDD de Productos y categorías
-        services.AddDbContext<UserDbContext>(options =>
-        {
-            var isDevelopment = configuration.GetValue<bool?>("Development") ?? true;
-            
-            if(isDevelopment) options.UseInMemoryDatabase("UserDatabase");
-            else
-            {
-                Log.Information("modo produccion activado conectando a base de datos");
-                var connectionString = configuration["DATABASE_URL_USER"] 
-                                       ?? configuration.GetConnectionString("DefaultConnection") 
-                                       ?? throw new InvalidOperationException("No se encontrado el DATABASE_URL");
-                options.UseNpgsql(connectionString);
-                options.EnableSensitiveDataLogging(); 
-                options.EnableDetailedErrors(); 
-            }
-        });
-        services.AddDbContext<PedidosDbContext>(options =>
-        {
-            var isDevelopment = configuration.GetValue<bool?>("Development") ?? true;
-            
-            if(isDevelopment) options.UseInMemoryDatabase("PedidosDatabase");
-            else
-            {
-                Log.Information("modo produccion activado conectando a base de datos");
-                var connectionString = configuration["DATABASE_URL_PEDIDOS"] 
-                                       ?? configuration.GetConnectionString("DefaultConnection") 
-                                       ?? throw new InvalidOperationException("No se encontrado el DATABASE_URL");
-                options.UseNpgsql(connectionString);
-                options.EnableSensitiveDataLogging(); 
-                options.EnableDetailedErrors(); 
-            }
-        });
-        services.AddDbContext<TalleresDbContext>(options =>
-        {
-            var isDevelopment = configuration.GetValue<bool?>("Development") ?? true;
-            
-            if(isDevelopment) options.UseInMemoryDatabase("PartidosDatabase");
-            else
-            {
-                Log.Information("modo produccion activado conectando a base de datos");
-                var connectionString = configuration["DATABASE_URL_PARTIDOS"] 
-                                       ?? configuration.GetConnectionString("DefaultConnection") 
-                                       ?? throw new InvalidOperationException("No se encontrado el DATABASE_URL");
-                options.UseNpgsql(connectionString);
-                options.EnableSensitiveDataLogging(); 
-                options.EnableDetailedErrors(); 
-            }
-        });
+         services.AddDbContext<UserDbContext>(options =>
+         {
+             var isDevelopment = configuration.GetValue<bool?>("Development") ?? true;
+             
+             options.AddInterceptors(new TimestampInterceptor());
+             
+             if(isDevelopment) options.UseInMemoryDatabase("UserDatabase");
+             else
+             {
+                 Log.Information("modo produccion activado conectando a base de datos");
+                 var connectionString = configuration["DATABASE_URL_USER"] 
+                                        ?? configuration.GetConnectionString("DefaultConnection") 
+                                        ?? throw new InvalidOperationException("No se encontrado el DATABASE_URL");
+                 options.UseNpgsql(connectionString);
+                 options.EnableSensitiveDataLogging(); 
+                 options.EnableDetailedErrors(); 
+             }
+         });
+         services.AddDbContext<PedidosDbContext>(options =>
+         {
+             var isDevelopment = configuration.GetValue<bool?>("Development") ?? true;
+             
+             options.AddInterceptors(new TimestampInterceptor());
+             
+             if(isDevelopment) options.UseInMemoryDatabase("PedidosDatabase");
+             else
+             {
+                 Log.Information("modo produccion activado conectando a base de datos");
+                 var connectionString = configuration["DATABASE_URL_PEDIDOS"] 
+                                        ?? configuration.GetConnectionString("DefaultConnection") 
+                                        ?? throw new InvalidOperationException("No se encontrado el DATABASE_URL");
+                 options.UseNpgsql(connectionString);
+                 options.EnableSensitiveDataLogging(); 
+                 options.EnableDetailedErrors(); 
+             }
+         });
+         services.AddDbContext<TalleresDbContext>(options =>
+         {
+             var isDevelopment = configuration.GetValue<bool?>("Development") ?? true;
+             
+             options.AddInterceptors(new TimestampInterceptor());
+             
+             if(isDevelopment) options.UseInMemoryDatabase("PartidosDatabase");
+             else
+             {
+                 Log.Information("modo produccion activado conectando a base de datos");
+                 var connectionString = configuration["DATABASE_URL_PARTIDOS"] 
+                                        ?? configuration.GetConnectionString("DefaultConnection") 
+                                        ?? throw new InvalidOperationException("No se encontrado el DATABASE_URL");
+                 options.UseNpgsql(connectionString);
+                 options.EnableSensitiveDataLogging(); 
+                 options.EnableDetailedErrors(); 
+             }
+         });
 
         
         return services;
