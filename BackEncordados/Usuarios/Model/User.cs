@@ -8,7 +8,7 @@ namespace BackEncordados.Usuarios.Model;
 /// </summary>
 public class User : ITimestamped
 {
-    public static string DEFAULT_IMAGE="/images/users/default.jpg";
+    public const string DEFAULT_IMAGE="/images/users/default.jpg";
     /// <summary>ID único del usuario (PK en PostgreSQL).</summary>
     public Guid Id { get; set; } = Guid.NewGuid();
 
@@ -20,7 +20,6 @@ public class User : ITimestamped
     /// <summary>Email del usuario (obligatorio, único).</summary>
     public string Email { get; set; } = string.Empty;
     ///
-    /// 
     public string Phone { get; set; } = string.Empty;
     
     /// <summary>Hash BCrypt de la contraseña (60 caracteres aprox).</summary>

@@ -10,16 +10,11 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
     public async Task<(IEnumerable<Pedidos> Items, int TotalCount)> FindAllAsync(FilterPurchasedDto filter)
     {
         var query = context.Pedidos.AsQueryable();
-        if(filter.isEncorder == true)
-            if (filter.userId != null && Guid.TryParse(filter.userId, out var encorderId))
-                query = query.Where(p => p.AssignedTo == encorderId);
+        if(filter.IsEncorder == true && filter.UserId != null && Guid.TryParse(filter.UserId, out var encorderId)) query = query.Where(p => p.AssignedTo == encorderId);
 
-        if (filter.isUser == true)
-            if (filter.userId != null && Guid.TryParse(filter.userId, out var userId))
-                query = query.Where(p => p.PlayerId == userId);
+        if (filter.IsUser == true && filter.UserId != null && Guid.TryParse(filter.UserId, out var userId)) query = query.Where(p => p.PlayerId == userId);
 
-        if (filter.Search.Length > 0)
-        {
+        if (filter.Search.Length > 0) {
             query = query.Where(p => EF.Functions.Like(p.RaquetModel, $"%{filter.Search}%") 
                                      || EF.Functions.Like(p.Comments, $"%{filter.Search}%") 
                                      || EF.Functions.Like(p.Machine, $"%{filter.Search}%"));
@@ -97,26 +92,23 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
             existingPurchased.Comments = pedidos.Comments;
 
         // Actualizar StringSetup si fue proporcionado
-        if (pedidos.StringSetup != null)
-        {
-            if (!string.IsNullOrEmpty(pedidos.StringSetup.StringV))
-                existingPurchased.StringSetup.StringV = pedidos.StringSetup.StringV;
+        if (!string.IsNullOrEmpty(pedidos.StringSetup.StringV))
+            existingPurchased.StringSetup.StringV = pedidos.StringSetup.StringV;
 
-            if (pedidos.StringSetup.TensionV > 0)
-                existingPurchased.StringSetup.TensionV = pedidos.StringSetup.TensionV;
+        if (pedidos.StringSetup.TensionV > 0)
+            existingPurchased.StringSetup.TensionV = pedidos.StringSetup.TensionV;
 
-            if (pedidos.StringSetup.PreStetchV > 0)
-                existingPurchased.StringSetup.PreStetchV = pedidos.StringSetup.PreStetchV;
+        if (pedidos.StringSetup.PreStetchV > 0)
+            existingPurchased.StringSetup.PreStetchV = pedidos.StringSetup.PreStetchV;
 
-            if (!string.IsNullOrEmpty(pedidos.StringSetup.StringH))
-                existingPurchased.StringSetup.StringH = pedidos.StringSetup.StringH;
+        if (!string.IsNullOrEmpty(pedidos.StringSetup.StringH))
+            existingPurchased.StringSetup.StringH = pedidos.StringSetup.StringH;
 
-            if (pedidos.StringSetup.TensionH > 0)
-                existingPurchased.StringSetup.TensionH = pedidos.StringSetup.TensionH;
+        if (pedidos.StringSetup.TensionH > 0)
+            existingPurchased.StringSetup.TensionH = pedidos.StringSetup.TensionH;
 
-            if (pedidos.StringSetup.PreStetchH > 0)
-                existingPurchased.StringSetup.PreStetchH = pedidos.StringSetup.PreStetchH;
-        }
+        if (pedidos.StringSetup.PreStetchH > 0)
+            existingPurchased.StringSetup.PreStetchH = pedidos.StringSetup.PreStetchH;
 
         var saved=context.Pedidos.Update(existingPurchased);
         await context.SaveChangesAsync();
@@ -139,7 +131,7 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
         return saved.Entity;
     }
 
-    public async Task<Pedidos?> ChangeStatusPurchasedAsync(Guid id, string? status)
+    public async Task<Pedidos?> ChangeStatusPurchasedAsync(Guid id, string status)
     {
         logger.LogInformation("Atualizando estado de pedido con ID {Id}", id);
         var existingPurchased = await  context.Pedidos.FirstOrDefaultAsync(p => p.Id == id);
@@ -152,7 +144,7 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
         return saved.Entity;
     }
 
-    public async Task<Pedidos?> ChangePaymentStatusPurchasedAsync(Guid id, string? payStatus)
+    public async Task<Pedidos?> ChangePaymentStatusPurchasedAsync(Guid id, string payStatus)
     {
         logger.LogInformation("Atualizando estado de pago del pedido con ID {Id}", id);
         var existingPurchased = await  context.Pedidos.FirstOrDefaultAsync(p => p.Id == id);

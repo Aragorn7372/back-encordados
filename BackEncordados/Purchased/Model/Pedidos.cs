@@ -16,8 +16,8 @@ public class Pedidos: ITimestamped
     public DateTime DateString { get; set; }= DateTime.UtcNow.AddDays(7);
     public bool Logotype { get; set; }
     public string RaquetModel { get; set; } = string.Empty;
-    public Double Price { get; set; }
-    public int Nudos { get; set; }
+    public double Price { get; set; }
+    public byte Nudos { get; set; }
     public Guid PlayerId { get; set; }
     public Guid AssignedTo { get; set; }
     public string Machine { get; set; } = string.Empty;

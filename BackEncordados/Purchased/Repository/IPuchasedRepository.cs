@@ -10,7 +10,7 @@ public interface IPuchasedRepository
     Task<Pedidos> CreatePurchasedAsync(Pedidos pedidos);
     Task<Pedidos?> UpdatePurchasedAsync(Pedidos pedidos,  Guid id);
     Task<Pedidos?> CancelPurchasedAsync(Guid id);
-    Task<Pedidos?> ChangeStatusPurchasedAsync(Guid id, string? status);
-    Task<Pedidos?> ChangePaymentStatusPurchasedAsync(Guid id, string? payStatus);
+    Task<Pedidos?> ChangeStatusPurchasedAsync(Guid id, string status);
+    Task<Pedidos?> ChangePaymentStatusPurchasedAsync(Guid id, string payStatus);
     
 }

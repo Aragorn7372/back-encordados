@@ -1,6 +1,6 @@
 ﻿namespace BackEncordados.Talleres.Model;
 
-public record WorkerMachineAssignment()
+public record WorkerMachineAssignment
 {
     public Guid WorkerId { get; set; }
 

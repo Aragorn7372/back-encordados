@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using BackEncordados.Common.Database.Config;
+﻿using BackEncordados.Common.Database.Config;
 using BackEncordados.Usuarios.Dto;
 using BackEncordados.Usuarios.Model;
 using Microsoft.EntityFrameworkCore;
@@ -118,17 +117,5 @@ public class UserRepository(
             .OrderBy(u => u.Email)
             .ToListAsync();
     }
-
-    private static IQueryable<User> ApplySorting(IQueryable<User> query, string sortBy, string direction)
-    {
-        var isDescending = direction.Equals("desc", StringComparison.OrdinalIgnoreCase);
-        Expression<Func<User, object>> keySelector = sortBy.ToLower() switch
-        {
-            "username" => u => u.Username,
-            "email" => u => u.Email,
-            "createdat" => u => u.CreatedAt,
-            _ => u => u.Id
-        };
-        return isDescending ? query.OrderByDescending(keySelector) : query.OrderBy(keySelector);
-    }
+    
 }
