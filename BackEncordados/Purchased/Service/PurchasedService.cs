@@ -184,13 +184,17 @@ public class PurchasedService(IPuchasedRepository repository,IUserRepository use
         return Result.Success<PurchasedResponseDto, DomainErrors>(response);
     }
     
-    public async Task<Result<PurchasedResponseDto, DomainErrors>> CancelPurchasedAsync(Guid id)
+    public async Task<Result<PurchasedResponseDto, DomainErrors>> CancelPurchasedAsync(Guid id, bool isUser,
+        string? idUser)
     {
         logger.LogInformation("Cancelando pedido con ID {Id}", id);
         var purchasedCaceled= await repository.CancelPurchasedAsync(id);
         if (purchasedCaceled is null) return Result.Failure<PurchasedResponseDto, DomainErrors>(new PurchasedNotFoundError())
             .TapError(()=>logger.LogWarning("Pedido con ID {Id} no encontrado para cancelar",id));
-        
+        if (isUser && Guid.TryParse(idUser, out Guid guid) && purchasedCaceled.PlayerId != guid) {
+            logger.LogWarning("Usuario con ID {UserId} no autorizado para cancelar el pedido con ID {Id}", idUser, id);
+            return Result.Failure<PurchasedResponseDto, DomainErrors>(new UnauthorizedError("User not authorized to cancel this purchase"));
+        }
         var playerResult = await GetUserDtoCachedAsync(purchasedCaceled.PlayerId);
         if (playerResult.IsFailure) return playerResult.Error;
         var encorderResult = await GetUserDtoCachedAsync(purchasedCaceled.AssignedTo);
