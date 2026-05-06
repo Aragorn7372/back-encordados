@@ -1,9 +1,9 @@
 ﻿namespace BackEncordados.Purchased.Dto;
 
 public record FilterPurchasedDto(
-    bool? isEncorder,
-    bool? isUser,
-    string? userId,
+    bool? IsEncorder,
+    bool? IsUser,
+    string? UserId,
     string Search,
     int Page = 0,
     int Size = 10,
