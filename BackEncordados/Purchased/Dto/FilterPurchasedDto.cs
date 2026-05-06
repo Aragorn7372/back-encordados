@@ -8,4 +8,8 @@ public record FilterPurchasedDto(
     int Page = 0,
     int Size = 10,
     string SortBy = "name",
-    string Direction = "asc");
+    string Direction = "asc") {
+    public string? UserId { get; set; } = UserId;
+    public bool? IsEncorder { get; set; } = IsEncorder;
+    public bool? IsUser { get; set; } = IsUser;
+};

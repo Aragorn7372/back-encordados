@@ -13,6 +13,6 @@ public interface ITournamentRepository
     Task<bool> DeleteAsync(long id);
     Task<Tournaments?> AsignWorker(long id,Guid workerId,string machineName);
     Task<Tournaments?> RemoveWorker(long id,Guid workerId);
-    Task<Tournaments?> PurchaseTournament(long id, Guid purchasedId);
+ 
     Task<IEnumerable<WorkerMachineAssignment>?> GetAssignedWorkerMachinesAsync(long tournamentId);
 }
