@@ -1,4 +1,6 @@
-﻿using BackEncordados.Usuarios.Repository;
+﻿using BackEncordados.Purchased.Repository;
+using BackEncordados.Talleres.Repository;
+using BackEncordados.Usuarios.Repository;
 using Serilog;
 
 namespace BackEncordados.Infraestructure;
@@ -25,6 +27,8 @@ public static class RepositoriesConfig
         Log.Information(" Registrando repositorios...");
 
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IPuchasedRepository, PurchasedReposirtory>();
+        services.AddScoped<ITournamentRepository, TournamentRepository>();
 
         return services;
     }

@@ -27,8 +27,8 @@ public class JwtService(
     {
         var key = _configuration["Jwt:Key"]
             ?? throw new InvalidOperationException("JWT Key no configurada");
-        var issuer = _configuration["Jwt:Issuer"] ?? "TiendaApi";
-        var audience = _configuration["Jwt:Audience"] ?? "TiendaApi";
+        var issuer = _configuration["Jwt:Issuer"] ?? "Encordados";
+        var audience = _configuration["Jwt:Audience"] ?? "Encorders";
         var expireMinutes = int.Parse(_configuration["Jwt:ExpireMinutes"] ?? "60");
 
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
@@ -69,8 +69,8 @@ public class JwtService(
         {
             var key = _configuration["Jwt:Key"]
                 ?? throw new InvalidOperationException("JWT Key no configurada");
-            var issuer = _configuration["Jwt:Issuer"] ?? "TiendaApi";
-            var audience = _configuration["Jwt:Audience"] ?? "TiendaApi";
+            var issuer = _configuration["Jwt:Issuer"] ?? "Encordados";
+            var audience = _configuration["Jwt:Audience"] ?? "Encorders";
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
