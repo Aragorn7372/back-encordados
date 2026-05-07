@@ -1,11 +1,15 @@
 ﻿namespace BackEncordados.Purchased.Dto;
 
 public record FilterPurchasedDto(
-    bool? isEncorder,
-    bool? isUser,
-    string? userId,
+    bool? IsEncorder,
+    bool? IsUser,
+    string? UserId,
     string Search,
     int Page = 0,
     int Size = 10,
     string SortBy = "name",
-    string Direction = "asc");
+    string Direction = "asc") {
+    public string? UserId { get; set; } = UserId;
+    public bool? IsEncorder { get; set; } = IsEncorder;
+    public bool? IsUser { get; set; } = IsUser;
+};

@@ -2,7 +2,7 @@
 
 namespace BackEncordados.Usuarios.Dto;
 
-public record ChangeRoleRequestDto()
+public record ChangeRoleRequestDto
 {
     public Guid UserId { get; set; }
 

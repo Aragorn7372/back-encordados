@@ -1,4 +1,7 @@
-﻿using BackEncordados.Usuarios.Service.Auth;
+﻿using BackEncordados.Purchased.Service;
+using BackEncordados.Talleres.Service;
+using BackEncordados.Usuarios.Service.Auth;
+using BackEncordados.Usuarios.Service.CrudService;
 using Serilog;
 
 namespace BackEncordados.Infraestructure;
@@ -13,10 +16,13 @@ public static class ServicesConfig
     /// </summary>
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
-        Log.Information("⚙️ Registrando servicios...");
+        Log.Information("Registrando servicios...");
         return services
             .AddScoped<IJwtService, JwtService>()
             .AddScoped<IJwtTokenExtractor, JwtTokenExtractor>()
-            .AddScoped<IAuthService, AuthService>();
+            .AddScoped<IAuthService, AuthService>()
+            .AddScoped<IUserService, UserService>()
+            .AddScoped<ITournamentService, TournamentService>()
+            .AddScoped<IPurchasedService, PurchasedService>();
     }
 }
