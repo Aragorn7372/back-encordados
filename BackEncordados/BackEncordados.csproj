@@ -49,9 +49,4 @@
     <ItemGroup>
       <Folder Include="Talleres\Controller\" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Tournaments\" />
-    </ItemGroup>
-
 </Project>
