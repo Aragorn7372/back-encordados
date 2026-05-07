@@ -1,4 +1,5 @@
 ﻿using BackEncordados.Usuarios.Service.Auth;
+using BackEncordados.Usuarios.Service.CrudService;
 using Serilog;
 
 namespace BackEncordados.Infraestructure;
@@ -17,6 +18,7 @@ public static class ServicesConfig
         return services
             .AddScoped<IJwtService, JwtService>()
             .AddScoped<IJwtTokenExtractor, JwtTokenExtractor>()
-            .AddScoped<IAuthService, AuthService>();
+            .AddScoped<IAuthService, AuthService>()
+            .AddScoped<IUserService, UserService>();
     }
 }
