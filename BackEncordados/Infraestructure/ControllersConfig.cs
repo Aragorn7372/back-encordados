@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using Serilog;
 
 namespace BackEncordados.Infraestructure;
@@ -23,6 +24,7 @@ public static class ControllersConfig
                 options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                 options.JsonSerializerOptions.WriteIndented = true;
                 options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             })
             .AddXmlSerializerFormatters()
             .AddXmlDataContractSerializerFormatters();

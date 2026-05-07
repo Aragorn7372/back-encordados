@@ -1,6 +1,6 @@
 ﻿using BackEncordados.Common.Service.Cache;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Serilog;
+using BackEncordados.Common.Service.Cache.Hybrid;
+using BackEncordados.Common.Service.Cache.Memory;
 
 namespace BackEncordados.Infraestructure;
 
@@ -16,19 +16,23 @@ public static class CacheConfig
     /// </summary>
     public static IServiceCollection AddCache(this IServiceCollection services, IConfiguration configuration)
     {
-        
-        Log.Information("Configurando caché Redis...");
-        var cacheUrl= Environment.GetEnvironmentVariable("REDIS_CACHE_URL") ?? configuration["redis:url"];
-        if (string.IsNullOrEmpty(cacheUrl))
-            services.AddStackExchangeRedisCache(options =>
-            {
-                options.Configuration = "redis://red-d630v77gi27c7382gq10:6379";
-                options.InstanceName = "Encordados:";
-                services.TryAddScoped<ICacheService, CacheService>();
-            });
-        else
-            services.AddMemoryCache();
-        services.TryAddScoped<ICacheService, CacheService>();
+        // infraestructura base
+        services.AddMemoryCache();
+    
+        var cacheUrl = Environment.GetEnvironmentVariable("REDIS_CACHE_URL") ?? configuration["redis:url"];
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = cacheUrl ?? throw new InvalidOperationException("Redis cache URL no configurada");
+            options.InstanceName = "Encordados:";
+        });
+
+        // implementaciones a lo koin con llaves para poder diferenciar
+        services.AddKeyedScoped<ICacheService, MemoryCacheService>("L1");
+        services.AddKeyedScoped<ICacheService, CacheService>("L2");
+
+        //  servicio hibridop
+        services.AddScoped<ICacheService, HybridCacheService>();
+
         return services;
     }
 }
