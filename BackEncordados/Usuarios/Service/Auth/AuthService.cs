@@ -23,7 +23,7 @@ public class AuthService(
     /// </summary>
     public async Task<Result<AuthResponseDto, AuthError>> SignUpAsync(RegisterDto dto)
     {
-        var sanitizedUsername = dto.Username?.Replace("\n", "").Replace("\r", "");
+        var sanitizedUsername = dto.Username.Replace("\n", "").Replace("\r", "");
         logger.LogInformation("SignUp request for username: {Username}", sanitizedUsername);
         
 
@@ -37,8 +37,8 @@ public class AuthService(
 
         var user = new User
         {
-            Username = dto.Username!,
-            Email = dto.Email!,
+            Username = dto.Username,
+            Email = dto.Email,
             PasswordHash = passwordHash,
             Role = User.UserRoles.USER,
             IsDeleted = false
@@ -58,11 +58,11 @@ public class AuthService(
     /// </summary>
     public async Task<Result<AuthResponseDto, AuthError>> SignInAsync(LoginDto dto)
     {
-        var sanitizedUsername = dto.Username?.Replace("\n", "").Replace("\r", "");
+        var sanitizedUsername = dto.Username.Replace("\n", "").Replace("\r", "");
         logger.LogInformation("SignIn request for username: {Username}", sanitizedUsername);
         
 
-        var user = await userRepository.FindByUsernameAsync(dto.Username!);
+        var user = await userRepository.FindByUsernameAsync(dto.Username);
         if (user is null)
         {
             logger.LogWarning("SignIn fallido: Usuario no encontrado - {Username}", sanitizedUsername);
@@ -96,13 +96,13 @@ public class AuthService(
     /// </summary>
     private async Task<UnitResult<AuthError>> CheckDuplicatesAsync(RegisterDto dto)
     {
-        var existingUser = await userRepository.FindByUsernameAsync(dto.Username!);
+        var existingUser = await userRepository.FindByUsernameAsync(dto.Username);
         if (existingUser is not null)
         {
             return UnitResult.Failure<AuthError>(new ConflictError("username ya en uso:" + existingUser.Username));
         }
 
-        var existingEmail = await userRepository.FindByEmailAsync(dto.Email!);
+        var existingEmail = await userRepository.FindByEmailAsync(dto.Email);
         if (existingEmail is not null)
         {
             return UnitResult.Failure<AuthError>(new ConflictError("email ya en uso" + existingEmail.Email));

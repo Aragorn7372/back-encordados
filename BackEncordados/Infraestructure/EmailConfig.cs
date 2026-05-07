@@ -21,12 +21,12 @@ public static class EmailConfig
 
         if (environment.IsDevelopment())
         {
-            Log.Information("📧 Configurando servicio de email en memoria (desarrollo local)...");
+            Log.Information("Configurando servicio de email en memoria (desarrollo local)...");
             services.TryAddScoped<IEmailService, MemoryEmailService>();
         }
         else
         {
-            Log.Information("📧 Configurando servicio de email con MailKit (producción)...");
+            Log.Information("Configurando servicio de email con MailKit (producción)...");
             services.TryAddScoped<IEmailService, MailKitEmailService>();
             services.AddHostedService<EmailBackgroundService>();
         }
