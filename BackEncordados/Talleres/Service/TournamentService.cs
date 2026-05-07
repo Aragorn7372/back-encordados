@@ -3,9 +3,7 @@ using BackEncordados.Common.Utils;
 using BackEncordados.Talleres.Dto;
 using BackEncordados.Talleres.Error;
 using BackEncordados.Talleres.Mapper;
-using BackEncordados.Talleres.Model;
 using BackEncordados.Talleres.Repository;
-using BackEncordados.Usuarios.Dto;
 using BackEncordados.Usuarios.Mapper;
 using BackEncordados.Usuarios.Repository;
 using CSharpFunctionalExtensions;
@@ -16,12 +14,12 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
 {
     public async Task<Result<TournamentResponseDetailsDto, TournamentsErrors>> GetTournament(long id)
     {
-        logger.LogInformation("Getting tournament {id}", id);
+        logger.LogInformation("Getting tournament {Id}", id);
         var tournament = await repository.FindByIdAsync(id);
         if (tournament is null)
         {
-            logger.LogWarning("Tournament with id {id} not found", id);
-            return Result.Failure<TournamentResponseDetailsDto, TournamentsErrors>(new TournamentsErrors("Tournament not found"));
+            logger.LogWarning("Tournament with id {Id} not found", id);
+            return Result.Failure<TournamentResponseDetailsDto, TournamentsErrors>(new TournamentNotFoundError());
         }
         var userTasks = tournament.WorkersList.Select(w => userRepository.FindByIdAsync(w));
         var fetchedUsers = await Task.WhenAll(userTasks);
@@ -54,7 +52,7 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
     public async Task<Result<TournamentResponseDetailsDto, TournamentsErrors>> CreateTournament(
         TournamentRequestDto request)
     {
-        logger.LogInformation("Creating tournament with title {title}", request.Name);
+        logger.LogInformation("Creating tournament with title {Title}", request.Name);
         var saved = await repository.SaveAsync(request.ToTournaments());
         var userTasks = saved.WorkersList.Select(w => userRepository.FindByIdAsync(w));
         var fetchedUsers = await Task.WhenAll(userTasks);
@@ -68,15 +66,15 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
         return Result.Success<TournamentResponseDetailsDto, TournamentsErrors>(responseDto);
     }
 
-    public async Task<Result<TournamentResponseDetailsDto, TournamentsErrors>> UpdateTournament(long id, TournamentPatchDto request)
+    public async Task<Result<TournamentResponseDto, TournamentsErrors>> UpdateTournament(long id, TournamentPatchDto request)
     {
-        logger.LogInformation("Updating tournament {id}", id);
+        logger.LogInformation("Updating tournament {Id}", id);
         var oldTournament =await repository.FindByIdAsync(id);
         if (oldTournament is null)
         {
-            logger.LogWarning("Tournament with id {id} not found", id);
-            return Result.Failure<TournamentResponseDetailsDto, TournamentsErrors>(
-                    new TournamentsErrors("Tournament not found"));
+            logger.LogWarning("Tournament with id {Id} not found", id);
+            return Result.Failure<TournamentResponseDto, TournamentsErrors>(
+                    new TournamentNotFoundError());
         }
 
         if (request.EndTournament != null) 
@@ -90,31 +88,31 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
         if(request.Logotype != null || request.Logotype?.Trim().Length > 0)
             oldTournament.Logotype = request.Logotype;
         return await repository.UpdateAsync(id, oldTournament) is {} updated
-            ? Result.Success<TournamentResponseDetailsDto, TournamentsErrors>(updated.ToTournamentResponseDetailsDto(new List<UserResponseDto>()))
-            : Result.Failure<TournamentResponseDetailsDto, TournamentsErrors>(new TournamentsErrors("Error updating tournament"));
+            ? Result.Success<TournamentResponseDto, TournamentsErrors>(updated.ToTournamentResponseDto())
+            : Result.Failure<TournamentResponseDto, TournamentsErrors>(new ConflictError("Error updating tournament"));
     }
 
     public async Task<Result<Unit, TournamentsErrors>> DeleteTournament(long id)
     {
-        logger.LogInformation("Deleting tournament {id}", id);
+        logger.LogInformation("Deleting tournament {Id}", id);
         return await repository.DeleteAsync(id) 
             ? Result.Success<Unit, TournamentsErrors>(Unit.Value) 
-            : Result.Failure<Unit, TournamentsErrors>(new TournamentsErrors("Error deleting tournament"));
+            : Result.Failure<Unit, TournamentsErrors>(new TournamentNotFoundError());
     }
 
     public async Task<Result<TournamentResponseDetailsDto, TournamentsErrors>> AssignWorkerMachine(long tournamentId, WorkerMachineAssignmentRequestDto request)
     {
-        logger.LogInformation("Assigning worker machine {id}", tournamentId);
+        logger.LogInformation("Assigning worker machine {Id}", tournamentId);
         var workerGuid= Guid.TryParse(request.UserId, out var guid) ? guid : Guid.Empty;
         if (workerGuid == Guid.Empty)        {
-            logger.LogWarning("Invalid user id {id}", request.UserId);
-            return Result.Failure<TournamentResponseDetailsDto, TournamentsErrors>(new TournamentsErrors("Invalid user id"));
+            logger.LogWarning("Invalid user id {Id}", request.UserId);
+            return Result.Failure<TournamentResponseDetailsDto, TournamentsErrors>(new ValidationError("Invalid user id"));
         }
         var tournamentUpdated =await repository.AsignWorker(tournamentId, workerGuid, request.MachineName);
         if (tournamentUpdated is null)
         {
-            logger.LogWarning("Tournament with id {id} not found", tournamentId);
-            return Result.Failure<TournamentResponseDetailsDto, TournamentsErrors>(new TournamentsErrors("Tournament not found"));
+            logger.LogWarning("Tournament with id {Id} not found", tournamentId);
+            return Result.Failure<TournamentResponseDetailsDto, TournamentsErrors>(new TournamentNotFoundError());
         }
         var users= tournamentUpdated.WorkersList.Select(async w => await userRepository.FindByIdAsync(w)).Where(u => u != null).ToList();
         var userTasks = tournamentUpdated.WorkersList.Select(w => userRepository.FindByIdAsync(w));
@@ -129,19 +127,19 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
         return Result.Success<TournamentResponseDetailsDto, TournamentsErrors>(responseDto);
     }
 
-    public async Task<Result<TournamentResponseDetailsDto, TournamentsErrors>> UnassignWorkerMachine(long tournamentId, WorkerMachineAssignmentRequestDto request)
+    public async Task<Result<TournamentResponseDetailsDto, TournamentsErrors>> UnassignWorkerMachine(long tournamentId, string request)
     {
-        logger.LogInformation("Assigning worker machine {id}", tournamentId);
-        var workerGuid= Guid.TryParse(request.UserId, out var guid) ? guid : Guid.Empty;
+        logger.LogInformation("Assigning worker machine {Id}", tournamentId);
+        var workerGuid= Guid.TryParse(request, out var guid) ? guid : Guid.Empty;
         if (workerGuid == Guid.Empty)        {
-            logger.LogWarning("Invalid user id {id}", request.UserId);
-            return Result.Failure<TournamentResponseDetailsDto, TournamentsErrors>(new TournamentsErrors("Invalid user id"));
+            logger.LogWarning("Invalid user id {Id}", request);
+            return Result.Failure<TournamentResponseDetailsDto, TournamentsErrors>(new ValidationError("Invalid user id"));
         }
         var tournamentUpdated =await repository.RemoveWorker(tournamentId, workerGuid);
         if (tournamentUpdated is null)
         {
-            logger.LogWarning("Tournament with id {id} not found", tournamentId);
-            return Result.Failure<TournamentResponseDetailsDto, TournamentsErrors>(new TournamentsErrors("Tournament not found"));
+            logger.LogWarning("Tournament with id {Id} not found", tournamentId);
+            return Result.Failure<TournamentResponseDetailsDto, TournamentsErrors>(new TournamentNotFoundError());
         }
         var users= tournamentUpdated.WorkersList.Select(async w => await userRepository.FindByIdAsync(w)).Where(u => u != null).ToList();
         var userTasks = tournamentUpdated.WorkersList.Select(w => userRepository.FindByIdAsync(w));
@@ -158,14 +156,14 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
 
     public async Task<Result<IEnumerable<WorkerMachineAssignmentResponseDto>, TournamentsErrors>> GetAssignedWorkerMachines(long tournamentId)
     {
-        logger.LogInformation("Getting assigned worker machines for tournament {id}", tournamentId);
+        logger.LogInformation("Getting assigned worker machines for tournament {Id}", tournamentId);
         var assignments = await repository.GetAssignedWorkerMachinesAsync(tournamentId);
 
         if (assignments == null)
         {
-            logger.LogWarning("Tournament with id {id} not found or deleted", tournamentId);
+            logger.LogWarning("Tournament with id {Id} not found or deleted", tournamentId);
             return Result.Failure<IEnumerable<WorkerMachineAssignmentResponseDto>, TournamentsErrors>(
-                new TournamentsErrors("Tournament not found"));
+                new TournamentNotFoundError());
         }
         var tasks = assignments.Select(async a =>
         {
@@ -185,12 +183,12 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
 
     public async Task<Result<TournamentResponseDetailsDto, TournamentsErrors>> GetTournamentByName(string name)
     {
-        logger.LogInformation("Getting tournament {id}", name);
+        logger.LogInformation("Getting tournament {Id}", name);
         var tournament = await repository.FindByNameAsync(name);
         if (tournament is null)
         {
-            logger.LogWarning("Tournament with id {id} not found", name);
-            return Result.Failure<TournamentResponseDetailsDto, TournamentsErrors>(new TournamentsErrors("Tournament not found"));
+            logger.LogWarning("Tournament with id {Id} not found", name);
+            return Result.Failure<TournamentResponseDetailsDto, TournamentsErrors>(new TournamentNotFoundError());
         }
         var userTasks = tournament.WorkersList.Select(w => userRepository.FindByIdAsync(w));
         var fetchedUsers = await Task.WhenAll(userTasks);

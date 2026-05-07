@@ -1,13 +1,12 @@
-﻿namespace BackEncordados.Usuarios.Errors;
+﻿using BackEncordados.Common.Errors;
+
+namespace BackEncordados.Usuarios.Errors;
 
 /// <summary>
 /// Errores de autenticación y registro (HTTP 401, 409, 400).
 /// </summary>
-public record AuthError(
-    string Error)
-{
-    public string Error { get; set; } = Error;
-}
+public record AuthError(string Error) : DomainErrors(Error);
+
 
 /// <summary>Crea error para credenciales inválidas.</summary>
 /// <returns>UnauthorizedError (HTTP 401).</returns>
