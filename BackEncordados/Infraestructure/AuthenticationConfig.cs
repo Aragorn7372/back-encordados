@@ -6,17 +6,13 @@ using Serilog;
 
 namespace BackEncordados.Infraestructure;
 
-/// <summary>
-/// Extensiones de configuración de autenticación y autorización JWT.
-/// </summary>
+
 public static class AuthenticationConfig
 {
-    /// <summary>
-    /// Configura autenticación JWT con tokens Bearer.
-    /// </summary>
+
     public static IServiceCollection AddAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
-        Log.Information("🔐 Configurando autenticación JWT...");
+        Log.Information("Configurando autenticación JWT...");
 
         // Lee primero las variables de entorno directas, luego las jerárquicas
         var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") 

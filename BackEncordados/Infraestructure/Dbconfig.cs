@@ -95,6 +95,22 @@ public static class DbConfig
                 options.EnableDetailedErrors(); 
             }
         });
+        services.AddDbContext<MaterialsDbContext>(options =>
+        {
+            var isDevelopment = configuration.GetValue<bool?>("Development") ?? true;
+            
+            if(isDevelopment) options.UseInMemoryDatabase("MaterialsDatabase");
+            else
+            {
+                Log.Information("modo produccion activado conectando a base de datos");
+                var connectionString = configuration["DATABASE_URL_PRODUCTOS"] 
+                                       ?? configuration.GetConnectionString("DefaultConnection") 
+                                       ?? throw new InvalidOperationException("No se encontrado el DATABASE_URL");
+                options.UseNpgsql(connectionString);
+                options.EnableSensitiveDataLogging(); 
+                options.EnableDetailedErrors(); 
+            }
+        });
 
         
         return services;

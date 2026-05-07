@@ -3,16 +3,10 @@ using Serilog;
 
 namespace BackEncordados.Infraestructure;
 
-/// <summary>
-/// Extension methods para inicialización de base de datos.
-/// </summary>
+
 public static class DatabaseInitializationExtensions
 {
-    /// <summary>
-    /// Inicializa la base de datos PostgreSQL y MongoDB.
-    /// Desarrollo: Elimina y recrea la BD, siembra datos.
-    /// Producción: Solo crea tablas si no existen.
-    /// </summary>
+
     public static async Task InitializeDatabaseAsync(this WebApplication app)
     {
         Log.Information("Inicializando base de datos...");
@@ -21,13 +15,14 @@ public static class DatabaseInitializationExtensions
         var user = scope.ServiceProvider.GetRequiredService<UserDbContext>();
         var partidos = scope.ServiceProvider.GetRequiredService<TalleresDbContext>();
         var pedidos = scope.ServiceProvider.GetRequiredService<PedidosDbContext>();
+        var materials= scope.ServiceProvider.GetRequiredService<MaterialsDbContext>();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
         
+        await materials.Database.EnsureCreatedAsync();
         await user.Database.EnsureCreatedAsync();
         await partidos.Database.EnsureCreatedAsync();
         await pedidos.Database.EnsureCreatedAsync();
         
         logger.LogInformation("Base de datos verificada (tablas creadas si no existían)");
-        
     }
 }
