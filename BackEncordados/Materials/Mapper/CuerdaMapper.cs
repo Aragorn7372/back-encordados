@@ -1,0 +1,30 @@
+﻿using BackEncordados.Materials.Dto.Strings;
+using BackEncordados.Materials.Model;
+
+namespace BackEncordados.Materials.Mapper;
+
+public static class CuerdaMapper {
+    
+    public static CuerdaResposeDto ToDto(this Cuerdas cuerda) {
+        return new CuerdaResposeDto(
+            Id: cuerda.Id,
+            Marca: cuerda.Marca,
+            Modelo: cuerda.Modelo,
+            Stock: cuerda.Stock,
+            Precio: cuerda.Precio,
+            StringFormat: cuerda.StringFormat.ToString(),
+            StringsType: cuerda.StringsType.ToString()
+        );
+    }
+
+    public static Cuerdas ToModel(this CuerdaRequestDto cuerda) {
+        return new Cuerdas {
+            Marca = cuerda.Marca,
+            Modelo = cuerda.Modelo,
+            Stock = cuerda.Stock,
+            Precio = cuerda.Precio,
+            StringFormat = Enum.Parse<FormatoCuerda>(cuerda.StringFormat, true),
+            StringsType = Enum.Parse<StringsType>(cuerda.StringsType, true)
+        };
+    }
+}
