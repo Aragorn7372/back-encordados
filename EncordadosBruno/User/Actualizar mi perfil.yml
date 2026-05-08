@@ -1,0 +1,26 @@
+﻿info:
+  name: Actualizar mi perfil
+  type: http
+  seq: 4
+
+http:
+  method: PATCH
+  url: "{{api-url}}/api/User/{{user_id_juan}}"
+  body:
+    type: json
+    data: |-
+      {
+        "Name": "Juan Martínez Torres",
+        "Email": "juan.nuevo@tenis.com",
+        "Telefono": "956789999"
+      }
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+

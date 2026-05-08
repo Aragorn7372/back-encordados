@@ -1,0 +1,31 @@
+﻿info:
+  name: Login Jugador Juan
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{api-url}}/api/Auth/signin"
+  body:
+    type: json
+    data: |-
+      {
+        "Username":"jugador_juan",
+        "Password":"user123"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const data = res.getBody();
+        bru.setEnvVar("token_juan", data.token);
+        bru.setEnvVar("user_id_juan", data.user.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
