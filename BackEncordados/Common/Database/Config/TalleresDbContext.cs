@@ -86,6 +86,72 @@ public class TalleresDbContext(DbContextOptions<TalleresDbContext> options)
 
     private void SeedData(ModelBuilder modelBuilder)
     {
-        // Seed opcional
+        var now = DateTime.UtcNow;
+        
+        var carlos = Guid.Parse("33333333-3333-3333-3333-333333333333");
+        var maria = Guid.Parse("44444444-4444-4444-4444-444444444444");
+
+        modelBuilder.Entity<Tournaments>().HasData(
+            new Tournaments
+            {
+                Id = 1,
+                Title = "Torneo Madrileño 2025",
+                Logotype = "/logos/torneo-madrid.jpg",
+                StartTournament = now.AddDays(-7),
+                EndTournament = now.AddDays(7),
+                WorkersList = new List<Guid> { carlos, maria },
+                IsDeleted = false,
+                CreatedAt = now.AddMonths(-2),
+                UpdatedAt = now.AddMonths(-2)
+            },
+            new Tournaments
+            {
+                Id = 2,
+                Title = "Open Circuit Barcelona",
+                Logotype = "/logos/torneo-barcelona.jpg",
+                StartTournament = now.AddDays(14),
+                EndTournament = now.AddDays(28),
+                WorkersList = new List<Guid> { carlos },
+                IsDeleted = false,
+                CreatedAt = now.AddMonths(-1),
+                UpdatedAt = now.AddMonths(-1)
+            },
+            new Tournaments
+            {
+                Id = 3,
+                Title = "Campeonato Regional Valencia",
+                Logotype = "/logos/torneo-valencia.jpg",
+                StartTournament = now.AddDays(-60),
+                EndTournament = now.AddDays(-45),
+                WorkersList = new List<Guid> { maria },
+                IsDeleted = false,
+                CreatedAt = now.AddMonths(-4),
+                UpdatedAt = now.AddMonths(-3)
+            },
+            new Tournaments
+            {
+                Id = 4,
+                Title = "Cup Toledo - Elite",
+                Logotype = "/logos/torneo-toledo.jpg",
+                StartTournament = now.AddDays(35),
+                EndTournament = now.AddDays(42),
+                WorkersList = new List<Guid> { carlos, maria },
+                IsDeleted = false,
+                CreatedAt = now.AddDays(-30),
+                UpdatedAt = now.AddDays(-30)
+            }
+        );
+
+        modelBuilder.Entity<Tournaments>()
+            .OwnsMany(t => t.WorkerMachineAssignments)
+            .HasData(
+                new { Id = 1L, TournamentId = 1L, WorkerId = carlos, MachineName = "Máquina Alpha-1" },
+                new { Id = 2L, TournamentId = 1L, WorkerId = maria, MachineName = "Máquina Beta-2" },
+                new { Id = 3L, TournamentId = 2L, WorkerId = carlos, MachineName = "Máquina Alpha-1" },
+                new { Id = 4L, TournamentId = 3L, WorkerId = maria, MachineName = "Máquina Beta-2" },
+                new { Id = 5L, TournamentId = 4L, WorkerId = carlos, MachineName = "Máquina Alpha-1" },
+                new { Id = 6L, TournamentId = 4L, WorkerId = maria, MachineName = "Máquina Beta-2" },
+                new { Id = 7L, TournamentId = 4L, WorkerId = maria, MachineName = "Máquina Gamma-3" }
+            );
     }
 }

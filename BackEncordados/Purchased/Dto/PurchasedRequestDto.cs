@@ -38,7 +38,7 @@ public class PurchasedRequestDto
     [Required(ErrorMessage = "El estado del pedido es obligatorio")]
     public string Status { get; init; } = string.Empty;
     [Required(ErrorMessage = "La configuración de las cuerdas es obligatoria")]
-    public StringSetupDto StringSetup { get; init; } = new();
+    public StringSetupDto StringSetup { get; init; } = null!;
 }
 public class StringSetupDto
 {
