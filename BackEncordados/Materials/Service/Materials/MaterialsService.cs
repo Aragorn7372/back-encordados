@@ -27,6 +27,15 @@ public class MaterialsService(ILogger<MaterialsService> logger, IMaterialsReposi
         );
     }
 
+    public async Task<Result<MaterialResponseDto, MaterialError>> FindByNameAsync(string name) {
+        logger.LogInformation("Buscando material con nombre {Modelo}", name);
+        return await repository.FindByNameAsync(name) is { } result
+            ? Result.Success<MaterialResponseDto, MaterialError>(result.ToDto())
+                .Tap(() => logger.LogInformation("Material con nombre {Modelo} encontrado", name))
+            : Result.Failure<MaterialResponseDto, MaterialError>(new MaterialNotFoundError())
+                .TapError(() => logger.LogInformation("Material con nombre {Modelo} no encontrado", name));
+    }
+
     public async Task<Result<MaterialResponseDto, MaterialError>> FindByIdAsync(long id) {
         logger.LogInformation("Buscando material con id {Id}", id);
         return await repository.FindByIdAsync(id) is { } result

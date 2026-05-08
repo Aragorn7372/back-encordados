@@ -5,8 +5,8 @@ namespace BackEncordados.Materials.Mapper;
 
 public static class CuerdaMapper {
     
-    public static CuerdaResposeDto ToDto(this Cuerdas cuerda) {
-        return new CuerdaResposeDto(
+    public static CuerdaResponseDto ToDto(this Cuerdas cuerda) {
+        return new CuerdaResponseDto(
             Id: cuerda.Id,
             Marca: cuerda.Marca,
             Modelo: cuerda.Modelo,
