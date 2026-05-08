@@ -1,6 +1,6 @@
 ﻿namespace BackEncordados.Materials.Dto.Strings;
 
-public record CuerdaResposeDto(
+public record CuerdaResponseDto(
   long Id,
   string Marca,
   string Modelo,

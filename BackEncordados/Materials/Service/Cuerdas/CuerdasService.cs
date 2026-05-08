@@ -11,12 +11,12 @@ namespace BackEncordados.Materials.Service.Cuerdas;
 
 public class CuerdasService(ILogger<CuerdasService> logger, ICuerdasRepository repository):ICuerdasService
 {
-    public async Task<PageResponseDto<CuerdaResposeDto>> FindAllAsync(CuerdaFilterdto filter)
+    public async Task<PageResponseDto<CuerdaResponseDto>> FindAllAsync(CuerdaFilterdto filter)
     {
         logger.LogInformation("CuerdasService::FindAllAsync");
         var paged= await repository.FindAllAsync(filter);
         int totalPages = filter.Size > 0 ? (int)Math.Ceiling(paged.TotalCount / (double)filter.Size) : 0;
-        return new PageResponseDto<CuerdaResposeDto>(
+        return new PageResponseDto<CuerdaResponseDto>(
             Content: paged.Items.Select(item => item.ToDto()).ToList(),
             TotalPages: totalPages,
             TotalElements: paged.TotalCount,
@@ -28,29 +28,38 @@ public class CuerdasService(ILogger<CuerdasService> logger, ICuerdasRepository r
         );
     }
 
-    public async Task<Result<CuerdaResposeDto, CuerdaError>> FindByIdAsync(long id)
+    public async Task<Result<CuerdaResponseDto, CuerdaError>> FindByNameAsync(string name) {
+        logger.LogInformation("CuerdasService::FindByNameAsync");
+        return await repository.FindByNameAsync(name) is { } result
+            ? Result.Success<CuerdaResponseDto, CuerdaError>(result.ToDto())
+                .Tap(() => logger.LogInformation($"CuerdaService::FindByNameAsync({name})"))
+            : Result.Failure<CuerdaResponseDto, CuerdaError>(new CuerdaNotFoundError())
+                .TapError(() => logger.LogInformation("Cuerda with name {Name} not found", name));
+    }
+
+    public async Task<Result<CuerdaResponseDto, CuerdaError>> FindByIdAsync(long id)
     {
         logger.LogInformation("CuerdasService::FindByIdAsync");
         return await repository.FindByIdAsync(id) is { } result
-            ? Result.Success<CuerdaResposeDto, CuerdaError>(result.ToDto())
+            ? Result.Success<CuerdaResponseDto, CuerdaError>(result.ToDto())
                 .Tap(()=>logger.LogInformation($"CuerdaService::FindByIdAsync({id})"))
-            : Result.Failure<CuerdaResposeDto, CuerdaError>(new CuerdaNotFoundError())
+            : Result.Failure<CuerdaResponseDto, CuerdaError>(new CuerdaNotFoundError())
                 .TapError((() => logger.LogInformation("Cuerda con id {Id} not found", id)));
     }
 
-    public async Task<Result<CuerdaResposeDto, CuerdaError>> CreateAsync(CuerdaRequestDto request)
+    public async Task<Result<CuerdaResponseDto, CuerdaError>> CreateAsync(CuerdaRequestDto request)
     {
         return await repository.CreateAsync(request.ToModel()) is { } result
-            ? Result.Success<CuerdaResposeDto, CuerdaError>(result.ToDto())
+            ? Result.Success<CuerdaResponseDto, CuerdaError>(result.ToDto())
                 .Tap(() => logger.LogInformation("Cuerda created with id {Id}", result.Id))
-            : Result.Failure<CuerdaResposeDto, CuerdaError>(new ConflictError("no se pudo crear la cuerda"))
+            : Result.Failure<CuerdaResponseDto, CuerdaError>(new ConflictError("no se pudo crear la cuerda"))
                 .TapError(() => logger.LogError("Failed to create Cuerda"));
     }
 
-    public async Task<Result<CuerdaResposeDto, CuerdaError>> UpdateAsync(long id,CuerdaPatchDto request) {
+    public async Task<Result<CuerdaResponseDto, CuerdaError>> UpdateAsync(long id,CuerdaPatchDto request) {
         var cuerda = await repository.FindByIdAsync(id);
         if (cuerda == null)
-            return  Result.Failure<CuerdaResposeDto, CuerdaError>(new CuerdaNotFoundError())
+            return  Result.Failure<CuerdaResponseDto, CuerdaError>(new CuerdaNotFoundError())
                 .Tap(() => logger.LogInformation("Cuerda with id {Id} found", id));
         if(!string.IsNullOrEmpty(request.Marca)) cuerda.Marca = request.Marca;
         if (request.Precio >= 0) cuerda.Precio = request.Precio;
@@ -60,9 +69,9 @@ public class CuerdasService(ILogger<CuerdasService> logger, ICuerdasRepository r
         if (string.IsNullOrEmpty(request.StringsType)) 
             cuerda.StringsType = Enum.Parse<StringsType>(request.StringsType, true);
         return await repository.UpdateAsync(cuerda,id) is { } result
-            ? Result.Success<CuerdaResposeDto, CuerdaError>(result.ToDto())
+            ? Result.Success<CuerdaResponseDto, CuerdaError>(result.ToDto())
                 .Tap(() => logger.LogInformation("Cuerda with id {Id} updated successfully", id))
-            : Result.Failure<CuerdaResposeDto, CuerdaError>(new CuerdaNotFoundError())
+            : Result.Failure<CuerdaResponseDto, CuerdaError>(new CuerdaNotFoundError())
                 .TapError(() => logger.LogWarning("Cuerda with id {Id} not found for update", id));
     }
 
