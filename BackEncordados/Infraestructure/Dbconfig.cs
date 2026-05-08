@@ -1,6 +1,7 @@
 ﻿using BackEncordados.Common.Database.Config;
 using BackEncordados.Common.Database.Helpers;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.EntityFrameworkCore.Extensions;
 using Serilog;
 
 namespace BackEncordados.Infraestructure;
@@ -9,7 +10,7 @@ namespace BackEncordados.Infraestructure;
 /// Configuración de bases de datos.
 /// </summary>
 /// <remarks>
-/// Configura los DbContext y Identity para usuarios.
+/// Configura los DbContext e Identity para usuarios.
 ///
 /// <para><b>Dependencias:</b></para>
 /// <list type="bullet">
@@ -18,8 +19,9 @@ namespace BackEncordados.Infraestructure;
 /// 
 /// <para><b>Características:</b></para>
 /// <list type="bullet">
-///     <item>Productos: InMemory (dev) o PostgreSQL (prod)</item>
-///     <item>Usuarios: Entity Framework Core con Identity</item>
+///     <item>Usuarios: InMemory (dev) o Turso SQLite (prod)</item>
+///     <item>Pedidos: InMemory (dev) o Turso SQLite (prod)</item>
+///     <item>Talleres: InMemory (dev) o Turso SQLite (prod)</item>
 /// </list>
 /// 
 /// <para><b>Configuración de contraseña:</b></para>
@@ -38,7 +40,7 @@ public static class DbConfig
     /// <remarks>
     /// <list type="number">
     ///     <item>Desarrollo: UseInMemoryDatabase</item>
-    ///     <item>Producción: UseNpgsql (PostgreSQL)</item>
+    ///     <item>Producción: UseSqlite con Turso</item>
     ///     <item>Configura Identity para usuarios</item>
     /// </list>
     /// </remarks>
@@ -47,7 +49,7 @@ public static class DbConfig
     /// <returns>IServiceCollection.</returns>
     public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
-        //BBDD de Productos y categorías
+        //BBDD de Usuarios
          services.AddDbContext<UserDbContext>(options =>
          {
              var isDevelopment = configuration.GetValue<bool?>("Development") ?? true;
@@ -57,47 +59,56 @@ public static class DbConfig
              if(isDevelopment) options.UseInMemoryDatabase("UserDatabase");
              else
              {
-                 Log.Information("modo produccion activado conectando a base de datos");
+                 Log.Information("Modo producción activado - Conectando a Turso (SQLite)");
                  var connectionString = configuration["DATABASE_URL_USER"] 
                                         ?? configuration.GetConnectionString("DefaultConnection") 
-                                        ?? throw new InvalidOperationException("No se encontrado el DATABASE_URL");
-                 options.UseNpgsql(connectionString);
+                                        ?? throw new InvalidOperationException("No se encontró DATABASE_URL_USER o DefaultConnection");
+                 options.UseSqlite(connectionString);
                  options.EnableSensitiveDataLogging(); 
                  options.EnableDetailedErrors(); 
              }
          });
+         //BBDD de Pedidos - MongoDB Atlas
          services.AddDbContext<PedidosDbContext>(options =>
          {
              var isDevelopment = configuration.GetValue<bool?>("Development") ?? true;
              
              options.AddInterceptors(new TimestampInterceptor());
              
-             if(isDevelopment) options.UseInMemoryDatabase("PedidosDatabase");
+             if(isDevelopment) 
+             {
+                 options.UseInMemoryDatabase("PedidosDatabase");
+             }
              else
              {
-                 Log.Information("modo produccion activado conectando a base de datos");
-                 var connectionString = configuration["DATABASE_URL_PEDIDOS"] 
-                                        ?? configuration.GetConnectionString("DefaultConnection") 
-                                        ?? throw new InvalidOperationException("No se encontrado el DATABASE_URL");
-                 options.UseNpgsql(connectionString);
+                 Log.Information("Modo producción activado - Conectando a MongoDB Atlas (Pedidos)");
+                 var mongoConnectionString = configuration["MONGODB_URI_PEDIDOS"] 
+                                            ?? configuration["MONGODB_URI"]
+                                            ?? throw new InvalidOperationException("No se encontró MONGODB_URI_PEDIDOS o MONGODB_URI");
+                 options.UseMongoDB(mongoConnectionString, "pedidos_db");
                  options.EnableSensitiveDataLogging(); 
                  options.EnableDetailedErrors(); 
              }
          });
+         
+         //BBDD de Talleres - MongoDB Atlas
          services.AddDbContext<TalleresDbContext>(options =>
          {
              var isDevelopment = configuration.GetValue<bool?>("Development") ?? true;
              
              options.AddInterceptors(new TimestampInterceptor());
              
-             if(isDevelopment) options.UseInMemoryDatabase("PartidosDatabase");
+             if(isDevelopment) 
+             {
+                 options.UseInMemoryDatabase("PartidosDatabase");
+             }
              else
              {
-                 Log.Information("modo produccion activado conectando a base de datos");
-                 var connectionString = configuration["DATABASE_URL_PARTIDOS"] 
-                                        ?? configuration.GetConnectionString("DefaultConnection") 
-                                        ?? throw new InvalidOperationException("No se encontrado el DATABASE_URL");
-                 options.UseNpgsql(connectionString);
+                 Log.Information("Modo producción activado - Conectando a MongoDB Atlas (Talleres)");
+                 var mongoConnectionString = configuration["MONGODB_URI_TALLERES"] 
+                                            ?? configuration["MONGODB_URI"]
+                                            ?? throw new InvalidOperationException("No se encontró MONGODB_URI_TALLERES o MONGODB_URI");
+                 options.UseMongoDB(mongoConnectionString, "talleres_db");
                  options.EnableSensitiveDataLogging(); 
                  options.EnableDetailedErrors(); 
              }
@@ -105,7 +116,5 @@ public static class DbConfig
 
         
         return services;
-        
-        
     }
 }

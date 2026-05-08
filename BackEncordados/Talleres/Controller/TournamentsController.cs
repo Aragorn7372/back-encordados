@@ -9,6 +9,7 @@ using BackEncordados.Usuarios.Errors;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using ConflictError = BackEncordados.Talleres.Error.ConflictError;
 using ValidationError = BackEncordados.Talleres.Error.ValidationError;
 
@@ -91,10 +92,10 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
         [FromQuery] string sortBy = "name",
         [FromQuery] string direction = "asc") {
         var filter = new FilterTournamentDto(search, null,page, pageSize, sortBy, direction);
-        var role= User.Claims.FirstOrDefault(c => c.Type == "role")?.Value;
+        var role= User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
         if (role != Usuarios.Model.User.UserRoles.ADMIN && 
             role != Usuarios.Model.User.UserRoles.OWNER) {
-            var idClaim = User.Claims.FirstOrDefault(c => c.Type == "id")?.Value;
+            var idClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             if (Guid.TryParse(idClaim, out Guid userId))
                 filter.UserId = userId;
             return Forbid("usuario no identicado");

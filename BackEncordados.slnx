@@ -2,5 +2,7 @@
   <Folder Name="/Solution Items/">
     <File Path="compose.yaml" />
   </Folder>
+  <Folder Name="/TestEncordados/" />
   <Project Path="BackEncordados/BackEncordados.csproj" />
+  <Project Path="TestEncordados/TestEncordados.csproj" />
 </Solution>

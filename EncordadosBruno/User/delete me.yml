@@ -1,0 +1,22 @@
+info:
+  name: delete me
+  type: http
+  seq: 2
+
+http:
+  method: DELETE
+  url: "{{api-url}}/api/User/me"
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: bru.deleteEnvVar("token")
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

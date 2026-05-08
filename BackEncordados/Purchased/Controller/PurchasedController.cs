@@ -8,6 +8,7 @@ using BackEncordados.Usuarios.Errors;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BackEncordados.Purchased.Controller;
 
@@ -37,21 +38,33 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
             Page: page,
             Size: size,
             Direction: direction);
-        var role= User.Claims.FirstOrDefault(c => c.Type == "role")?.Value;
-        if (role != Usuarios.Model.User.UserRoles.ADMIN &&
-            role != Usuarios.Model.User.UserRoles.OWNER) {
-            var idClaim = User.Claims.FirstOrDefault(c => c.Type == "id")?.Value;
-            if (!string.IsNullOrEmpty(idClaim)) {
-                filter.UserId = idClaim;
-                if (role == Usuarios.Model.User.UserRoles.ENCORDER ) {
-                    filter.IsEncorder = true;
-                } else if (role == Usuarios.Model.User.UserRoles.USER ) {
-                    filter.IsUser = true;
-                }
-            }
-            return Forbid();
+        var role= User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+        
+        if (role == Usuarios.Model.User.UserRoles.ADMIN ||
+            role == Usuarios.Model.User.UserRoles.OWNER) {
+            return Ok(await service.FindAllAsync(filter));
         }
-        return Ok(await service.FindAllAsync(filter));
+        
+        if (role == Usuarios.Model.User.UserRoles.ENCORDER ||
+            role == Usuarios.Model.User.UserRoles.USER) {
+            var idClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(idClaim)) {
+                logger.LogWarning("User claim not found for role {Role}", role);
+                return Forbid();
+            }
+            
+            filter.UserId = idClaim;
+            if (role == Usuarios.Model.User.UserRoles.ENCORDER) {
+                filter.IsEncorder = true;
+            } else if (role == Usuarios.Model.User.UserRoles.USER) {
+                filter.IsUser = true;
+            }
+            
+            return Ok(await service.FindAllAsync(filter));
+        }
+        
+        logger.LogWarning("Access denied for role {Role}", role);
+        return Forbid();
     }
 
     [HttpGet("{id}")]
@@ -121,9 +134,9 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
     public async Task<IActionResult> CancelPurchased( string id) {
         logger.LogInformation("Cancel purchased with id {Id}", id);
         if (Guid.TryParse(id, out var guid)) {
-            var role= User.Claims.FirstOrDefault(c => c.Type == "role")?.Value;
+            var role= User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
             var isUser = false;
-            var idUser= User.Claims.FirstOrDefault(c => c.Type == "id")?.Value;
+            var idUser= User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             if (role == Usuarios.Model.User.UserRoles.USER) {
                 isUser = true;
             }
