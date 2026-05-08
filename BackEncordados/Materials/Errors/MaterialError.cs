@@ -8,7 +8,7 @@ public record MaterialError(string Error)
 };
 public record MaterialConflictError(string Error):MaterialError(Error);
 
-public record MaterialNotFoundError(string Error):MaterialError(Error);
+public record MaterialNotFoundError(string Error="Material not found"):MaterialError(Error);
 public record MaterialValidationError(string Error):MaterialError(Error);
 
 

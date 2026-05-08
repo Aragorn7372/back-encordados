@@ -181,5 +181,4 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
         var error = new PurchasedNotFoundError();
         return NotFound(new { error.Error });
     }
-
 }

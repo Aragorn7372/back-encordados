@@ -5,4 +5,4 @@ using BackEncordados.Materials.Service.Common;
 namespace BackEncordados.Materials.Service.Materials;
 
 public interface
-    IMaterialsService : IProductsService<MaterialResponseDto, MaterialError, MaterialRequestDto, MaterialPatchDto>;
+    IMaterialsService : IProductsService<MaterialResponseDto, MaterialError, MaterialRequestDto, MaterialPatchDto,MaterialFilterDto>;
