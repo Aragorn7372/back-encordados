@@ -41,8 +41,11 @@ public static class AuthenticationConfig
                 ValidateAudience = true,
                 ValidAudience = jwtAudience,
                 ValidateLifetime = true,
-                ClockSkew = TimeSpan.Zero
+                ClockSkew = TimeSpan.Zero,
+                NameClaimType = System.Security.Claims.ClaimTypes.NameIdentifier,
+                RoleClaimType = System.Security.Claims.ClaimTypes.Role
             };
+            options.MapInboundClaims = false;
         });
 
         Log.Information("Configurando políticas de autorización...");

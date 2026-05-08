@@ -199,7 +199,7 @@ public class PurchasedService(IPuchasedRepository repository,IUserRepository use
         if (playerResult.IsFailure) return playerResult.Error;
         var encorderResult = await GetUserDtoCachedAsync(purchasedCaceled.AssignedTo);
         if (encorderResult.IsFailure) return encorderResult.Error;
-        return await Result.Success<PurchasedResponseDto,DomainErrors>(purchasedCaceled.ToDto(playerResult.Value, encorderResult.Value))
+        return await Result.Success<PurchasedResponseDto,DomainErrors>(purchasedCaceled.ToDto(encorderResult.Value, playerResult.Value))
             .TapAsync(async response=>
             {
                 await cache.SetAsync(CacheKeys.PurchasedCacheKey + id, response, TimeSpan.FromMinutes(5));
@@ -221,7 +221,7 @@ public class PurchasedService(IPuchasedRepository repository,IUserRepository use
         if (playerResult.IsFailure) return playerResult.Error;
         var encorderResult = await GetUserDtoCachedAsync(purchased.AssignedTo);
         if (encorderResult.IsFailure) return encorderResult.Error;
-        return await Result.Success<PurchasedResponseDto,DomainErrors>(purchased.ToDto(playerResult.Value, encorderResult.Value))
+        return await Result.Success<PurchasedResponseDto,DomainErrors>(purchased.ToDto(encorderResult.Value, playerResult.Value))
             .TapAsync(async response=>
             {
                 await cache.SetAsync(CacheKeys.PurchasedCacheKey + id, response, TimeSpan.FromMinutes(5));
@@ -241,7 +241,7 @@ public class PurchasedService(IPuchasedRepository repository,IUserRepository use
         if (playerResult.IsFailure) return playerResult.Error;
         var encorderResult = await GetUserDtoCachedAsync(purchased.AssignedTo);
         if (encorderResult.IsFailure) return encorderResult.Error;
-        return await Result.Success<PurchasedResponseDto,DomainErrors>(purchased.ToDto(playerResult.Value, encorderResult.Value))
+        return await Result.Success<PurchasedResponseDto,DomainErrors>(purchased.ToDto(encorderResult.Value, playerResult.Value))
             .TapAsync(async response=>
             {
                 await cache.SetAsync(CacheKeys.PurchasedCacheKey + id, response, TimeSpan.FromMinutes(5));

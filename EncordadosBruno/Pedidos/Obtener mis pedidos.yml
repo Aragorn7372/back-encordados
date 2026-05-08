@@ -1,0 +1,18 @@
+﻿info:
+  name: Obtener mis pedidos
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{api-url}}/api/Purchased?page=0&size=10&sortBy=createdAt&direction=desc"
+  auth:
+    type: bearer
+    token: "{{token_juan}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+

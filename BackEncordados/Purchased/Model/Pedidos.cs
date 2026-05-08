@@ -5,7 +5,7 @@ namespace BackEncordados.Purchased.Model;
 public class Pedidos: ITimestamped
 {
     public Guid Id { get; set; }
-    public Guid TournamentId { get; set; }
+    public long TournamentId { get; set; }
     public string TypeString { get; set; } = string.Empty;
     public TypePuchase TypeWork { get; set; }= TypePuchase.ENCORDADO;
     /// <summary>Fecha de creación en UTC.</summary>
@@ -24,5 +24,5 @@ public class Pedidos: ITimestamped
     public string Comments { get; set; } = string.Empty;
     public PaymentStatus PayStatus { get; set; } = PaymentStatus.PENDING_PAYMENT;
     public Status  Status { get; set; }= Status.PENDING;
-    public StringSetup StringSetup { get; set; } = new();
+    public StringSetup StringSetup { get; set; } = null!;
 }

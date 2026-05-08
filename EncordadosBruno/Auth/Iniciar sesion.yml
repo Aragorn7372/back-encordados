@@ -1,0 +1,30 @@
+info:
+  name: Iniciar sesion
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{api-url}}/api/Auth/signin"
+  body:
+    type: json
+    data: |-
+      {
+        "Username":"example",
+        "Password":"buenas noches"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const data = res.getBody();
+
+        bru.setEnvVar("token", data.token);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

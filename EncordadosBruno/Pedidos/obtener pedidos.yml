@@ -1,0 +1,17 @@
+info:
+  name: obtener pedidos
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{api-url}}/api/Purchased"
+  auth:
+    type: bearer
+    token: "{{token_carlos}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

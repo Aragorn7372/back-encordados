@@ -5,6 +5,7 @@ using BackEncordados.Usuarios.Service.CrudService;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BackEncordados.Usuarios.Controller;
 
@@ -111,9 +112,26 @@ public class UserController(ILogger<UserController> logger, IUserService service
     [Authorize(Policy = "RequireUserRole")]
     public async Task<IActionResult> GetMe()
     {
-        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "id");
-        if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        logger.LogInformation("GetMe called - User authenticated: {IsAuthenticated}", User.Identity?.IsAuthenticated);
+        logger.LogInformation("Total claims received: {ClaimCount}", User.Claims.Count());
+        foreach (var claim in User.Claims)
+        {
+            logger.LogInformation("Claim Type: {ClaimType}, Value: {ClaimValue}", claim.Type, claim.Value);
+        }
+        
+        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+        if (userIdClaim is null)
+        {
+            logger.LogWarning("NameIdentifier claim not found. Looking for alternative claim types...");
+            logger.LogWarning("Available claim types: {ClaimTypes}", string.Join(", ", User.Claims.Select(c => c.Type)));
             return NotFound(new { message = "User ID claim not found or invalid" });
+        }
+        
+        if (!Guid.TryParse(userIdClaim.Value, out var userId))
+        {
+            logger.LogWarning("Failed to parse user ID claim value: {Value}", userIdClaim.Value);
+            return NotFound(new { message = "User ID claim not found or invalid" });
+        }
 
         var result = await service.FindByIdAsync(userId);
         return result.Match(
@@ -149,7 +167,7 @@ public class UserController(ILogger<UserController> logger, IUserService service
     [Authorize(Policy = "RequireUserRole")]
     public async Task<IActionResult> DeleteMe()
     {
-        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "id");
+        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
         if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
             return NotFound(new { message = "User ID claim not found or invalid" });
 
