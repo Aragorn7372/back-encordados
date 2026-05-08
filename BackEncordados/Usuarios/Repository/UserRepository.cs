@@ -103,8 +103,10 @@ public class UserRepository(
         if (user is not null)
         {
             user.IsDeleted = true;
+            // Reemplazar username con UUID para liberar el username único
+            user.Username = $"deleted_{Guid.NewGuid():N}";
             await context.SaveChangesAsync();
-            logger.LogInformation("Usuario eliminado con ID: {Id}", id);
+            logger.LogInformation("Usuario eliminado con ID: {Id}. Username reemplazado con: {NewUsername}", id, user.Username);
         }
     }
 

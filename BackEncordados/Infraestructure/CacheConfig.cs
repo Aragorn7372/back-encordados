@@ -9,16 +9,25 @@ namespace BackEncordados.Infraestructure;
 /// </summary>
 public static class CacheConfig
 {
-    /// <summary>
-    /// Configura el servicio de caché.
-    /// Desarrollo: MemoryCache.
-    /// Producción: Redis.
-    /// </summary>
-    public static IServiceCollection AddCache(this IServiceCollection services, IConfiguration configuration)
+/// <summary>
+/// Configura el servicio de caché.
+/// Desarrollo: MemoryCache.
+/// Producción: Redis.
+/// </summary>
+public static IServiceCollection AddCache(this IServiceCollection services, IConfiguration configuration)
+{
+    // infraestructura base
+    services.AddMemoryCache();
+
+    if (configuration.GetValue<bool?>("Development") ?? true)
     {
-        // infraestructura base
-        services.AddMemoryCache();
-    
+        // En desarrollo: solo MemoryCache
+        services.AddKeyedScoped<ICacheService, MemoryCacheService>("L1");
+        services.AddScoped<ICacheService, MemoryCacheService>();
+    }
+    else
+    {
+        // En producción: Redis
         var cacheUrl = Environment.GetEnvironmentVariable("REDIS_CACHE_URL") ?? configuration["redis:url"];
         services.AddStackExchangeRedisCache(options =>
         {
@@ -30,9 +39,10 @@ public static class CacheConfig
         services.AddKeyedScoped<ICacheService, MemoryCacheService>("L1");
         services.AddKeyedScoped<ICacheService, CacheService>("L2");
 
-        //  servicio hibridop
+        // servicio híbrido
         services.AddScoped<ICacheService, HybridCacheService>();
-
-        return services;
     }
+
+    return services;
+}
 }

@@ -60,7 +60,6 @@ await app.InitializeDatabaseAsync();
 Log.Information("=== CONFIGURATION VALUES ===");
 Log.Information("Storage: UploadPath={UploadPath}, MaxFileSize={MaxFileSize}, AllowedExtensions={AllowedExtensions}, AllowedContentTypes={AllowedContentTypes}",
     configuration["Storage:UploadPath"], configuration["Storage:MaxFileSize"], configuration["Storage:AllowedExtensions"], configuration["Storage:AllowedContentTypes"]);
-Log.Information("Stripe: Key={StripeKey}", configuration["Stripe:Key"]);
 Log.Information("Server: Url={ServerUrl}", configuration["Server:Url"]);
 Log.Information("Development: {Development}", configuration["Development"]);
 Log.Information("Jwt: Key={JwtKey}, Issuer={JwtIssuer}, Audience={JwtAudience}", 
