@@ -6,8 +6,7 @@ namespace BackEncordados.Purchased.Validator;
 
 public class PurchasedPatchValidator : AbstractValidator<PurchasedPatchDto>
 {
-    public PurchasedPatchValidator()
-    {
+    public PurchasedPatchValidator() {
         RuleFor(x => x.TypeString)
             .Length(1, 100).WithMessage("El tipo de trabajo debe tener entre 1 y 100 caracteres")
             .When(x => x.TypeString != null);

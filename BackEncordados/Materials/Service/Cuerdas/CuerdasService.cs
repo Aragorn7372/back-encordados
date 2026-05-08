@@ -1,34 +1,78 @@
 ﻿using BackEncordados.Common.Dto;
+using BackEncordados.Common.Utils;
 using BackEncordados.Materials.Dto.Strings;
 using BackEncordados.Materials.Errors;
+using BackEncordados.Materials.Mapper;
+using BackEncordados.Materials.Model;
+using BackEncordados.Materials.Repository.Strings;
 using CSharpFunctionalExtensions;
 
 namespace BackEncordados.Materials.Service.Cuerdas;
 
-public class CuerdasService:ICuerdasService
+public class CuerdasService(ILogger<CuerdasService> logger, ICuerdasRepository repository):ICuerdasService
 {
-    public Task<PageResponseDto<CuerdaResposeDto>> FindAllAsync(CuerdaError filter)
+    public async Task<PageResponseDto<CuerdaResposeDto>> FindAllAsync(CuerdaFilterdto filter)
     {
-        throw new NotImplementedException();
+        logger.LogInformation("CuerdasService::FindAllAsync");
+        var paged= await repository.FindAllAsync(filter);
+        int totalPages = filter.Size > 0 ? (int)Math.Ceiling(paged.TotalCount / (double)filter.Size) : 0;
+        return new PageResponseDto<CuerdaResposeDto>(
+            Content: paged.Items.Select(item => item.ToDto()).ToList(),
+            TotalPages: totalPages,
+            TotalElements: paged.TotalCount,
+            PageSize: filter.Size,
+            PageNumber: filter.Page,    
+            TotalPageElements: paged.Items.Count(),
+            SortBy: filter.SortBy,
+            Direction: filter.Direction
+        );
     }
 
-    public Task<Result<CuerdaResposeDto, CuerdaError>> FindByIdAsync(long id)
+    public async Task<Result<CuerdaResposeDto, CuerdaError>> FindByIdAsync(long id)
     {
-        throw new NotImplementedException();
+        logger.LogInformation("CuerdasService::FindByIdAsync");
+        return await repository.FindByIdAsync(id) is { } result
+            ? Result.Success<CuerdaResposeDto, CuerdaError>(result.ToDto())
+                .Tap(()=>logger.LogInformation($"CuerdaService::FindByIdAsync({id})"))
+            : Result.Failure<CuerdaResposeDto, CuerdaError>(new CuerdaNotFoundError())
+                .TapError((() => logger.LogInformation("Cuerda con id {Id} not found", id)));
     }
 
-    public Task<Result<CuerdaResposeDto, CuerdaError>> CreateAsync(CuerdaRequestDto request)
+    public async Task<Result<CuerdaResposeDto, CuerdaError>> CreateAsync(CuerdaRequestDto request)
     {
-        throw new NotImplementedException();
+        return await repository.CreateAsync(request.ToModel()) is { } result
+            ? Result.Success<CuerdaResposeDto, CuerdaError>(result.ToDto())
+                .Tap(() => logger.LogInformation("Cuerda created with id {Id}", result.Id))
+            : Result.Failure<CuerdaResposeDto, CuerdaError>(new ConflictError("no se pudo crear la cuerda"))
+                .TapError(() => logger.LogError("Failed to create Cuerda"));
     }
 
-    public Task<Result<CuerdaResposeDto, CuerdaError>> UpdateAsync(CuerdaPatchDto request)
-    {
-        throw new NotImplementedException();
+    public async Task<Result<CuerdaResposeDto, CuerdaError>> UpdateAsync(long id,CuerdaPatchDto request) {
+        var cuerda = await repository.FindByIdAsync(id);
+        if (cuerda == null)
+            return  Result.Failure<CuerdaResposeDto, CuerdaError>(new CuerdaNotFoundError())
+                .Tap(() => logger.LogInformation("Cuerda with id {Id} found", id));
+        if(!string.IsNullOrEmpty(request.Marca)) cuerda.Marca = request.Marca;
+        if (request.Precio >= 0) cuerda.Precio = request.Precio;
+        if (request.Stock >= 0) cuerda.Stock = request.Stock;
+        if (string.IsNullOrEmpty(request.StringFormat)) 
+            cuerda.StringFormat= Enum.Parse<FormatoCuerda>(request.StringFormat, true);
+        if (string.IsNullOrEmpty(request.StringsType)) 
+            cuerda.StringsType = Enum.Parse<StringsType>(request.StringsType, true);
+        return await repository.UpdateAsync(cuerda,id) is { } result
+            ? Result.Success<CuerdaResposeDto, CuerdaError>(result.ToDto())
+                .Tap(() => logger.LogInformation("Cuerda with id {Id} updated successfully", id))
+            : Result.Failure<CuerdaResposeDto, CuerdaError>(new CuerdaNotFoundError())
+                .TapError(() => logger.LogWarning("Cuerda with id {Id} not found for update", id));
     }
 
-    public Task<Result<CuerdaResposeDto, CuerdaError>> DeleteAsync(long id)
+    public async Task<Result<Unit, CuerdaError>> DeleteAsync(long id)
     {
-        throw new NotImplementedException();
+        logger.LogInformation("eliminando cuerda con id {Id}", id);
+        return await repository.DeleteAsync(id)
+            ? Result.Success<Unit, CuerdaError>(new Unit())
+                .Tap(() => logger.LogInformation("Cuerda with id {Id} deleted successfully", id))
+            : Result.Failure<Unit, CuerdaError>(new CuerdaNotFoundError())
+                .TapError(() => logger.LogWarning("Cuerda with id {Id} not found for deletion", id));
     }
 }
