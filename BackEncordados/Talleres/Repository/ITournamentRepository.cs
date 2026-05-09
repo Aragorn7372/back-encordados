@@ -11,8 +11,8 @@ public interface ITournamentRepository
     Task<Tournaments> SaveAsync(Tournaments tournament);
     Task<Tournaments?> UpdateAsync(long id, Tournaments tournament);
     Task<bool> DeleteAsync(long id);
-    Task<Tournaments?> AsignWorker(long id,Guid workerId,string machineName);
-    Task<Tournaments?> RemoveWorker(long id,Guid workerId);
+    Task<Tournaments?> AsignWorker(long id,Ulid workerId,string machineName);
+    Task<Tournaments?> RemoveWorker(long id,Ulid workerId);
  
     Task<IEnumerable<WorkerMachineAssignment>?> GetAssignedWorkerMachinesAsync(long tournamentId);
 }

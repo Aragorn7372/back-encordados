@@ -1,4 +1,5 @@
-﻿using BackEncordados.Purchased.Model;
+﻿using BackEncordados.Common.Database.Helpers;
+using BackEncordados.Purchased.Model;
 using Microsoft.EntityFrameworkCore;
 
 namespace BackEncordados.Common.Database.Config;
@@ -13,7 +14,7 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
         pedidosBuilder.HasKey(p => p.Id);
 
         pedidosBuilder.Property(p => p.Id)
-            .ValueGeneratedOnAdd();
+            .HasValueGenerator<UlidValueGenerator>();
         
         pedidosBuilder.Property(p => p.TournamentId)
             .IsRequired();
@@ -96,19 +97,19 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
     {
         var now = DateTime.UtcNow;
 
-        var juan = Guid.Parse("55555555-5555-5555-5555-555555555555");
-        var ana = Guid.Parse("66666666-6666-6666-6666-666666666666");
-        var pedro = Guid.Parse("77777777-7777-7777-7777-777777777777");
-        var carlos = Guid.Parse("33333333-3333-3333-3333-333333333333");
-        var maria = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var juan = Ulid.Parse("01KR424NQJR7CEHQW4STCQ3GGE");
+        var ana = Ulid.Parse("01KR424NQJ683QVB6F0P1B4XGM");
+        var pedro = Ulid.Parse("01KR424NQJD66APFZ2SM3RNPHZ");
+        var carlos = Ulid.Parse("01KR424NQJKSBKBMH15K4V835W");
+        var maria = Ulid.Parse("01KR424NQJKMNYS1FEC7NXBBH2");
 
         // IDs fijos para los pedidos
-        var pedido1Id = Guid.Parse("11111111-1111-1111-1111-111111111111");
-        var pedido2Id = Guid.Parse("22222222-2222-2222-2222-222222222222");
-        var pedido3Id = Guid.Parse("33333333-3333-3333-3333-333333333333");
-        var pedido4Id = Guid.Parse("44444444-4444-4444-4444-444444444444");
-        var pedido5Id = Guid.Parse("55555555-5555-5555-5555-555555555555");
-        var pedido6Id = Guid.Parse("66666666-6666-6666-6666-666666666666");
+        var pedido1Id = Ulid.Parse("01KR42ME5P1Q2BGWW1DY11Z4TJ");
+        var pedido2Id = Ulid.Parse("01KR424NQJVJRJR4GKWNTP2HK2");
+        var pedido3Id = Ulid.Parse("01KR424NQJ6VBW36R0TS0HYGAR");
+        var pedido4Id = Ulid.Parse("01KR424NQJWHMD2MN2YFQA7K6E");
+        var pedido5Id = Ulid.Parse("01KR424NQJDA22KTM967R9RW9N");
+        var pedido6Id = Ulid.Parse("01KR42766T458MYAE94CSAYWY7");
 
         // Seed de Pedidos SIN StringSetup
         modelBuilder.Entity<Pedidos>().HasData(

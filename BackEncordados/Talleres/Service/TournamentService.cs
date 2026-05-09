@@ -103,12 +103,12 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
     public async Task<Result<TournamentResponseDetailsDto, TournamentsErrors>> AssignWorkerMachine(long tournamentId, WorkerMachineAssignmentRequestDto request)
     {
         logger.LogInformation("Assigning worker machine {Id}", tournamentId);
-        var workerGuid= Guid.TryParse(request.UserId, out var guid) ? guid : Guid.Empty;
-        if (workerGuid == Guid.Empty)        {
+        var workerUlid= Ulid.TryParse(request.UserId, out var ulid) ? ulid : Ulid.Empty;
+        if (workerUlid == Ulid.Empty)        {
             logger.LogWarning("Invalid user id {Id}", request.UserId);
             return Result.Failure<TournamentResponseDetailsDto, TournamentsErrors>(new ValidationError("Invalid user id"));
         }
-        var tournamentUpdated =await repository.AsignWorker(tournamentId, workerGuid, request.MachineName);
+        var tournamentUpdated =await repository.AsignWorker(tournamentId, workerUlid, request.MachineName);
         if (tournamentUpdated is null)
         {
             logger.LogWarning("Tournament with id {Id} not found", tournamentId);
@@ -130,12 +130,12 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
     public async Task<Result<TournamentResponseDetailsDto, TournamentsErrors>> UnassignWorkerMachine(long tournamentId, string request)
     {
         logger.LogInformation("Assigning worker machine {Id}", tournamentId);
-        var workerGuid= Guid.TryParse(request, out var guid) ? guid : Guid.Empty;
-        if (workerGuid == Guid.Empty)        {
+        var workerUlid= Ulid.TryParse(request, out var ulid) ? ulid : Ulid.Empty;
+        if (workerUlid == Ulid.Empty)        {
             logger.LogWarning("Invalid user id {Id}", request);
             return Result.Failure<TournamentResponseDetailsDto, TournamentsErrors>(new ValidationError("Invalid user id"));
         }
-        var tournamentUpdated =await repository.RemoveWorker(tournamentId, workerGuid);
+        var tournamentUpdated =await repository.RemoveWorker(tournamentId, workerUlid);
         if (tournamentUpdated is null)
         {
             logger.LogWarning("Tournament with id {Id} not found", tournamentId);

@@ -14,6 +14,7 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
         {
             entity.ToTable("users");
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasValueGenerator<UlidValueGenerator>();
             entity.Property(e => e.Username).IsRequired().HasMaxLength(50);
             entity.Property(e => e.Email).IsRequired().HasMaxLength(100);
             entity.Property(u => u.PasswordHash).IsRequired();
@@ -37,13 +38,19 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
         var userPasswordHash = BCrypt.Net.BCrypt.HashPassword("user123", workFactor: 11);
         var encorderPasswordHash = BCrypt.Net.BCrypt.HashPassword("encorder123", workFactor: 11);
         var ownerPasswordHash = BCrypt.Net.BCrypt.HashPassword("owner123", workFactor: 11);
-
+        var juan = Ulid.Parse("01KR424NQJR7CEHQW4STCQ3GGE");
+        var ana = Ulid.Parse("01KR424NQJ683QVB6F0P1B4XGM");
+        var pedro = Ulid.Parse("01KR424NQJD66APFZ2SM3RNPHZ");
+        var carlos = Ulid.Parse("01KR424NQJKSBKBMH15K4V835W");
+        var maria = Ulid.Parse("01KR424NQJKMNYS1FEC7NXBBH2");
+        var admin= Ulid.Parse("01KR42E3NRSSH7MRQ6KX38DA6B");
+        var owner= Ulid.Parse("01KR42E3NRTHEKKH1VHSNZK74D");
         var users = new List<User>
         {
+            
             // Usuario ADMIN
-            new User
-            {
-                Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+            new() {
+                Id = Ulid.Parse("01ARZ3NDEKTSV4RRFFQ69G5FAV"),
                 Username = "admin_encordados",
                 Name = "Administrador",
                 Email = "admin@encordados.com",
@@ -57,9 +64,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
             },
 
             // Usuario OWNER
-            new User
-            {
-                Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+            new() {
+                Id = Ulid.Parse("01ARZ3NDEKTSV4RRFFQ69G5FBV"),
                 Username = "owner_principal",
                 Name = "Propietario",
                 Email = "owner@encordados.com",
@@ -72,10 +78,10 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 UpdatedAt = DateTime.UtcNow.AddMonths(-5)
             },
 
+             
             // Usuario ENCORDER 1
-            new User
-            {
-                Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
+            new() {
+                Id = carlos,
                 Username = "carlos_encordador",
                 Name = "Carlos García",
                 Email = "carlos@encordados.com",
@@ -89,9 +95,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
             },
 
             // Usuario ENCORDER 2
-            new User
-            {
-                Id = Guid.Parse("44444444-4444-4444-4444-444444444444"),
+            new() {
+                Id = maria,
                 Username = "maria_encordadora",
                 Name = "María López",
                 Email = "maria@encordados.com",
@@ -105,9 +110,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
             },
 
             // Usuario JUGADOR 1
-            new User
-            {
-                Id = Guid.Parse("55555555-5555-5555-5555-555555555555"),
+            new() {
+                Id = juan,
                 Username = "jugador_juan",
                 Name = "Juan Martínez",
                 Email = "juan@tenis.com",
@@ -121,9 +125,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
             },
 
             // Usuario JUGADOR 2
-            new User
-            {
-                Id = Guid.Parse("66666666-6666-6666-6666-666666666666"),
+            new() {
+                Id = ana,
                 Username = "jugador_ana",
                 Name = "Ana Pérez",
                 Email = "ana@tenis.com",
@@ -137,9 +140,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
             },
 
             // Usuario JUGADOR 3
-            new User
-            {
-                Id = Guid.Parse("77777777-7777-7777-7777-777777777777"),
+            new() {
+                Id = pedro,
                 Username = "jugador_pedro",
                 Name = "Pedro Rodríguez",
                 Email = "pedro@tenis.com",

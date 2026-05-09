@@ -96,7 +96,7 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
         if (role != Usuarios.Model.User.UserRoles.ADMIN && 
             role != Usuarios.Model.User.UserRoles.OWNER) {
             var idClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (Guid.TryParse(idClaim, out Guid userId))
+            if (Ulid.TryParse(idClaim, out Ulid userId))
                 filter.UserId = userId;
             return Forbid("usuario no identicado");
         }

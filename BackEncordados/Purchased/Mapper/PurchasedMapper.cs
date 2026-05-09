@@ -28,7 +28,7 @@ public static class PurchasedMapper
             );
     }
 
-    public static Pedidos ToEntity(this PurchasedRequestDto pedido, Guid player, Guid encorder)
+    public static Pedidos ToEntity(this PurchasedRequestDto pedido, Ulid player, Ulid encorder)
     {
         return new Pedidos
         {

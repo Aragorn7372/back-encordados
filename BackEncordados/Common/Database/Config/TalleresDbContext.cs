@@ -1,6 +1,7 @@
 ﻿using BackEncordados.Common.Database.Helpers;
 using BackEncordados.Talleres.Model;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BackEncordados.Common.Database.Config;
@@ -25,12 +26,12 @@ public class TalleresDbContext(DbContextOptions<TalleresDbContext> options)
 
     private void ConfigureTournaments(ModelBuilder modelBuilder)
     {
-        var guidListConverter = new ValueConverter<List<Guid>, string>(
+        var ulidListConverter = new ValueConverter<List<Ulid>, string>(
             v => string.Join(";", v),
             v => string.IsNullOrWhiteSpace(v)
-                ? new List<Guid>()
+                ? new List<Ulid>()
                 : v.Split(";", StringSplitOptions.RemoveEmptyEntries)
-                    .Select(Guid.Parse)
+                    .Select(Ulid.Parse)
                     .ToList()
         );
 
@@ -56,7 +57,12 @@ public class TalleresDbContext(DbContextOptions<TalleresDbContext> options)
                 .IsRequired();
 
             entity.Property(x => x.WorkersList)
-                .HasConversion(guidListConverter)
+                .HasConversion(
+                    ulidListConverter,
+                    new ValueComparer<List<Ulid>>(
+                        (c1, c2) => c1 != null && c2 != null && c1.SequenceEqual(c2),
+                        c => c == null ? 0 : c.Aggregate(0, (acc, v) => HashCode.Combine(acc, v)),
+                        c => c == null ? new List<Ulid>() : c.ToList()))
                 .HasColumnType("text");
             entity.Property(x => x.IsDeleted)
                 .IsRequired()
@@ -88,8 +94,10 @@ public class TalleresDbContext(DbContextOptions<TalleresDbContext> options)
     {
         var now = DateTime.UtcNow;
         
-        var carlos = Guid.Parse("33333333-3333-3333-3333-333333333333");
-        var maria = Guid.Parse("44444444-4444-4444-4444-444444444444");
+     
+        var carlos = Ulid.Parse("01KR424NQJKSBKBMH15K4V835W");
+        var maria = Ulid.Parse("01KR424NQJKMNYS1FEC7NXBBH2");
+        
 
         modelBuilder.Entity<Tournaments>().HasData(
             new Tournaments
@@ -99,7 +107,7 @@ public class TalleresDbContext(DbContextOptions<TalleresDbContext> options)
                 Logotype = "/logos/torneo-madrid.jpg",
                 StartTournament = now.AddDays(-7),
                 EndTournament = now.AddDays(7),
-                WorkersList = new List<Guid> { carlos, maria },
+                WorkersList = new List<Ulid> { carlos, maria },
                 IsDeleted = false,
                 CreatedAt = now.AddMonths(-2),
                 UpdatedAt = now.AddMonths(-2)
@@ -111,7 +119,7 @@ public class TalleresDbContext(DbContextOptions<TalleresDbContext> options)
                 Logotype = "/logos/torneo-barcelona.jpg",
                 StartTournament = now.AddDays(14),
                 EndTournament = now.AddDays(28),
-                WorkersList = new List<Guid> { carlos },
+                WorkersList = new List<Ulid> { carlos },
                 IsDeleted = false,
                 CreatedAt = now.AddMonths(-1),
                 UpdatedAt = now.AddMonths(-1)
@@ -123,7 +131,7 @@ public class TalleresDbContext(DbContextOptions<TalleresDbContext> options)
                 Logotype = "/logos/torneo-valencia.jpg",
                 StartTournament = now.AddDays(-60),
                 EndTournament = now.AddDays(-45),
-                WorkersList = new List<Guid> { maria },
+                WorkersList = new List<Ulid> { maria },
                 IsDeleted = false,
                 CreatedAt = now.AddMonths(-4),
                 UpdatedAt = now.AddMonths(-3)
@@ -135,7 +143,7 @@ public class TalleresDbContext(DbContextOptions<TalleresDbContext> options)
                 Logotype = "/logos/torneo-toledo.jpg",
                 StartTournament = now.AddDays(35),
                 EndTournament = now.AddDays(42),
-                WorkersList = new List<Guid> { carlos, maria },
+                WorkersList = new List<Ulid> { carlos, maria },
                 IsDeleted = false,
                 CreatedAt = now.AddDays(-30),
                 UpdatedAt = now.AddDays(-30)

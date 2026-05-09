@@ -102,7 +102,7 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
         return true;
     }
 
-    public async Task<Tournaments?> AsignWorker(long id, Guid workerId, string machineName)
+    public async Task<Tournaments?> AsignWorker(long id, Ulid workerId, string machineName)
     {
         logger.LogInformation(
             "Asignando trabajador con guid {WorkerId} al torneo con ID {Id}",
@@ -134,7 +134,7 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
         return saved.Entity;
     }
 
-    public async Task<Tournaments?> RemoveWorker(long id, Guid workerId)
+    public async Task<Tournaments?> RemoveWorker(long id, Ulid workerId)
     {
         logger.LogInformation(
             "Eliminando trabajador con guid {WorkerId} del torneo con ID {Id}",

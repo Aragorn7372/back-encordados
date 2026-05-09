@@ -15,7 +15,7 @@ public class UserRepository(
 {
 
     /// <inheritdoc/>
-    public async Task<User?> FindByIdAsync(Guid id)
+    public async Task<User?> FindByIdAsync(Ulid id)
     {
         return await context.Users.FindAsync(id);
     }
@@ -63,7 +63,7 @@ public class UserRepository(
         return (items, totalCount);
     }
 
-    public async Task<bool> UserChageRoleAsync(Guid id, string role)
+    public async Task<bool> UserChageRoleAsync(Ulid id, string role)
     {
         var user = await FindByIdAsync(id);
         if (user is not null)
@@ -97,14 +97,14 @@ public class UserRepository(
     }
 
     /// <inheritdoc/>
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Ulid id)
     {
         var user = await FindByIdAsync(id);
         if (user is not null)
         {
             user.IsDeleted = true;
             // Reemplazar username con UUID para liberar el username único
-            user.Username = $"deleted_{Guid.NewGuid():N}";
+            user.Username = $"deleted_{Ulid.NewUlid().ToString()[..8]}";
             await context.SaveChangesAsync();
             logger.LogInformation("Usuario eliminado con ID: {Id}. Username reemplazado con: {NewUsername}", id, user.Username);
         }

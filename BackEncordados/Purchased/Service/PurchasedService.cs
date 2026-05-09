@@ -58,7 +58,7 @@ public class PurchasedService(IPuchasedRepository repository,IUserRepository use
         );
     }
 
-    public async Task<Result<PurchasedResponseDto, DomainErrors>> FindByIdAsync(Guid id)
+    public async Task<Result<PurchasedResponseDto, DomainErrors>> FindByIdAsync(Ulid id)
     {
         logger.LogInformation("Buscando pedido con ID: {Id}", id);
         // Intentar obtener el pedido de caché
@@ -85,7 +85,7 @@ public class PurchasedService(IPuchasedRepository repository,IUserRepository use
         return response;
     }
     
-    private async Task<Result<UserResponseDto, DomainErrors>> GetUserDtoCachedAsync(Guid userId)
+    private async Task<Result<UserResponseDto, DomainErrors>> GetUserDtoCachedAsync(Ulid userId)
     {
         string key = CacheKeys.UserDataKey + userId;
         var cached = await cache.GetAsync<UserResponseDto>(key);
@@ -129,7 +129,7 @@ public class PurchasedService(IPuchasedRepository repository,IUserRepository use
             .Tap(()=>logger.LogInformation("Pedido creado con ID {Id} y guardado en caché",entity.Id));
     }
 
-    public async Task<Result<PurchasedResponseDto, DomainErrors>> UpdatePurchasedAsync(Guid id, PurchasedPatchDto request)
+    public async Task<Result<PurchasedResponseDto, DomainErrors>> UpdatePurchasedAsync(Ulid id, PurchasedPatchDto request)
     {
         logger.LogInformation("Actualizando pedido con ID {Id}", id);
         
@@ -184,14 +184,14 @@ public class PurchasedService(IPuchasedRepository repository,IUserRepository use
         return Result.Success<PurchasedResponseDto, DomainErrors>(response);
     }
     
-    public async Task<Result<PurchasedResponseDto, DomainErrors>> CancelPurchasedAsync(Guid id, bool isUser,
+    public async Task<Result<PurchasedResponseDto, DomainErrors>> CancelPurchasedAsync(Ulid id, bool isUser,
         string? idUser)
     {
         logger.LogInformation("Cancelando pedido con ID {Id}", id);
         var purchasedCaceled= await repository.CancelPurchasedAsync(id);
         if (purchasedCaceled is null) return Result.Failure<PurchasedResponseDto, DomainErrors>(new PurchasedNotFoundError())
             .TapError(()=>logger.LogWarning("Pedido con ID {Id} no encontrado para cancelar",id));
-        if (isUser && Guid.TryParse(idUser, out Guid guid) && purchasedCaceled.PlayerId != guid) {
+        if (isUser && Ulid.TryParse(idUser, out Ulid ulid) && purchasedCaceled.PlayerId != ulid) {
             logger.LogWarning("Usuario con ID {UserId} no autorizado para cancelar el pedido con ID {Id}", idUser, id);
             return Result.Failure<PurchasedResponseDto, DomainErrors>(new UnauthorizedError("User not authorized to cancel this purchase"));
         }
@@ -208,7 +208,7 @@ public class PurchasedService(IPuchasedRepository repository,IUserRepository use
         
     }
 
-    public async Task<Result<PurchasedResponseDto, DomainErrors>> ChangeStatusPurchasedAsync(Guid id, string status)
+    public async Task<Result<PurchasedResponseDto, DomainErrors>> ChangeStatusPurchasedAsync(Ulid id, string status)
     {
         logger.LogInformation("Cambiando el estatus al pedido con ID {Id}", id);
         if (!Enum.TryParse<PaymentStatus>(status,true, out var statusEnum))
@@ -229,7 +229,7 @@ public class PurchasedService(IPuchasedRepository repository,IUserRepository use
             });
     }
 
-    public async Task<Result<PurchasedResponseDto, DomainErrors>> ChangePaymentStatusPurchasedAsync(Guid id, string payStatus)
+    public async Task<Result<PurchasedResponseDto, DomainErrors>> ChangePaymentStatusPurchasedAsync(Ulid id, string payStatus)
     {
         logger.LogInformation("Cambiando el estatus de pago al pedido con ID {Id}", id);
         if (!Enum.TryParse<PaymentStatus>(payStatus,true, out var payStatusEnum))

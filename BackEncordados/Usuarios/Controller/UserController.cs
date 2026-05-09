@@ -88,12 +88,12 @@ public class UserController(ILogger<UserController> logger, IUserService service
         return Ok(result);
     }
 
-    [HttpGet("{id:guid}")]
+    [HttpGet("{id:ulid}")]
     [ProducesResponseType(typeof(UserResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(Policy = "RequireAdminRole")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(Ulid id)
     {
         var result = await service.FindByIdAsync(id);
         return result.Match(
@@ -127,7 +127,7 @@ public class UserController(ILogger<UserController> logger, IUserService service
             return NotFound(new { message = "User ID claim not found or invalid" });
         }
         
-        if (!Guid.TryParse(userIdClaim.Value, out var userId))
+        if (!Ulid.TryParse(userIdClaim.Value, out var userId))
         {
             logger.LogWarning("Failed to parse user ID claim value: {Value}", userIdClaim.Value);
             return NotFound(new { message = "User ID claim not found or invalid" });
@@ -143,11 +143,11 @@ public class UserController(ILogger<UserController> logger, IUserService service
             });
     }
 
-    [HttpDelete("{id:guid}")]
+    [HttpDelete("{id:ulid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(Policy = "RequireAdminRole")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(Ulid id)
     {
         try
         {
@@ -168,7 +168,7 @@ public class UserController(ILogger<UserController> logger, IUserService service
     public async Task<IActionResult> DeleteMe()
     {
         var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-        if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        if (userIdClaim is null || !Ulid.TryParse(userIdClaim.Value, out var userId))
             return NotFound(new { message = "User ID claim not found or invalid" });
 
         try
@@ -183,14 +183,14 @@ public class UserController(ILogger<UserController> logger, IUserService service
         }
     }
 
-    [HttpPatch("{id:guid}")]
+    [HttpPatch("{id:ulid}")]
     [ProducesResponseType(typeof(UserResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(Policy = "RequireAdminRole")]
-    public async Task<IActionResult> Patch(Guid id, [FromBody] UserRequestDto request)
+    public async Task<IActionResult> Patch(Ulid id, [FromBody] UserRequestDto request)
     {
         var result = await service.PatchUserAsync(id, request);
         return result.Match(
@@ -204,14 +204,14 @@ public class UserController(ILogger<UserController> logger, IUserService service
             });
     }
 
-    [HttpPost("{id:guid}/roles")]
+    [HttpPost("{id:ulid}/roles")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(Policy = "RequireAdminRole")]
-    public async Task<IActionResult> GiveRole(Guid id, [FromQuery] string role)
+    public async Task<IActionResult> GiveRole(Ulid id, [FromQuery] string role)
     {
         var result = await service.GiveRoleToUserAsync(id, role);
         if (result.IsSuccess)
