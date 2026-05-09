@@ -9,19 +9,19 @@ namespace BackEncordados.Usuarios.Service.CrudService;
 
 public class UserService(ILogger<UserService> logger, IUserRepository repository) : IUserService
 {
-    public async Task<Result<UserResponseDto, AuthError>> FindByIdAsync(Guid id)
+    public async Task<Result<UserResponseDto, AuthError>> FindByIdAsync(Ulid id)
     {
         return await repository.FindByIdAsync(id) is { } user
             ? Result.Success<UserResponseDto, AuthError>(user.ToDto())
             : Result.Failure<UserResponseDto, AuthError>(new AuthError("User not found"));
     }
 
-    public Task DeleteUserAsync(Guid id)
+    public Task DeleteUserAsync(Ulid id)
     {
         return repository.DeleteAsync(id);
     }
 
-    public async Task<Result<bool, AuthError>> GiveRoleToUserAsync(Guid id, string role)
+    public async Task<Result<bool, AuthError>> GiveRoleToUserAsync(Ulid id, string role)
     {
         return await repository.UserChageRoleAsync(id, role)
             ? Result.Success<bool, AuthError>(true)
@@ -44,7 +44,7 @@ public class UserService(ILogger<UserService> logger, IUserRepository repository
         );
     }
 
-    public async Task<Result<UserResponseDto, AuthError>> PatchUserAsync(Guid id, UserRequestDto request)
+    public async Task<Result<UserResponseDto, AuthError>> PatchUserAsync(Ulid id, UserRequestDto request)
     {
         logger.LogInformation("Actualizando usuario con ID: {Id}", id);
 

@@ -10,10 +10,10 @@ namespace BackEncordados.Purchased.Service;
 public interface IPurchasedService
 {
     Task<PageResponseDto<PurchasedResponseDto>> FindAllAsync(FilterPurchasedDto filter);
-    Task<Result<PurchasedResponseDto, DomainErrors>> FindByIdAsync(Guid id);
+    Task<Result<PurchasedResponseDto, DomainErrors>> FindByIdAsync(Ulid id);
     Task<Result<PurchasedResponseDto, DomainErrors>> CreatePurchasedAsync(PurchasedRequestDto request);
-    Task<Result<PurchasedResponseDto, DomainErrors>> UpdatePurchasedAsync(Guid id, PurchasedPatchDto request);
-    Task<Result<PurchasedResponseDto, DomainErrors>> CancelPurchasedAsync(Guid id, bool isUser, string? idUser);
-    Task<Result<PurchasedResponseDto, DomainErrors>> ChangeStatusPurchasedAsync(Guid id, string status);
-    Task<Result<PurchasedResponseDto, DomainErrors>> ChangePaymentStatusPurchasedAsync(Guid id, string payStatus);
+    Task<Result<PurchasedResponseDto, DomainErrors>> UpdatePurchasedAsync(Ulid id, PurchasedPatchDto request);
+    Task<Result<PurchasedResponseDto, DomainErrors>> CancelPurchasedAsync(Ulid id, bool isUser, string? idUser);
+    Task<Result<PurchasedResponseDto, DomainErrors>> ChangeStatusPurchasedAsync(Ulid id, string status);
+    Task<Result<PurchasedResponseDto, DomainErrors>> ChangePaymentStatusPurchasedAsync(Ulid id, string payStatus);
 }

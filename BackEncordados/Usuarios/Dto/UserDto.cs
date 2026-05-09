@@ -31,7 +31,7 @@ public record UserDto(
     /// Generado automáticamente por la base de datos.
     /// </summary>
     /// <example>1</example>
-    Guid Id,
+    Ulid Id,
 
     /// <summary>
     /// Nombre de usuario único.

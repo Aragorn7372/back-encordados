@@ -10,9 +10,9 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
     public async Task<(IEnumerable<Pedidos> Items, int TotalCount)> FindAllAsync(FilterPurchasedDto filter)
     {
         var query = context.Pedidos.AsQueryable();
-        if(filter.IsEncorder == true && filter.UserId != null && Guid.TryParse(filter.UserId, out var encorderId)) query = query.Where(p => p.AssignedTo == encorderId);
+        if(filter.IsEncorder == true && filter.UserId != null && Ulid.TryParse(filter.UserId, out var encorderId)) query = query.Where(p => p.AssignedTo == encorderId);
 
-        if (filter.IsUser == true && filter.UserId != null && Guid.TryParse(filter.UserId, out var userId)) query = query.Where(p => p.PlayerId == userId);
+        if (filter.IsUser == true && filter.UserId != null && Ulid.TryParse(filter.UserId, out var userId)) query = query.Where(p => p.PlayerId == userId);
 
         if (filter.Search.Length > 0) {
             query = query.Where(p => EF.Functions.Like(p.RaquetModel, $"%{filter.Search}%") 
@@ -35,7 +35,7 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
         return (items, totalCount); 
     }
 
-    public async Task<Pedidos?> FindByIdAsync(Guid id)
+    public async Task<Pedidos?> FindByIdAsync(Ulid id)
     {
         logger.LogInformation("Buscando pedido con ID {Id}", id);
         return await context.Pedidos.Include(p => p.StringSetup ).FirstOrDefaultAsync(p => p.Id == id);
@@ -44,13 +44,13 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
     public async Task<Pedidos> CreatePurchasedAsync(Pedidos pedidos)
     {
         logger.LogInformation("Creando pedido");
-        pedidos.Id = Guid.NewGuid();
+        pedidos.Id = Ulid.NewUlid();
         var saved =await context.Pedidos.AddAsync(pedidos);
         await context.SaveChangesAsync();
         return saved.Entity;
     }
 
-    public async Task<Pedidos?> UpdatePurchasedAsync(Pedidos pedidos, Guid id)
+    public async Task<Pedidos?> UpdatePurchasedAsync(Pedidos pedidos, Ulid id)
     {
         logger.LogInformation("Atualizando pedido con ID {Id}", id);
         
@@ -117,7 +117,7 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
         return saved.Entity;
     }
 
-    public async Task<Pedidos?> CancelPurchasedAsync(Guid id)
+    public async Task<Pedidos?> CancelPurchasedAsync(Ulid id)
     {
         logger.LogInformation("Cancelando pedido con ID {Id}", id);
         var existingPurchased = await context.Pedidos.FirstOrDefaultAsync(p => p.Id == id && p.Status != Status.CANCELED && p.PayStatus != PaymentStatus.CANCELED);
@@ -131,7 +131,7 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
         return saved.Entity;
     }
 
-    public async Task<Pedidos?> ChangeStatusPurchasedAsync(Guid id, string status)
+    public async Task<Pedidos?> ChangeStatusPurchasedAsync(Ulid id, string status)
     {
         logger.LogInformation("Atualizando estado de pedido con ID {Id}", id);
         var existingPurchased = await  context.Pedidos.FirstOrDefaultAsync(p => p.Id == id);
@@ -144,7 +144,7 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
         return saved.Entity;
     }
 
-    public async Task<Pedidos?> ChangePaymentStatusPurchasedAsync(Guid id, string payStatus)
+    public async Task<Pedidos?> ChangePaymentStatusPurchasedAsync(Ulid id, string payStatus)
     {
         logger.LogInformation("Atualizando estado de pago del pedido con ID {Id}", id);
         var existingPurchased = await  context.Pedidos.FirstOrDefaultAsync(p => p.Id == id);

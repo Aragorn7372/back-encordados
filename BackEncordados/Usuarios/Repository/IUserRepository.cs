@@ -11,7 +11,7 @@ public interface IUserRepository
     /// <summary>Busca un usuario por ID.</summary>
     /// <param name="id">ID del usuario.</param>
     /// <returns>Usuario o null.</returns>
-    Task<User?> FindByIdAsync(Guid id);
+    Task<User?> FindByIdAsync(Ulid id);
 
     /// <summary>Busca un usuario por username.</summary>
     /// <param name="username">Username a buscar.</param>
@@ -33,7 +33,7 @@ public interface IUserRepository
     /// <returns>Usuario guardado.</returns>
     Task<User> SaveAsync(User user);
 
-    Task<bool> UserChageRoleAsync(Guid id, string role);
+    Task<bool> UserChageRoleAsync(Ulid id, string role);
     /// <summary>Actualiza un usuario existente.</summary>
     /// <param name="user">Usuario con datos actualizados.</param>
     /// <returns>Usuario actualizado.</returns>
@@ -41,7 +41,7 @@ public interface IUserRepository
 
     /// <summary>Elimina un usuario (soft delete).</summary>
     /// <param name="id">ID del usuario.</param>
-    Task DeleteAsync(Guid id);
+    Task DeleteAsync(Ulid id);
 
     /// <summary>Obtiene solo usuarios activos.</summary>
     /// <returns>Colección de usuarios activos.</returns>
