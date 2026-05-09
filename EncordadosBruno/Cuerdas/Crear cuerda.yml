@@ -1,0 +1,29 @@
+info:
+  name: Crear cuerda
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{api-url}}/api/Cuerdas"
+  body:
+    type: json
+    data: |-
+      {
+        "Marca": "Babolat",
+        "TournamentId": 1,
+        "Modelo": "RPM Blast",
+        "Stock": 200,
+        "Precio": 18.50,
+        "StringFormat": "12m",
+        "StringsType": "Polyester"
+      }
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

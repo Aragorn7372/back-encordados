@@ -1,7 +1,7 @@
 info:
-  name: Actualizar mi perfil
+  name: Actualizar usuario por id
   type: http
-  seq: 5
+  seq: 8
 
 http:
   method: PATCH
@@ -10,9 +10,10 @@ http:
     type: json
     data: |-
       {
-        "Name": "Juan Martínez Torres",
-        "Email": "juan.nuevo@tenis.com",
-        "Telefono": "956789999"
+        "Name": "Juan Martínez Actualizado",
+        "Email": "juan.actualizado@tenis.com",
+        "Telefono": "956789999",
+        "Username": "juan_updated"
       }
   auth:
     type: bearer

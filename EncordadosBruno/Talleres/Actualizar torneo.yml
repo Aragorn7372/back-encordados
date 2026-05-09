@@ -1,0 +1,26 @@
+info:
+  name: Actualizar torneo
+  type: http
+  seq: 5
+
+http:
+  method: PUT
+  url: "{{api-url}}/api/Tournaments/1"
+  body:
+    type: json
+    data: |-
+      {
+        "Name": "Torneo Madrileño 2025 - Actualizado",
+        "EndTournament": "2026-07-20T00:00:00Z",
+        "StartTournament": "2026-06-28T00:00:00Z",
+        "Logotype": "/logos/torneo-madrid-v2.jpg"
+      }
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,11 +1,11 @@
 info:
-  name: Obtener todos los usuarios
+  name: Obtener todas las cuerdas
   type: http
-  seq: 3
+  seq: 1
 
 http:
   method: GET
-  url: "{{api-url}}/api/User?findUsers=true&page=0&size=10&sortBy=createdAt&direction=desc"
+  url: "{{api-url}}/api/Cuerdas?page=0&size=10&sortBy=createdAt&direction=desc"
   auth:
     type: bearer
     token: "{{token_admin}}"

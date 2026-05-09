@@ -1,0 +1,28 @@
+info:
+  name: Actualizar material
+  type: http
+  seq: 5
+
+http:
+  method: PUT
+  url: "{{api-url}}/api/Materials/1"
+  body:
+    type: json
+    data: |-
+      {
+        "Marca": "Head",
+        "TournamentId": 1,
+        "Modelo": "Grip Pro Elite",
+        "Stock": 100,
+        "Precio": 15.99,
+        "Type": "Grip"
+      }
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

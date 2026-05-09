@@ -21,11 +21,10 @@ runtime:
       code: |-
         const data = res.getBody();
         bru.setEnvVar("token_admin", data.token);
-        bru.setEnvVar("user_id_admin", data.user.id);
+        bru.setEnvVar("user_id_admin", data.user.id || "01ARZ3NDEKTSV4RRFFQ69G5FAV");
 
 settings:
   encodeUrl: true
   timeout: 0
   followRedirects: true
   maxRedirects: 5
-

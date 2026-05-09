@@ -1,4 +1,4 @@
-﻿info:
+info:
   name: Crear nuevo pedido de encordado
   type: http
   seq: 2
@@ -10,18 +10,18 @@ http:
     type: json
     data: |-
       {
-        "TournamentId": "11111111-1111-1111-1111-111111111111",
+        "TournamentId": 1,
         "TypeString": "Babolat RPM Blast",
         "TypeWork": "ENCORDADO",
-        "DateString": "2026-05-15T00:00:00Z",
+        "DateString": "2026-06-15T00:00:00Z",
         "Logotype": true,
         "RaquetModel": "Wilson Clash 100",
         "Price": 28.50,
         "Nudos": 1,
-        "PlayerId": "55555555-5555-5555-5555-555555555555",
-        "AssignedTo": "33333333-3333-3333-3333-333333333333",
+        "PlayerName": "jugador_juan",
+        "AssignedToName": "carlos_encordador",
         "Machine": "Máquina Alpha-1",
-        "Comments": "Nuevo pedido de Juan para el torneo",
+        "Comments": "Nuevo pedido para el Torneo Madrileño",
         "PayStatus": "PENDING_PAYMENT",
         "Status": "PENDING",
         "StringSetup": {
@@ -42,4 +42,3 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
-
