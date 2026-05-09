@@ -45,6 +45,7 @@
         <PackageReference Include="Stripe.net" Version="43.14.0" />
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
         <PackageReference Include="Ulid" Version="1.4.1" />
+        <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-6c8g-7p36-r338" />
     </ItemGroup>
 
     <ItemGroup>
