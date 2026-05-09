@@ -10,7 +10,7 @@ public class User : ITimestamped
 {
     public const string DEFAULT_IMAGE="/images/users/default.jpg";
     /// <summary>ID único del usuario (PK en PostgreSQL).</summary>
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Ulid Id { get; set; } = Ulid.NewUlid();
 
     /// <summary>Nombre de usuario público (3-50 caracteres, único).</summary>
     public string Username { get; set; } = string.Empty;

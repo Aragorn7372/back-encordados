@@ -16,7 +16,7 @@ public record Tournaments: ITimestamped
     public DateTime EndTournament { get; set; }=DateTime.UtcNow;
 
     public string Logotype { get; set; } = string.Empty;
-    public List<Guid> WorkersList {get; set;} = new ();
+    public List<Ulid> WorkersList {get; set;} = new ();
     public List<WorkerMachineAssignment> WorkerMachineAssignments { get; set; } = new ();
     public bool IsDeleted { get; set; }=false;
 };

@@ -1,4 +1,6 @@
-﻿using BackEncordados.Purchased.Repository;
+﻿using BackEncordados.Materials.Repository.Materials;
+using BackEncordados.Materials.Repository.Strings;
+using BackEncordados.Purchased.Repository;
 using BackEncordados.Talleres.Repository;
 using BackEncordados.Usuarios.Repository;
 using Serilog;
@@ -29,6 +31,8 @@ public static class RepositoriesConfig
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IPuchasedRepository, PurchasedReposirtory>();
         services.AddScoped<ITournamentRepository, TournamentRepository>();
+        services.AddScoped<IMaterialsRepository, MaterialsRepository>();
+        services.AddScoped<ICuerdasRepository, CuerdasRepository>();
 
         return services;
     }

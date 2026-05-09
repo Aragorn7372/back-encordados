@@ -4,7 +4,7 @@ namespace BackEncordados.Purchased.Model;
 
 public class Pedidos: ITimestamped
 {
-    public Guid Id { get; set; }
+    public Ulid Id { get; set; }
     public long TournamentId { get; set; }
     public string TypeString { get; set; } = string.Empty;
     public TypePuchase TypeWork { get; set; }= TypePuchase.ENCORDADO;
@@ -18,8 +18,8 @@ public class Pedidos: ITimestamped
     public string RaquetModel { get; set; } = string.Empty;
     public double Price { get; set; }
     public byte Nudos { get; set; }
-    public Guid PlayerId { get; set; }
-    public Guid AssignedTo { get; set; }
+    public Ulid PlayerId { get; set; }
+    public Ulid AssignedTo { get; set; }
     public string Machine { get; set; } = string.Empty;
     public string Comments { get; set; } = string.Empty;
     public PaymentStatus PayStatus { get; set; } = PaymentStatus.PENDING_PAYMENT;

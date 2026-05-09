@@ -74,8 +74,8 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
     [Authorize]
     public async Task<IActionResult> GetById(string id) { 
         logger.LogInformation("Get purchased by id {Id}", id);
-        if (Guid.TryParse(id, out var guid)) {
-            return await service.FindByIdAsync(guid).Match(
+        if (Ulid.TryParse(id, out var ulid)) {
+            return await service.FindByIdAsync(ulid).Match(
                 onSuccess: purchased => Ok(purchased),
                 onFailure: error => error switch {
                     PurchasedNotFoundError => NotFound(new{error.Error}),
@@ -111,8 +111,8 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
     [Authorize(policy: "RequireAdminRole")]
     public async Task<IActionResult> Update(string id, PurchasedPatchDto request) {
         logger.LogInformation("Update purchased with id {Id} {@Request}", id, request);
-        if (Guid.TryParse(id, out var guid)) {
-            return await service.UpdatePurchasedAsync(guid, request).Match(
+        if (Ulid.TryParse(id, out var ulid)) {
+            return await service.UpdatePurchasedAsync(ulid, request).Match(
                 onSuccess: purchased => Ok(purchased),
                 onFailure: error => error switch {
                     PurchasedNotFoundError => NotFound(new { error.Error }),
@@ -133,14 +133,14 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
     [Authorize(policy: "RequireUserRole")]
     public async Task<IActionResult> CancelPurchased( string id) {
         logger.LogInformation("Cancel purchased with id {Id}", id);
-        if (Guid.TryParse(id, out var guid)) {
+        if (Ulid.TryParse(id, out var ulid)) {
             var role= User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
             var isUser = false;
             var idUser= User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             if (role == Usuarios.Model.User.UserRoles.USER) {
                 isUser = true;
             }
-            return await service.CancelPurchasedAsync(guid,isUser,idUser).Match(
+            return await service.CancelPurchasedAsync(ulid,isUser,idUser).Match(
                 onSuccess: purchased => Ok(purchased),
                 onFailure: error => error switch {
                     PurchasedNotFoundError => NotFound(new { error.Error }),
@@ -161,8 +161,8 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
     [Authorize(policy: "RequireEcorderRole")]
     public async Task<IActionResult> ChangeStatusPurchased(string id, [FromQuery] string status) {
         logger.LogInformation("Change status purchased with id {Id} to status {Status}", id, status);
-        if (Guid.TryParse(id, out var guid)) {
-            return await service.ChangeStatusPurchasedAsync(guid, status).Match(
+        if (Ulid.TryParse(id, out var ulid)) {
+            return await service.ChangeStatusPurchasedAsync(ulid, status).Match(
                 onSuccess: purchased => Ok(purchased),
                 onFailure: error => error switch {
                     PurchasedNotFoundError => NotFound(new { error.Error }),
@@ -182,8 +182,8 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
     [Authorize(policy: "RequireEcorderRole")]
     public async Task<IActionResult> ChangePaymentStatusPurchased(string id, [FromQuery] string paymentStatus) {
         logger.LogInformation("Change payment status purchased with id {Id} to payment status {PaymentStatus}", id, paymentStatus);
-        if (Guid.TryParse(id, out var guid)) {
-            return await service.ChangePaymentStatusPurchasedAsync(guid, paymentStatus).Match(
+        if (Ulid.TryParse(id, out var ulid)) {
+            return await service.ChangePaymentStatusPurchasedAsync(ulid, paymentStatus).Match(
                 onSuccess: purchased => Ok(purchased),
                 onFailure: error => error switch {
                     UserNotFoundError => NotFound(new { error.Error }),

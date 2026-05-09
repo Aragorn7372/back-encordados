@@ -68,6 +68,24 @@ public static class DbConfig
                  options.EnableDetailedErrors(); 
              }
          });
+         services.AddDbContext<MaterialsDbContext>(options =>
+         {
+             var isDevelopment = configuration.GetValue<bool?>("Development") ?? true;
+             
+             options.AddInterceptors(new TimestampInterceptor());
+             
+             if(isDevelopment) options.UseInMemoryDatabase("MaterialsDatabase");
+             else
+             {
+                 Log.Information("Modo producción activado - Conectando a Turso (SQLite)");
+                 var connectionString = configuration["DATABASE_URL_MATERIALS"] 
+                                        ?? configuration.GetConnectionString("DefaultConnection") 
+                                        ?? throw new InvalidOperationException("No se encontró DATABASE_URL_USER o DefaultConnection");
+                 options.UseSqlite(connectionString);
+                 options.EnableSensitiveDataLogging(); 
+                 options.EnableDetailedErrors(); 
+             }
+         });
          //BBDD de Pedidos - MongoDB Atlas
          services.AddDbContext<PedidosDbContext>(options =>
          {

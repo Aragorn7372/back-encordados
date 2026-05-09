@@ -1,4 +1,7 @@
-﻿using BackEncordados.Purchased.Service;
+﻿using BackEncordados.Materials.Repository.Strings;
+using BackEncordados.Materials.Service.Cuerdas;
+using BackEncordados.Materials.Service.Materials;
+using BackEncordados.Purchased.Service;
 using BackEncordados.Talleres.Service;
 using BackEncordados.Usuarios.Service.Auth;
 using BackEncordados.Usuarios.Service.CrudService;
@@ -23,6 +26,8 @@ public static class ServicesConfig
             .AddScoped<IAuthService, AuthService>()
             .AddScoped<IUserService, UserService>()
             .AddScoped<ITournamentService, TournamentService>()
-            .AddScoped<IPurchasedService, PurchasedService>();
+            .AddScoped<IPurchasedService, PurchasedService>()
+            .AddScoped<ICuerdasService, CuerdasService>()
+            .AddScoped<IMaterialsService, MaterialsService>();
     }
 }

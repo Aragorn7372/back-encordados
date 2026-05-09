@@ -4,7 +4,7 @@ using BackEncordados.Usuarios.Dto;
 namespace BackEncordados.Purchased.Dto;
 
 public record PurchasedResponseDto(
-    Guid Id,
+    Ulid Id,
     string TypeString,
     string TypeWork,
     DateTime DateString,
