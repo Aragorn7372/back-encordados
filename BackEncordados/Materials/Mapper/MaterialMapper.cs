@@ -8,6 +8,7 @@ public static class MaterialMapper {
     public static MaterialResponseDto ToDto(this Material material) {
         return new MaterialResponseDto(
             material.Id,
+            TournamentId: material.TournamentId,
             material.Marca,
             material.Modelo,
             material.Stock,
@@ -18,6 +19,7 @@ public static class MaterialMapper {
     public static Material ToModel(this MaterialRequestDto material) {
         return new Material {
             Marca = material.Marca,
+            TournamentId = material.TournamentId,
             Modelo = material.Modelo,
             Stock = material.Stock,
             Precio = material.Precio,
