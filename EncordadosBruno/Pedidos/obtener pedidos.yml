@@ -8,7 +8,7 @@ http:
   url: "{{api-url}}/api/Purchased"
   auth:
     type: bearer
-    token: "{{token_carlos}}"
+    token: "{{token_admin}}"
 
 settings:
   encodeUrl: true

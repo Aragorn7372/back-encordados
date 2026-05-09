@@ -1,0 +1,17 @@
+info:
+  name: Asignar rol a usuario
+  type: http
+  seq: 10
+
+http:
+  method: POST
+  url: "{{api-url}}/api/User/{{user_id_juan}}/roles?role=ADMIN"
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

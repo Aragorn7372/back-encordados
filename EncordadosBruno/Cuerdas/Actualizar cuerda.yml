@@ -1,0 +1,29 @@
+info:
+  name: Actualizar cuerda
+  type: http
+  seq: 5
+
+http:
+  method: PUT
+  url: "{{api-url}}/api/Cuerdas/1"
+  body:
+    type: json
+    data: |-
+      {
+        "Marca": "Babolat",
+        "TournamentId": 1,
+        "Modelo": "RPM Blast 2.0",
+        "Stock": 150,
+        "Precio": 19.99,
+        "StringFormat": "12m",
+        "StringsType": "Polyester"
+      }
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

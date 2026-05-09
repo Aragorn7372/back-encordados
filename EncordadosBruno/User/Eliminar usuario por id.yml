@@ -1,0 +1,17 @@
+info:
+  name: Eliminar usuario por id
+  type: http
+  seq: 9
+
+http:
+  method: DELETE
+  url: "{{api-url}}/api/User/{{user_id_juan}}"
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

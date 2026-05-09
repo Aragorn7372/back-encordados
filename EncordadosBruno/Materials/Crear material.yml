@@ -1,0 +1,28 @@
+info:
+  name: Crear material
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{api-url}}/api/Materials"
+  body:
+    type: json
+    data: |-
+      {
+        "Marca": "Head",
+        "TournamentId": 1,
+        "Modelo": "Grip Pro",
+        "Stock": 50,
+        "Precio": 12.99,
+        "Type": "Grip"
+      }
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
