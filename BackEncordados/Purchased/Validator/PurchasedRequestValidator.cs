@@ -17,7 +17,7 @@ public class PurchasedRequestValidator : AbstractValidator<PurchasedRequestDto>
             .NotNull().WithMessage("Nudos es requerido.")
             .Must(n => n == 2 || n == 4 ).WithMessage("Nudos debe ser 2 o 4.");
         RuleFor(x => x.TournamentId)
-            .Cascade(CascadeMode.Stop) // Si el ID es nulo, no sigue con la validación de DB
+            .Cascade(CascadeMode.Stop) 
             .NotNull().WithMessage("El ID del torneo es obligatorio")
             .MustAsync(async (id, cancellation) => 
             {
@@ -26,21 +26,19 @@ public class PurchasedRequestValidator : AbstractValidator<PurchasedRequestDto>
                 return tournament != null && !tournament.IsDeleted;
             })
             .WithMessage("El torneo no existe o ha sido cancelado.");
-       // Validación para el Jugador
-RuleFor(x => x.PlayerName)
+
+        RuleFor(x => x.PlayerName)
     .Cascade(CascadeMode.Stop)
     .NotEmpty().WithMessage("El nombre del jugador es obligatorio")
     .CustomAsync(async (username, context, cancellation) => 
     {
         string key = CacheKeys.UserKey + username;
         
-        // Intentar obtener desde el caché híbrido
         var player = await cache.GetAsync<User?>(key);
         User? user = null;
 
         if (player == null)
         {
-            //  Si no está en caché, ir a DB
             user = await userRepository.FindByUsernameAsync(username!);
             if (user == null || user.IsDeleted || user.Role != User.UserRoles.USER)
             {
@@ -52,11 +50,9 @@ RuleFor(x => x.PlayerName)
             await cache.SetAsync(key, player);
         }
 
-        // Guardar el GUID para que el servicio lo use sin re-consultar
-        context.RootContextData["PlayerGuid"] = player;
+        context.RootContextData["PlayerUlid"] = player;
     });
 
-// Validación para el Encordador asignado
 RuleFor(x => x.AssignedToName)
     .Cascade(CascadeMode.Stop)
     .NotEmpty().WithMessage("El nombre del encordador es obligatorio")
@@ -70,7 +66,6 @@ RuleFor(x => x.AssignedToName)
         {
             var user = await userRepository.FindByUsernameAsync(username!);
             
-            // Validación de roles específicos para el encordador/owner
             if (user == null || user.IsDeleted || 
                (user.Role != User.UserRoles.ENCORDER && user.Role != User.UserRoles.OWNER))
             {
@@ -82,7 +77,6 @@ RuleFor(x => x.AssignedToName)
             await cache.SetAsync(key, assigned);
         }
 
-        // Guardar en el contexto con una clave distinta
         context.RootContextData["AssignedToGuid"] = assigned;
     });
         RuleFor(x => x.TypeWork)
