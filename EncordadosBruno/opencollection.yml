@@ -3,6 +3,23 @@ opencollection: 1.0.0
 info:
   name: EncordadosBruno
 bundled: false
+
+collections:
+  - uid: a1b2c3d4-0001-5678-90ab-cdef12345601
+    name: Auth
+  - uid: a1b2c3d4-0002-5678-90ab-cdef12345602
+    name: User
+  - uid: a1b2c3d4-0003-5678-90ab-cdef12345603
+    name: Pedidos
+  - uid: a1b2c3d4-0004-5678-90ab-cdef12345604
+    name: Talleres
+  - uid: a1b2c3d4-0005-5678-90ab-cdef12345605
+    name: Materials
+  - uid: a1b2c3d4-0006-5678-90ab-cdef12345606
+    name: Cuerdas
+  - uid: a1b2c3d4-0007-5678-90ab-cdef12345607
+    name: Health
+
 extensions:
   bruno:
     ignore:

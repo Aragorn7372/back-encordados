@@ -1,0 +1,17 @@
+info:
+  name: Obtener cuerda por id
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{api-url}}/api/Cuerdas/1"
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

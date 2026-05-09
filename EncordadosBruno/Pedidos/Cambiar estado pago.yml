@@ -1,0 +1,17 @@
+info:
+  name: Cambiar estado de pago
+  type: http
+  seq: 10
+
+http:
+  method: PATCH
+  url: "{{api-url}}/api/Purchased/change-payment-status/01KR42ME5P1Q2BGWW1DY11Z4TJ?paymentStatus=PAID"
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

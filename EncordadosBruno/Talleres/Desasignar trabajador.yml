@@ -1,0 +1,23 @@
+info:
+  name: Desasignar trabajador de torneo
+  type: http
+  seq: 8
+
+http:
+  method: PATCH
+  url: "{{api-url}}/api/Tournaments/remove-worker/1"
+  body:
+    type: json
+    data: |-
+      {
+        "WorkerUserId": "{{user_id_carlos}}"
+      }
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,4 +1,4 @@
-﻿info:
+info:
   name: Obtener mi perfil
   type: http
   seq: 1
@@ -8,11 +8,10 @@ http:
   url: "{{api-url}}/api/User/me"
   auth:
     type: bearer
-    token: "{{token_juan}}"
+    token: "{{token_admin}}"
 
 settings:
   encodeUrl: true
   timeout: 0
   followRedirects: true
   maxRedirects: 5
-

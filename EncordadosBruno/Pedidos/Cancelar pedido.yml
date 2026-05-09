@@ -1,0 +1,17 @@
+info:
+  name: Cancelar pedido
+  type: http
+  seq: 8
+
+http:
+  method: PATCH
+  url: "{{api-url}}/api/Purchased/cancel/01KR424NQJDA22KTM967R9RW9N"
+  auth:
+    type: bearer
+    token: "{{token_juan}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

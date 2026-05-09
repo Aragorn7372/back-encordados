@@ -1,0 +1,26 @@
+info:
+  name: Actualizar usuario por id
+  type: http
+  seq: 8
+
+http:
+  method: PATCH
+  url: "{{api-url}}/api/User/{{user_id_juan}}"
+  body:
+    type: json
+    data: |-
+      {
+        "Name": "Juan Martínez Actualizado",
+        "Email": "juan.actualizado@tenis.com",
+        "Telefono": "956789999",
+        "Username": "juan_updated"
+      }
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

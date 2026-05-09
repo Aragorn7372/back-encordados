@@ -1,0 +1,35 @@
+info:
+  name: Actualizar pedido
+  type: http
+  seq: 7
+
+http:
+  method: PATCH
+  url: "{{api-url}}/api/Purchased/01KR42ME5P1Q2BGWW1DY11Z4TJ"
+  body:
+    type: json
+    data: |-
+      {
+        "TypeString": "Babolat RPM Blast Actualizado",
+        "RaquetModel": "Wilson Pro Staff",
+        "Price": 32.00,
+        "Machine": "Máquina Beta-2",
+        "Comments": "Pedido actualizado por admin",
+        "StringSetup": {
+          "StringV": "Babolat RPM Blast",
+          "TensionV": 27.0,
+          "PreStetchV": 3,
+          "StringH": "Babolat Pro",
+          "TensionH": 26.0,
+          "PreStetchH": 2
+        }
+      }
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

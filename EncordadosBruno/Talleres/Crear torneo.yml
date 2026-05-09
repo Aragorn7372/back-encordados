@@ -1,0 +1,26 @@
+info:
+  name: Crear torneo
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{api-url}}/api/Tournaments"
+  body:
+    type: json
+    data: |-
+      {
+        "Name": "Torneo Nacional Madrid 2026",
+        "EndTournament": "2026-09-15T00:00:00Z",
+        "StartTournament": "2026-09-01T00:00:00Z",
+        "Logotype": "/logos/torneo-nacional-madrid.jpg"
+      }
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
