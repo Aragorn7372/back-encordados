@@ -1,0 +1,45 @@
+info:
+  name: Cancelar pedido
+  type: http
+  seq: 8
+
+docs: |
+  # Cancelar Pedido
+
+  Cancela un pedido existente. Solo el usuario propietario puede cancelar sus propios pedidos.
+
+  ## Authorization
+  RequireUserRole
+
+  ## HTTP Method
+  `PATCH /api/Purchased/cancel/{id}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | string (ULID) | ID único del pedido |
+
+  ## Responses
+  - **200 OK**: `PurchasedResponseDto` con estado cancelado
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No es el propietario del pedido
+  - **404 Not Found**: Pedido no encontrado
+
+  ## Test Cases
+  - [ ] Cancelar mi propio pedido exitosamente
+  - [ ] Intentar cancelar pedido de otro usuario (403)
+  - [ ] Intentar cancelar pedido inexistente (404)
+  - [ ] Intentar sin token (401)
+
+http:
+  method: PATCH
+  url: "{{api-url}}/api/Purchased/cancel/01KR424NQJDA22KTM967R9RW9N"
+  auth:
+    type: bearer
+    token: "{{token_juan}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

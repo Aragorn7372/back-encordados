@@ -1,0 +1,45 @@
+info:
+  name: Obtener torneo por nombre
+  type: http
+  seq: 4
+
+docs: |
+  # Obtener Torneo por Nombre
+
+  Obtiene los detalles de un torneo específico buscando por nombre.
+
+  ## Authorization
+  RequireEncorderRole
+
+  ## HTTP Method
+  `GET /api/Tournaments/name/{name}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `name` | string | Nombre del torneo (URL encoded) |
+
+  ## Responses
+  - **200 OK**: `TournamentResponseDetailsDto` con datos del torneo
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Encorder
+  - **404 Not Found**: Torneo no encontrado
+
+  ## Test Cases
+  - [ ] Obtener torneo existente por nombre
+  - [ ] Obtener torneo con nombre con caracteres especiales (ñ, espacios)
+  - [ ] Intentar obtener torneo inexistente (404)
+  - [ ] Intentar sin permisos de Encorder (403)
+
+http:
+  method: GET
+  url: "{{api-url}}/api/Tournaments/name/Torneo%20Madrile%C3%B1o%202025"
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

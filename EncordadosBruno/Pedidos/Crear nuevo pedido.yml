@@ -1,7 +1,69 @@
-﻿info:
+info:
   name: Crear nuevo pedido de encordado
   type: http
   seq: 2
+
+docs: |
+  # Crear Nuevo Pedido
+
+  Crea un nuevo pedido de encordado de raqueta.
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `POST /api/Purchased`
+
+  ## Body (JSON)
+  ```json
+  {
+    "TournamentId": 1,
+    "TypeString": "Babolat RPM Blast",
+    "TypeWork": "ENCORDADO",
+    "DateString": "2026-06-15T00:00:00Z",
+    "Logotype": true,
+    "RaquetModel": "Wilson Clash 100",
+    "Price": 28.50,
+    "Nudos": 1,
+    "PlayerName": "jugador_juan",
+    "AssignedToName": "carlos_encordador",
+    "Machine": "Máquina Alpha-1",
+    "Comments": "Nuevo pedido para el Torneo Madrileño",
+    "PayStatus": "PENDING_PAYMENT",
+    "Status": "PENDING",
+    "StringSetup": {
+      "StringV": "Babolat RPM Blast",
+      "TensionV": 26.0,
+      "PreStetchV": 2,
+      "StringH": "Babolat Pro",
+      "TensionH": 25.5,
+      "PreStetchH": 1
+    }
+  }
+  ```
+
+  ## Campos Principales
+  | Campo | Tipo | Descripción |
+  |-------|------|-------------|
+  | `TournamentId` | long | ID del torneo asociado |
+  | `TypeString` | string | Modelo de cuerda |
+  | `TypeWork` | string | Tipo de trabajo (ENCORDADO, etc.) |
+  | `RaquetModel` | string | Modelo de raqueta |
+  | `Price` | decimal | Precio del servicio |
+  | `Status` | string | Estado inicial (PENDING) |
+  | `PayStatus` | string | Estado de pago (PENDING_PAYMENT) |
+
+  ## Responses
+  - **201 Created**: `PurchasedResponseDto` con datos del pedido creado
+  - **400 Bad Request**: Datos inválidos
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Admin
+
+  ## Test Cases
+  - [ ] Crear pedido con todos los campos
+  - [ ] Crear pedido con campos mínimos
+  - [ ] Crear pedido con tournament inexistente (404)
+  - [ ] Intentar sin permisos de Admin (403)
 
 http:
   method: POST
@@ -10,18 +72,18 @@ http:
     type: json
     data: |-
       {
-        "TournamentId": "11111111-1111-1111-1111-111111111111",
+        "TournamentId": 1,
         "TypeString": "Babolat RPM Blast",
         "TypeWork": "ENCORDADO",
-        "DateString": "2026-05-15T00:00:00Z",
+        "DateString": "2026-06-15T00:00:00Z",
         "Logotype": true,
         "RaquetModel": "Wilson Clash 100",
         "Price": 28.50,
         "Nudos": 1,
-        "PlayerId": "55555555-5555-5555-5555-555555555555",
-        "AssignedTo": "33333333-3333-3333-3333-333333333333",
+        "PlayerName": "jugador_juan",
+        "AssignedToName": "carlos_encordador",
         "Machine": "Máquina Alpha-1",
-        "Comments": "Nuevo pedido de Juan para el torneo",
+        "Comments": "Nuevo pedido para el Torneo Madrileño",
         "PayStatus": "PENDING_PAYMENT",
         "Status": "PENDING",
         "StringSetup": {
@@ -42,4 +104,3 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
-

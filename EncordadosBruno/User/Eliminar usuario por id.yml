@@ -1,0 +1,45 @@
+info:
+  name: Eliminar usuario por id
+  type: http
+  seq: 9
+
+docs: |
+  # Eliminar Usuario por ID
+
+  Elimina un usuario específico del sistema por su ID (ULID).
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `DELETE /api/User/{id}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | ULID | ID único del usuario a eliminar |
+
+  ## Responses
+  - **204 No Content**: Usuario eliminado exitosamente
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Admin
+  - **500 Internal Server Error**: Error al eliminar
+
+  ## Test Cases
+  - [ ] Eliminar usuario existente por ID
+  - [ ] Intentar eliminar usuario inexistente
+  - [ ] Intentar sin token (401)
+  - [ ] Intentar sin rol Admin (403)
+
+http:
+  method: DELETE
+  url: "{{api-url}}/api/User/{{user_id_juan}}"
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

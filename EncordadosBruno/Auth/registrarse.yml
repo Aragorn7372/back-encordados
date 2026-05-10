@@ -3,6 +3,38 @@ info:
   type: http
   seq: 1
 
+docs: |
+  # Registrarse
+
+  Registra un nuevo usuario en el sistema.
+
+  ## Authorization
+  Ninguno (endpoint público)
+
+  ## HTTP Method
+  `POST /api/Auth/signup`
+
+  ## Body (JSON)
+  ```json
+  {
+    "Username": "string",
+    "Email": "string",
+    "Password": "string"
+  }
+  ```
+
+  ## Responses
+  - **201 Created**: Usuario creado exitosamente, devuelve token y datos del usuario
+  - **400 Bad Request**: Error de validación en los datos
+  - **409 Conflict**: Username o Email ya existe
+
+  ## Test Cases
+  - [ ] Registro exitoso con datos válidos
+  - [ ] Registro fallido por email duplicado
+  - [ ] Registro fallido por username duplicado
+  - [ ] Registro fallido por password muy corto
+  - [ ] Registro fallido por email inválido
+
 http:
   method: POST
   url: "{{api-url}}/api/Auth/signup"
