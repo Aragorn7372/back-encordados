@@ -3,6 +3,44 @@ info:
   type: http
   seq: 5
 
+docs: |
+  # Actualizar Mi Perfil
+
+  Actualiza los datos del usuario autenticado actualmente.
+
+  ## Authorization
+  RequireUserRole
+
+  ## HTTP Method
+  `PATCH /api/User/me`
+
+  ## Body (JSON - todos los campos opcionales)
+  ```json
+  {
+    "Name": "string",
+    "Email": "string",
+    "Telefono": "string",
+    "Username": "string"
+  }
+  ```
+
+  ## Responses
+  - **200 OK**: `UserResponseDto` con datos actualizados
+  - **400 Bad Request**: Datos inválidos
+  - **401 Unauthorized**: Token inválido o expirado
+  - **404 Not Found**: Usuario no encontrado
+  - **409 Conflict**: Username o Email ya existe
+
+  ## Test Cases
+  - [ ] Actualizar mi nombre
+  - [ ] Actualizar mi email
+  - [ ] Actualizar mi teléfono
+  - [ ] Intentar con email duplicado (409)
+  - [ ] Intentar sin token (401)
+
+  ## Nota
+  Este endpoint usa la misma ruta que "Actualizar usuario por id" pero toma el ID del token JWT.
+
 http:
   method: PATCH
   url: "{{api-url}}/api/User/{{user_id_juan}}"

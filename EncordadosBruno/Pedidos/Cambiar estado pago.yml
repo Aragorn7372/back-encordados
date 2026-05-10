@@ -3,6 +3,39 @@ info:
   type: http
   seq: 10
 
+docs: |
+  # Cambiar Estado de Pago
+
+  Permite a un encordador cambiar el estado de pago de un pedido.
+
+  ## Authorization
+  RequireEcorderRole
+
+  ## HTTP Method
+  `PATCH /api/Purchased/change-payment-status/{id}?paymentStatus={paymentStatus}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | string (ULID) | ID único del pedido |
+
+  ## Parameters (Query)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `paymentStatus` | string | Nuevo estado de pago (PAID, PENDING_PAYMENT, OVERDUE, etc.) |
+
+  ## Responses
+  - **200 OK**: `PurchasedResponseDto` con estado de pago actualizado
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de encordador
+  - **404 Not Found**: Pedido no encontrado
+
+  ## Test Cases
+  - [ ] Cambiar estado de pago a PAID
+  - [ ] Cambiar estado de pago a PENDING_PAYMENT
+  - [ ] Cambiar estado de pago de pedido inexistente (404)
+  - [ ] Intentar sin permisos de encordador (403)
+
 http:
   method: PATCH
   url: "{{api-url}}/api/Purchased/change-payment-status/01KR42ME5P1Q2BGWW1DY11Z4TJ?paymentStatus=PAID"

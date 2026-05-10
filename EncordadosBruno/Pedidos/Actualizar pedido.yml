@@ -3,6 +3,55 @@ info:
   type: http
   seq: 7
 
+docs: |
+  # Actualizar Pedido
+
+  Actualiza los datos de un pedido existente.
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `PUT /api/Purchased/{id}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | string (ULID) | ID único del pedido |
+
+  ## Body (JSON - todos los campos opcionales)
+  ```json
+  {
+    "TypeString": "Babolat RPM Blast Actualizado",
+    "RaquetModel": "Wilson Pro Staff",
+    "Price": 32.00,
+    "Machine": "Máquina Beta-2",
+    "Comments": "Pedido actualizado por admin",
+    "StringSetup": {
+      "StringV": "Babolat RPM Blast",
+      "TensionV": 27.0,
+      "PreStetchV": 3,
+      "StringH": "Babolat Pro",
+      "TensionH": 26.0,
+      "PreStetchH": 2
+    }
+  }
+  ```
+
+  ## Responses
+  - **200 OK**: `PurchasedResponseDto` con datos actualizados
+  - **400 Bad Request**: Datos inválidos
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Admin
+  - **404 Not Found**: Pedido no encontrado
+
+  ## Test Cases
+  - [ ] Actualizar precio del pedido
+  - [ ] Actualizar tipo de cuerda
+  - [ ] Actualizar configuración de encordado (StringSetup)
+  - [ ] Intentar actualizar pedido inexistente (404)
+  - [ ] Intentar sin permisos de Admin (403)
+
 http:
   method: PATCH
   url: "{{api-url}}/api/Purchased/01KR42ME5P1Q2BGWW1DY11Z4TJ"
