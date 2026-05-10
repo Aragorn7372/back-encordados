@@ -22,21 +22,18 @@ docs: |
   ## Body (JSON - todos los campos opcionales)
   ```json
   {
-    "TypeString": "Babolat RPM Blast Actualizado",
-    "RaquetModel": "Wilson Pro Staff",
-    "Price": 32.00,
     "Machine": "Máquina Beta-2",
     "Comments": "Pedido actualizado por admin",
-    "StringSetup": {
-      "StringV": "Babolat RPM Blast",
-      "TensionV": 27.0,
-      "PreStetchV": 3,
-      "StringH": "Babolat Pro",
-      "TensionH": 26.0,
-      "PreStetchH": 2
-    }
+    "PayStatus": "PAID"
   }
   ```
+
+  ## Campos Actualizables
+  | Campo | Tipo | Descripción |
+  |-------|------|-------------|
+  | `Machine` | string? | Máquina a usar |
+  | `Comments` | string? | Comentarios del pedido |
+  | `PayStatus` | string? | Estado de pago (PENDING_PAYMENT, PAID, OVERDUE) |
 
   ## Responses
   - **200 OK**: `PurchasedResponseDto` con datos actualizados
@@ -46,32 +43,22 @@ docs: |
   - **404 Not Found**: Pedido no encontrado
 
   ## Test Cases
-  - [ ] Actualizar precio del pedido
-  - [ ] Actualizar tipo de cuerda
-  - [ ] Actualizar configuración de encordado (StringSetup)
+  - [ ] Actualizar máquina del pedido
+  - [ ] Actualizar comentarios del pedido
+  - [ ] Actualizar estado de pago
   - [ ] Intentar actualizar pedido inexistente (404)
   - [ ] Intentar sin permisos de Admin (403)
 
 http:
-  method: PATCH
+  method: PUT
   url: "{{api-url}}/api/Purchased/01KR42ME5P1Q2BGWW1DY11Z4TJ"
   body:
     type: json
     data: |-
       {
-        "TypeString": "Babolat RPM Blast Actualizado",
-        "RaquetModel": "Wilson Pro Staff",
-        "Price": 32.00,
         "Machine": "Máquina Beta-2",
         "Comments": "Pedido actualizado por admin",
-        "StringSetup": {
-          "StringV": "Babolat RPM Blast",
-          "TensionV": 27.0,
-          "PreStetchV": 3,
-          "StringH": "Babolat Pro",
-          "TensionH": 26.0,
-          "PreStetchH": 2
-        }
+        "PayStatus": "PAID"
       }
   auth:
     type: bearer
