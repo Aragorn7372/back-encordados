@@ -1,0 +1,50 @@
+info:
+  name: Cambiar estado del pedido
+  type: http
+  seq: 9
+
+docs: |
+  # Cambiar Estado del Pedido
+
+  Permite a un encordador cambiar el estado de un pedido.
+
+  ## Authorization
+  RequireEcorderRole
+
+  ## HTTP Method
+  `PATCH /api/Purchased/change-status/{id}?status={status}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | string (ULID) | ID único del pedido |
+
+  ## Parameters (Query)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `status` | string | Nuevo estado (COMPLETED, IN_PROGRESS, CANCELLED, etc.) |
+
+  ## Responses
+  - **200 OK**: `PurchasedResponseDto` con estado actualizado
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de encordador
+  - **404 Not Found**: Pedido no encontrado
+
+  ## Test Cases
+  - [ ] Cambiar estado a COMPLETED
+  - [ ] Cambiar estado a IN_PROGRESS
+  - [ ] Cambiar estado de pedido inexistente (404)
+  - [ ] Intentar sin permisos de encordador (403)
+
+http:
+  method: PATCH
+  url: "{{api-url}}/api/Purchased/change-status/01KR42ME5P1Q2BGWW1DY11Z4TJ?status=COMPLETED"
+  auth:
+    type: bearer
+    token: "{{token_carlos}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

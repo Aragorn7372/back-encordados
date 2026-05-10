@@ -1,0 +1,45 @@
+info:
+  name: Obtener pedido por id
+  type: http
+  seq: 6
+
+docs: |
+  # Obtener Pedido por ID
+
+  Obtiene los detalles de un pedido específico por su ID.
+
+  ## Authorization
+  Multi-rol (debe tener acceso al pedido)
+
+  ## HTTP Method
+  `GET /api/Purchased/{id}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | string (ULID) | ID único del pedido |
+
+  ## Responses
+  - **200 OK**: `PurchasedResponseDto` con datos completos del pedido
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene acceso a este pedido
+  - **404 Not Found**: Pedido no encontrado
+
+  ## Test Cases
+  - [ ] Obtener pedido existente por ID válido
+  - [ ] Intentar obtener pedido inexistente (404)
+  - [ ] Admin obtiene cualquier pedido
+  - [ ] User intenta obtener pedido de otro (403)
+
+http:
+  method: GET
+  url: "{{api-url}}/api/Purchased/01KR42ME5P1Q2BGWW1DY11Z4TJ"
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,41 +1,42 @@
 info:
-  name: Obtener todos los encordadores
+  name: Obtener todos los materiales
   type: http
-  seq: 4
+  seq: 1
 
 docs: |
-  # Obtener Todos los Encordadores
+  # Obtener Todos los Materiales
 
-  Lista usuarios con rol Encordador con soporte para filtros y paginación.
+  Lista materiales con soporte para búsqueda y paginación.
 
   ## Authorization
   RequireAdminRole
 
   ## HTTP Method
-  `GET /api/User/encorders`
+  `GET /api/Materials`
 
   ## Parameters (Query)
   | Parámetro | Tipo | Default | Descripción |
   |-----------|------|---------|-------------|
-  | `search` | string | "" | Búsqueda por nombre/username |
+  | `search` | string | "" | Búsqueda por nombre/modelo |
   | `page` | int | 0 | Número de página |
   | `size` | int | 10 | Tamaño de página |
-  | `sortBy` | string | "name" | Campo de ordenamiento |
+  | `sortBy` | string | "id" | Campo de ordenamiento |
   | `direction` | string | "asc" | Dirección (asc/desc) |
 
   ## Responses
-  - **200 OK**: `PageResponseDto<UserResponseDto>` con solo encordadores
+  - **200 OK**: `PageResponseDto<MaterialResponseDto>`
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Admin
 
   ## Test Cases
-  - [ ] Listar encordadores con paginación por defecto
-  - [ ] Buscar encordador por nombre
-  - [ ] Ordenar encordadores por nombre
+  - [ ] Listar materiales con paginación por defecto
+  - [ ] Buscar material por nombre/modelo
+  - [ ] Ordenar por diferentes campos
+  - [ ] Intentar sin permisos de Admin (403)
 
 http:
   method: GET
-  url: "{{api-url}}/api/User/encorders?page=0&size=10&sortBy=name&direction=asc"
+  url: "{{api-url}}/api/Materials?page=0&size=10&sortBy=createdAt&direction=desc"
   auth:
     type: bearer
     token: "{{token_admin}}"

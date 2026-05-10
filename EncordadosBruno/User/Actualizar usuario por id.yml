@@ -1,18 +1,23 @@
 info:
-  name: Actualizar mi perfil
+  name: Actualizar usuario por id
   type: http
-  seq: 5
+  seq: 8
 
 docs: |
-  # Actualizar Mi Perfil
+  # Actualizar Usuario por ID
 
-  Actualiza los datos del usuario autenticado actualmente.
+  Actualiza los datos de un usuario específico (solo campos proporcionados).
 
   ## Authorization
-  RequireUserRole
+  RequireAdminRole
 
   ## HTTP Method
-  `PATCH /api/User/me`
+  `PATCH /api/User/{id}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | ULID | ID único del usuario |
 
   ## Body (JSON - todos los campos opcionales)
   ```json
@@ -28,18 +33,18 @@ docs: |
   - **200 OK**: `UserResponseDto` con datos actualizados
   - **400 Bad Request**: Datos inválidos
   - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Admin
   - **404 Not Found**: Usuario no encontrado
   - **409 Conflict**: Username o Email ya existe
 
   ## Test Cases
-  - [ ] Actualizar mi nombre
-  - [ ] Actualizar mi email
-  - [ ] Actualizar mi teléfono
+  - [ ] Actualizar nombre de usuario
+  - [ ] Actualizar email de usuario
+  - [ ] Actualizar teléfono
+  - [ ] Actualizar username
+  - [ ] Intentar actualizar usuario inexistente (404)
   - [ ] Intentar con email duplicado (409)
-  - [ ] Intentar sin token (401)
-
-  ## Nota
-  Este endpoint usa la misma ruta que "Actualizar usuario por id" pero toma el ID del token JWT.
+  - [ ] Intentar sin permisos de Admin (403)
 
 http:
   method: PATCH
@@ -48,9 +53,10 @@ http:
     type: json
     data: |-
       {
-        "Name": "Juan Martínez Torres",
-        "Email": "juan.nuevo@tenis.com",
-        "Telefono": "956789999"
+        "Name": "Juan Martínez Actualizado",
+        "Email": "juan.actualizado@tenis.com",
+        "Telefono": "956789999",
+        "Username": "juan_updated"
       }
   auth:
     type: bearer

@@ -3,6 +3,34 @@
   type: http
   seq: 1
 
+docs: |
+  # Obtener Mis Pedidos
+
+  Lista los pedidos del usuario autenticado actualmente.
+
+  ## Authorization
+  RequireUserRole
+
+  ## HTTP Method
+  `GET /api/Purchased`
+
+  ## Parameters (Query)
+  | Parámetro | Tipo | Default | Descripción |
+  |-----------|------|---------|-------------|
+  | `page` | int | 0 | Número de página |
+  | `size` | int | 10 | Tamaño de página |
+  | `sortBy` | string | "createdAt" | Campo de ordenamiento |
+  | `direction` | string | "desc" | Dirección (asc/desc) |
+
+  ## Responses
+  - **200 OK**: `PageResponseDto<PurchasedResponseDto>` solo pedidos del usuario
+  - **401 Unauthorized**: Token inválido o expirado
+
+  ## Test Cases
+  - [ ] Obtener mis pedidos con paginación
+  - [ ] Verificar que solo aparecen mis pedidos
+  - [ ] Intentar sin token (401)
+
 http:
   method: GET
   url: "{{api-url}}/api/Purchased?page=0&size=10&sortBy=createdAt&direction=desc"
@@ -15,4 +43,3 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
-
