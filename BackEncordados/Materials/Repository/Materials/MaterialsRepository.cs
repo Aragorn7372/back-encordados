@@ -12,6 +12,8 @@ public class MaterialsRepository(ILogger<MaterialsRepository>logger,MaterialsDbC
         logger.LogInformation("Buscando materiales con filtro: search={Marca}, Page={Page}, PageSize={PageSize}", filter.Search,filter.Page,filter.Size);
         var query = context.Materiales.AsQueryable();
         query = query.Where(m=>!m.IsDeleted);
+        if(filter.TournamentId != null)
+            query = query.Where(m => m.TournamentId == filter.TournamentId);
         if (filter.Search.Length > 0)
         {
             query = query.Where(m =>
