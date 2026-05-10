@@ -21,14 +21,16 @@ public class CuerdasController(ILogger<CuerdasController> logger, ICuerdasServic
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [Authorize(policy: "RequireAdminRole")]
     public async Task<IActionResult> GetAll(
+        [FromQuery] long tournamentId,
         [FromQuery] string sortBy = "id",
         [FromQuery] int page = 0,
         [FromQuery] int size = 10,
         [FromQuery] string direction = "asc",
         [FromQuery] string search = "") {
-        logger.LogInformation("Get all cuerdas with search {Search}, sortBy {SortBy}, page {Page}, size {Size} and direction {Direction}",
-            search, sortBy, page, size, direction);
+        logger.LogInformation("Get all cuerdas with search {Search}, sortBy {SortBy}, page {Page}, size {Size}, direction {Direction} and tournamentId {TournamentId}",
+            search, sortBy, page, size, direction, tournamentId);
         var filter = new CuerdaFilterdto(
+            TournamentId: tournamentId,
             Search: search,
             SortBy: sortBy,
             Page: page,
