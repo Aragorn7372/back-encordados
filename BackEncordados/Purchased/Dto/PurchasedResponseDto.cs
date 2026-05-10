@@ -5,18 +5,13 @@ namespace BackEncordados.Purchased.Dto;
 
 public record PurchasedResponseDto(
     Ulid Id,
-    string TypeString,
-    string TypeWork,
-    DateTime DateString,
-    bool Logotype,
-    string RaquetModel,
-    double Price,
-    byte Nudos,
-    UserResponseDto Player, 
+    long TournamentId,
+    UserResponseDto Player,
     UserResponseDto Encorder,
     string Machine,
     string Comments,
     string PayStatus,
-    string Status,
-    StringSetup StringSetup
-    );
+    DateTime CreatedAt,
+    DateTime UpdatedAt,
+    List<PedidoLineaResponseDto> Lineas
+);

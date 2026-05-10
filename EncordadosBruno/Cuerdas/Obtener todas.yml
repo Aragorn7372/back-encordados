@@ -3,6 +3,35 @@ info:
   type: http
   seq: 1
 
+http:
+  method: GET
+  url: "{{api-url}}/api/Cuerdas?page=0&size=10&sortBy=createdAt&direction=desc&tournamentId=1"
+  params:
+    - name: page
+      value: "0"
+      type: query
+    - name: size
+      value: "10"
+      type: query
+    - name: sortBy
+      value: createdAt
+      type: query
+    - name: direction
+      value: desc
+      type: query
+    - name: tournamentId
+      value: "1"
+      type: query
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
 docs: |
   # Obtener Todas las Cuerdas
 
@@ -33,16 +62,3 @@ docs: |
   - [ ] Buscar cuerda por nombre/modelo
   - [ ] Filtrar por marca
   - [ ] Intentar sin permisos de Admin (403)
-
-http:
-  method: GET
-  url: "{{api-url}}/api/Cuerdas?page=0&size=10&sortBy=createdAt&direction=desc"
-  auth:
-    type: bearer
-    token: "{{token_admin}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5

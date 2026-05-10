@@ -39,7 +39,7 @@ public class TransactionalAttribute : ActionFilterAttribute
 
     public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        var transactions = new List<IDbContextTransaction>();
+        var transactions = new List<(IDbContextTransaction Transaction, Type ContextType)>();
 
         try
         {
@@ -50,8 +50,15 @@ public class TransactionalAttribute : ActionFilterAttribute
                 if (dbContext == null)
                     throw new InvalidOperationException($"No se pudo obtener la instancia de {contextType.Name}");
 
+                // Skip transactions for in-memory database (dev mode)
+                if (dbContext.Database.IsInMemory())
+                {
+                    Log.Debug("In-memory database detectada, saltando transacción para {DbContextName}", contextType.Name);
+                    continue;
+                }
+
                 var transaction = await dbContext.Database.BeginTransactionAsync();
-                transactions.Add(transaction);
+                transactions.Add((transaction, contextType));
 
                 Log.Information("Transacción iniciada en {DbContextName}", contextType.Name);
             }
@@ -65,9 +72,10 @@ public class TransactionalAttribute : ActionFilterAttribute
             if (!hasError)
             {
                 // COMMIT: Si todo está bien
-                foreach (var transaction in transactions)
+                foreach (var (transaction, contextType) in transactions)
                 {
                     await transaction.CommitAsync();
+                    Log.Information("Transacción confirmada para {DbContextName}", contextType.Name);
                 }
 
                 Log.Information("Todas las transacciones fueron confirmadas exitosamente");
@@ -76,15 +84,16 @@ public class TransactionalAttribute : ActionFilterAttribute
             {
                 // ROLLBACK: Si hay excepción o Result.Failure
                 var reversedTransactions = transactions.AsEnumerable().Reverse();
-                foreach (var transaction in reversedTransactions)
+                foreach (var (transaction, contextType) in reversedTransactions)
                 {
                     try
                     {
                         await transaction.RollbackAsync();
+                        Log.Warning("Transacción revertida para {DbContextName}", contextType.Name);
                     }
                     catch (Exception ex)
                     {
-                        Log.Error(ex, "Error durante el rollback de transacción");
+                        Log.Error(ex, "Error durante el rollback de transacción en {DbContextName}", contextType.Name);
                     }
                 }
 
@@ -98,15 +107,16 @@ public class TransactionalAttribute : ActionFilterAttribute
         finally
         {
             // Garantizar la liberación de todas las transacciones
-            foreach (var transaction in transactions)
+            foreach (var (transaction, contextType) in transactions)
             {
                 try
                 {
                     await transaction.DisposeAsync();
+                    Log.Debug("Transacción liberada para {DbContextName}", contextType.Name);
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, "Error liberando transacción");
+                    Log.Error(ex, "Error liberando transacción para {DbContextName}", contextType.Name);
                 }
             }
         }
