@@ -20,7 +20,7 @@ public class MaterialsController(ILogger<MaterialsController> logger, IMaterials
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [Authorize(policy: "RequireAdminRole")]
     public async Task<IActionResult> GetAll(
-        [FromQuery] long? TournamentId,
+        [FromQuery] long? tournamentId,
         [FromQuery] string sortBy = "id",
         [FromQuery] int page = 0,
         [FromQuery] int size = 10,
@@ -29,7 +29,7 @@ public class MaterialsController(ILogger<MaterialsController> logger, IMaterials
         logger.LogInformation("Get all materials with search {Search}, sortBy {SortBy}, page {Page}, size {Size} and direction {Direction}",
             search, sortBy, page, size, direction);
         var filter = new MaterialFilterDto(
-            TournamentId: TournamentId,
+            TournamentId: tournamentId,
             Search: search,
             SortBy: sortBy,
             Page: page,

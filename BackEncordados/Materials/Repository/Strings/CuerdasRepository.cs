@@ -15,7 +15,7 @@ public class CuerdasRepository(ILogger<CuerdasRepository>logger, MaterialsDbCont
         if (filter.TournamentId != null) 
             query = query.Where(c => c.TournamentId == filter.TournamentId);
             
-        if (filter.Search.Length > 0)
+        if (!string.IsNullOrEmpty(filter.Search))
         {
             query = query.Where(c =>EF.Functions.Like(c.Marca,$"%{filter.Search}%")
             ||EF.Functions.Like(c.Modelo,$"%{filter.Search}%")
