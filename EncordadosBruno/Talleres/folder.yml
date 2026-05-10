@@ -3,5 +3,22 @@ info:
   type: folder
   seq: 4
 
+docs: |
+  # Talleres
+
+  Gestión de torneos y asignación de trabajadores/encordadores a talleres.
+
+  ## Descripción
+  Esta carpeta contiene los endpoints para:
+  - **POST /Tournaments**: Crear nuevo torneo (Admin)
+  - **GET /Tournaments**: Listar torneos con paginación (Admin/Owner)
+  - **GET /Tournaments/{id}**: Obtener torneo por ID (Encorder)
+  - **GET /Tournaments/name/{name}**: Obtener torneo por nombre (Encorder)
+  - **PUT /Tournaments/{id}**: Actualizar torneo (Admin)
+  - **DELETE /Tournaments/{id}**: Eliminar torneo (Admin)
+  - **PATCH /Tournaments/add-worker/{id}**: Asignar trabajador a torneo (Admin)
+  - **PATCH /Tournaments/remove-worker/{id}**: Desasignar trabajador (Admin)
+  - **GET /Tournaments/{id}/workers**: Obtener trabajadores asignados (Admin)
+
 request:
   auth: inherit

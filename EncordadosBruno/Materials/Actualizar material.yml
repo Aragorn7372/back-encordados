@@ -3,6 +3,49 @@ info:
   type: http
   seq: 5
 
+docs: |
+  # Actualizar Material
+
+  Actualiza los datos de un material existente.
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `PUT /api/Materials/{id}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | long | ID numérico del material |
+
+  ## Body (JSON)
+  ```json
+  {
+    "Marca": "Head",
+    "TournamentId": 1,
+    "Modelo": "Grip Pro Elite",
+    "Stock": 100,
+    "Precio": 15.99,
+    "Type": "Grip"
+  }
+  ```
+
+  ## Responses
+  - **200 OK**: `MaterialResponseDto` con datos actualizados
+  - **400 Bad Request**: Datos inválidos
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Admin
+  - **404 Not Found**: Material no encontrado
+  - **409 Conflict**: Ya existe otro material con ese modelo
+
+  ## Test Cases
+  - [ ] Actualizar stock de material
+  - [ ] Actualizar precio de material
+  - [ ] Actualizar modelo de material
+  - [ ] Intentar actualizar material inexistente (404)
+  - [ ] Intentar sin permisos de Admin (403)
+
 http:
   method: PUT
   url: "{{api-url}}/api/Materials/1"

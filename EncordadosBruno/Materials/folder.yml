@@ -3,5 +3,22 @@ info:
   type: folder
   seq: 5
 
+docs: |
+  # Materials
+
+  Gestión de materiales/equipamiento del sistema (grips, overgrips, etc.).
+
+  ## Descripción
+  Esta carpeta contiene los endpoints para:
+  - **GET /Materials**: Listar materiales con paginación
+  - **GET /Materials/{id}**: Obtener material por ID
+  - **GET /Materials/name/{name}**: Obtener material por nombre
+  - **POST /Materials**: Crear nuevo material
+  - **PUT /Materials/{id}**: Actualizar material
+  - **DELETE /Materials/{id}**: Eliminar material
+
+  ## Authorization
+  Todos los endpoints requieren RequireAdminRole
+
 request:
   auth: inherit

@@ -3,5 +3,22 @@ info:
   type: folder
   seq: 6
 
+docs: |
+  # Cuerdas
+
+  Gestión de cuerdas para encordado de raquetas de tenis.
+
+  ## Descripción
+  Esta carpeta contiene los endpoints para:
+  - **GET /Cuerdas**: Listar cuerdas con paginación
+  - **GET /Cuerdas/{id}**: Obtener cuerda por ID
+  - **GET /Cuerdas/name/{name}**: Obtener cuerda por nombre/modelo
+  - **POST /Cuerdas**: Crear nueva cuerda
+  - **PUT /Cuerdas/{id}**: Actualizar cuerda
+  - **DELETE /Cuerdas/{id}**: Eliminar cuerda
+
+  ## Authorization
+  Todos los endpoints requieren RequireAdminRole
+
 request:
   auth: inherit

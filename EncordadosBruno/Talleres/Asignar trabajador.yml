@@ -3,6 +3,48 @@ info:
   type: http
   seq: 7
 
+docs: |
+  # Asignar Trabajador a Torneo
+
+  Asigna un trabajador (encordador) y su máquina a un torneo.
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `PATCH /api/Tournaments/add-worker/{id}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | long | ID numérico del torneo |
+
+  ## Body (JSON)
+  ```json
+  {
+    "WorkerUserId": "{{user_id_carlos}}",
+    "Machine": "Máquina Alpha-1"
+  }
+  ```
+
+  ## Campos
+  | Campo | Tipo | Descripción |
+  |-------|------|-------------|
+  | `WorkerUserId` | ULID | ID del usuario trabajador/encordador |
+  | `Machine` | string | Nombre de la máquina asignada |
+
+  ## Responses
+  - **200 OK**: `TournamentResponseDto` con trabajador asignado
+  - **400 Bad Request**: Datos inválidos
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Admin
+  - **404 Not Found**: Torneo o usuario no encontrado
+
+  ## Test Cases
+  - [ ] Asignar trabajador existente a torneo
+  - [ ] Asignar trabajador inexistente (404)
+  - [ ] Intentar sin permisos de Admin (403)
+
 http:
   method: PATCH
   url: "{{api-url}}/api/Tournaments/add-worker/1"

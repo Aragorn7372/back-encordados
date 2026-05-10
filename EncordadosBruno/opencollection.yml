@@ -2,7 +2,45 @@ opencollection: 1.0.0
 
 info:
   name: EncordadosBruno
-bundled: false
+  bundled: false
+
+docs: |
+  # Encordados API
+
+  Colección de tests para la API del sistema de gestión de encordado de raquetas.
+
+  ## Descripción
+  Sistema para gestionar:
+  - **Torneos**: Creación y gestión de torneos de tenis
+  - **Pedidos**: Gestión de pedidos de encordado de raquetas
+  - **Cuerdas**: Inventario de cuerdas para encordado
+  - **Materiales**: Inventario de materiales (grips, overgrips, etc.)
+  - **Usuarios**: Gestión de usuarios con roles (Admin, Encorder, User)
+  - **Auth**: Autenticación JWT
+
+  ## Autenticación
+  La API usa autenticación JWT. Para obtener un token:
+  1. Usar `Auth/Iniciar sesion` con credenciales válidas
+  2. El token se almacenará automáticamente en la variable `{{token}}`
+
+  ## Roles
+  | Rol | Descripción |
+  |-----|-------------|
+  | **Admin/Owner** | Acceso total al sistema |
+  | **Encorder** | Puede gestionar pedidos y ver torneos |
+  | **User** | Puede ver y cancelar sus propios pedidos |
+
+  ## Estructura de Carpetas
+  - **Auth**: Endpoints de autenticación (login, registro)
+  - **User**: CRUD de usuarios
+  - **Pedidos**: Gestión de pedidos de encordado
+  - **Talleres**: Gestión de torneos y asignación de trabajadores
+  - **Materials**: Inventario de materiales
+  - **Cuerdas**: Inventario de cuerdas
+  - **Health**: Verificación del sistema
+
+  ## Environments
+  - `local`: Para desarrollo local (http://localhost:5000)
 
 collections:
   - uid: a1b2c3d4-0001-5678-90ab-cdef12345601

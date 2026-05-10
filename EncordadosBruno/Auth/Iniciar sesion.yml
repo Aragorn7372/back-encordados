@@ -3,6 +3,36 @@ info:
   type: http
   seq: 2
 
+docs: |
+  # Iniciar Sesión
+
+  Autentica un usuario y devuelve un token JWT.
+
+  ## Authorization
+  Ninguno (endpoint público)
+
+  ## HTTP Method
+  `POST /api/Auth/signin`
+
+  ## Body (JSON)
+  ```json
+  {
+    "Username": "string",
+    "Password": "string"
+  }
+  ```
+
+  ## Responses
+  - **200 OK**: `{ token, userId, username, role }`
+  - **401 Unauthorized**: Credenciales inválidas
+  - **400 Bad Request**: Datos de entrada inválidos
+
+  ## Test Cases
+  - [ ] Login exitoso con credenciales válidas
+  - [ ] Login fallido con password incorrecto
+  - [ ] Login fallido con username inexistente
+  - [ ] Validar que el token se guarda en la variable `{{token}}`
+
 http:
   method: POST
   url: "{{api-url}}/api/Auth/signin"

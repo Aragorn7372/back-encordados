@@ -3,6 +3,41 @@ info:
   type: http
   seq: 8
 
+docs: |
+  # Desasignar Trabajador de Torneo
+
+  Quita la asignación de un trabajador/encordador de un torneo.
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `PATCH /api/Tournaments/remove-worker/{id}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | long | ID numérico del torneo |
+
+  ## Body (JSON)
+  ```json
+  {
+    "WorkerUserId": "{{user_id_carlos}}"
+  }
+  ```
+
+  ## Responses
+  - **200 OK**: `TournamentResponseDto` con trabajador desasignado
+  - **400 Bad Request**: Datos inválidos
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Admin
+  - **404 Not Found**: Torneo o usuario no encontrado
+
+  ## Test Cases
+  - [ ] Desasignar trabajador de torneo
+  - [ ] Desasignar trabajador no asignado previamente
+  - [ ] Intentar sin permisos de Admin (403)
+
 http:
   method: PATCH
   url: "{{api-url}}/api/Tournaments/remove-worker/1"

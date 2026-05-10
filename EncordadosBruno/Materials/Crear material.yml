@@ -3,6 +3,51 @@ info:
   type: http
   seq: 4
 
+docs: |
+  # Crear Material
+
+  Crea un nuevo material/equipamiento en el sistema.
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `POST /api/Materials`
+
+  ## Body (JSON)
+  ```json
+  {
+    "Marca": "Head",
+    "TournamentId": 1,
+    "Modelo": "Grip Pro",
+    "Stock": 50,
+    "Precio": 12.99,
+    "Type": "Grip"
+  }
+  ```
+
+  ## Campos
+  | Campo | Tipo | Descripción |
+  |-------|------|-------------|
+  | `Marca` | string | Marca del material |
+  | `Modelo` | string | Modelo del material |
+  | `Type` | string | Tipo (Grip, Overgrip, etc.) |
+  | `Stock` | int | Cantidad en stock |
+  | `Precio` | decimal | Precio unitario |
+  | `TournamentId` | long | ID del torneo asociado (opcional) |
+
+  ## Responses
+  - **201 Created**: `MaterialResponseDto` con datos del material creado
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Admin
+  - **409 Conflict**: Ya existe un material con el mismo modelo
+
+  ## Test Cases
+  - [ ] Crear material con todos los campos
+  - [ ] Crear material con campos mínimos
+  - [ ] Crear material duplicado (409)
+  - [ ] Intentar sin permisos de Admin (403)
+
 http:
   method: POST
   url: "{{api-url}}/api/Materials"

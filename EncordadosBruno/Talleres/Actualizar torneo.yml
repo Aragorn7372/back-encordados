@@ -3,6 +3,46 @@ info:
   type: http
   seq: 5
 
+docs: |
+  # Actualizar Torneo
+
+  Actualiza los datos de un torneo existente.
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `PUT /api/Tournaments/{id}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | long | ID numérico del torneo |
+
+  ## Body (JSON)
+  ```json
+  {
+    "Name": "Torneo Madrileño 2025 - Actualizado",
+    "EndTournament": "2026-07-20T00:00:00Z",
+    "StartTournament": "2026-06-28T00:00:00Z",
+    "Logotype": "/logos/torneo-madrid-v2.jpg"
+  }
+  ```
+
+  ## Responses
+  - **200 OK**: `TournamentResponseDto` con datos actualizados
+  - **400 Bad Request**: Datos inválidos
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Admin
+  - **404 Not Found**: Torneo o usuario no encontrado
+
+  ## Test Cases
+  - [ ] Actualizar nombre del torneo
+  - [ ] Actualizar fechas del torneo
+  - [ ] Actualizar logo del torneo
+  - [ ] Intentar actualizar torneo inexistente (404)
+  - [ ] Intentar sin permisos de Admin (403)
+
 http:
   method: PUT
   url: "{{api-url}}/api/Tournaments/1"
