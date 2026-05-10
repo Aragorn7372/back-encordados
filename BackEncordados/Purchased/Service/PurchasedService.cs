@@ -61,17 +61,14 @@ public class PurchasedService(IPuchasedRepository repository,IUserRepository use
     public async Task<Result<PurchasedResponseDto, DomainErrors>> FindByIdAsync(Ulid id)
     {
         logger.LogInformation("Buscando pedido con ID: {Id}", id);
-        // Intentar obtener el pedido de caché
         var purchasedCached = await cache.GetAsync<PurchasedResponseDto>(CacheKeys.PurchasedCacheKey + id);
         if (purchasedCached != null) return Result.Success<PurchasedResponseDto, DomainErrors>(purchasedCached)
             .Tap(()=>logger.LogInformation("Pedido con ID {Id} obtenido de caché",id));
 
-        //  Si no está, buscar en DB
         var purchased = await repository.FindByIdAsync(id);
         if (purchased is null) return Result.Failure<PurchasedResponseDto,DomainErrors>(new PurchasedNotFoundError())
             .TapError(()=>logger.LogWarning("Pedido con ID {Id} no encontrado en DB",id));
 
-        // Usamos el método que busca primero en caché de datos y luego en DB
         var playerResult = await GetUserDtoCachedAsync(purchased.PlayerId);
         if (playerResult.IsFailure) return playerResult.Error;
         var encorderResult = await GetUserDtoCachedAsync(purchased.AssignedTo);
@@ -79,7 +76,6 @@ public class PurchasedService(IPuchasedRepository repository,IUserRepository use
 
         var response = purchased.ToDto(encorderResult.Value, playerResult.Value);
 
-        //  Guardar en caché 
         await cache.SetAsync(CacheKeys.PurchasedCacheKey + id, response, TimeSpan.FromMinutes(5));
     
         return response;
@@ -103,11 +99,9 @@ public class PurchasedService(IPuchasedRepository repository,IUserRepository use
     public async Task<Result<PurchasedResponseDto, DomainErrors>> CreatePurchasedAsync(PurchasedRequestDto request)
     {
         logger.LogInformation("Creando pedido para jugador {PlayerName} asignado a {AssignedToName}", request.PlayerName, request.AssignedToName);
-        //  Obtener los IDs 
         var player = await cache.GetAsync<User>(CacheKeys.UserKey + request.PlayerName);
         var encorder = await cache.GetAsync<User>(CacheKeys.UserKey + request.AssignedToName);
 
-        // Fallback por si la caché expiró entre validación y ejecución
         if (player == null) player = await userRepository.FindByUsernameAsync(request.PlayerName!);
         if (encorder == null) encorder = await userRepository.FindByUsernameAsync(request.AssignedToName!);
 
@@ -115,14 +109,11 @@ public class PurchasedService(IPuchasedRepository repository,IUserRepository use
             return Result.Failure<PurchasedResponseDto,DomainErrors>(new UserNotFoundError("Player or Encorder not found"))
                 .TapError(()=>logger.LogWarning("Jugador o encordador no encontrado. Player: {PlayerName}, Encorder: {AssignedToName}",request.PlayerName, request.AssignedToName));
 
-        //  Crear y Guardar
         var entity = request.ToEntity(player.Id, encorder.Id);
         await repository.CreatePurchasedAsync(entity);
 
-        // Generar respuesta
         var response = entity.ToDto(encorder.ToDto(), player.ToDto());
     
-        //  Invalida o refresca el caché del pedido específico
         await cache.SetAsync(CacheKeys.PurchasedCacheKey + entity.Id, response, TimeSpan.FromMinutes(5));
         
         return Result.Success<PurchasedResponseDto, DomainErrors>(response)
@@ -133,20 +124,17 @@ public class PurchasedService(IPuchasedRepository repository,IUserRepository use
     {
         logger.LogInformation("Actualizando pedido con ID {Id}", id);
         
-        // Obtener el pedido existente
         var existingPurchased = await repository.FindByIdAsync(id);
         if (existingPurchased is null) 
             return Result.Failure<PurchasedResponseDto, DomainErrors>(new PurchasedNotFoundError())
                 .TapError(() => logger.LogWarning("Pedido con ID {Id} no encontrado para actualizar", id));
 
-        // Preparar StringSetup si es necesario
         StringSetup updatedStringSetup = existingPurchased.StringSetup;
         if (request.StringSetup != null)
         {
             updatedStringSetup=request.StringSetup.ToModel();
         }
 
-        // Crear entidad con solo los campos del patch que no son nulos
         var patchEntity = new Pedidos
         {
             TypeString = request.TypeString ?? existingPurchased.TypeString,
@@ -161,13 +149,11 @@ public class PurchasedService(IPuchasedRepository repository,IUserRepository use
             StringSetup = updatedStringSetup
         };
 
-        // Actualizar en DB
         var updated = await repository.UpdatePurchasedAsync(patchEntity, id);
         if (updated is null)
             return Result.Failure<PurchasedResponseDto, DomainErrors>(new PurchasedNotFoundError())
                 .TapError(() => logger.LogWarning("No se pudo actualizar el pedido con ID {Id}", id));
 
-        // Obtener datos de usuario para la respuesta
         var playerResult = await GetUserDtoCachedAsync(updated.PlayerId);
         if (playerResult.IsFailure)
             return playerResult.Error;

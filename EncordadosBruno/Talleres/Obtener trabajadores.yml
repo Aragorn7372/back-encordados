@@ -1,0 +1,45 @@
+info:
+  name: Obtener trabajadores del torneo
+  type: http
+  seq: 9
+
+docs: |
+  # Obtener Trabajadores del Torneo
+
+  Lista los trabajadores/encordadores asignados a un torneo específico.
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `GET /api/Tournaments/{id}/workers`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | long | ID numérico del torneo |
+
+  ## Responses
+  - **200 OK**: `List<WorkerMachineAssignmentResponseDto>`
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Admin
+  - **404 Not Found**: Torneo no encontrado
+
+  ## Test Cases
+  - [ ] Obtener trabajadores de torneo con asignaciones
+  - [ ] Obtener trabajadores de torneo sin asignaciones (lista vacía)
+  - [ ] Intentar obtener trabajadores de torneo inexistente (404)
+  - [ ] Intentar sin permisos de Admin (403)
+
+http:
+  method: GET
+  url: "{{api-url}}/api/Tournaments/1/workers"
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -122,14 +122,11 @@ public class TransactionalAttribute : ActionFilterAttribute
     {
         try
         {
-            // Si hay excepción, es error
             if (context.Exception != null)
                 return true;
 
-            // Detectar por status code en ObjectResult
             if (context.Result is ObjectResult objResult)
             {
-                // 400-599 = error, hacer rollback
                 if (objResult.StatusCode.HasValue && objResult.StatusCode >= 400)
                 {
                     Log.Debug("Detectado error HTTP {StatusCode} en respuesta", objResult.StatusCode);
@@ -137,21 +134,18 @@ public class TransactionalAttribute : ActionFilterAttribute
                 }
             }
 
-            // BadRequestResult, NotFoundResult, etc. son errores explícitos
             if (context.Result is BadRequestResult or NotFoundResult)
             {
                 Log.Debug("Detectado resultado de error: {ResultType}", context.Result.GetType().Name);
                 return true;
             }
 
-            // StatusCodeResult con código >= 400
             if (context.Result is StatusCodeResult statusCodeResult && statusCodeResult.StatusCode >= 400)
             {
                 Log.Debug("Detectado StatusCodeResult {StatusCode}", statusCodeResult.StatusCode);
                 return true;
             }
 
-            // Status 200, 201, 204, etc. son éxito (commit)
             Log.Debug("Detectado resultado exitoso: {ResultType}", context.Result?.GetType().Name ?? "null");
             return false;
         }

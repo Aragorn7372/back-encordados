@@ -3,5 +3,25 @@ info:
   type: folder
   seq: 2
 
+docs: |
+  # User
+
+  Gestión de usuarios del sistema Encordados.
+
+  ## Descripción
+  Esta carpeta contiene los endpoints para:
+  - **GET /User**: Listar usuarios con filtros y paginación
+  - **GET /User/me**: Obtener perfil del usuario autenticado
+  - **GET /User/{id}**: Obtener usuario por ID
+  - **GET /User/encorders**: Listar solo encordadores
+  - **PATCH /User/{id}**: Actualizar datos de usuario
+  - **DELETE /User/{id}**: Eliminar usuario (Admin)
+  - **DELETE /User/me**: Autoeiminarse
+  - **POST /User/{id}/roles**: Asignar rol a usuario
+
+  ## Roles
+  - **Admin**: Acceso total
+  - **User**: Solo puede ver/modificar su propio perfil
+
 request:
   auth: inherit

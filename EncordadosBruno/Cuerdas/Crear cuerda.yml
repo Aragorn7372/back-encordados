@@ -1,0 +1,76 @@
+info:
+  name: Crear cuerda
+  type: http
+  seq: 4
+
+docs: |
+  # Crear Cuerda
+
+  Crea una nueva cuerda en el sistema.
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `POST /api/Cuerdas`
+
+  ## Body (JSON)
+  ```json
+  {
+    "Marca": "Babolat",
+    "TournamentId": 1,
+    "Modelo": "RPM Blast",
+    "Stock": 200,
+    "Precio": 18.50,
+    "StringFormat": "12m",
+    "StringsType": "Polyester"
+  }
+  ```
+
+  ## Campos
+  | Campo | Tipo | Descripción |
+  |-------|------|-------------|
+  | `Marca` | string | Marca de la cuerda |
+  | `Modelo` | string | Modelo de la cuerda |
+  | `StringsType` | string | Tipo (Polyester, Multifilamento, etc.) |
+  | `StringFormat` | string | Formato (12m, 200m, etc.) |
+  | `Stock` | int | Cantidad en stock |
+  | `Precio` | decimal | Precio unitario |
+  | `TournamentId` | long | ID del torneo asociado (opcional) |
+
+  ## Responses
+  - **201 Created**: `CuerdaResponseDto` con datos de la cuerda creada
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Admin
+  - **409 Conflict**: Ya existe una cuerda con el mismo modelo
+
+  ## Test Cases
+  - [ ] Crear cuerda con todos los campos
+  - [ ] Crear cuerda con campos mínimos
+  - [ ] Crear cuerda duplicada (409)
+  - [ ] Intentar sin permisos de Admin (403)
+
+http:
+  method: POST
+  url: "{{api-url}}/api/Cuerdas"
+  body:
+    type: json
+    data: |-
+      {
+        "Marca": "Babolat",
+        "TournamentId": 1,
+        "Modelo": "RPM Blast",
+        "Stock": 200,
+        "Precio": 18.50,
+        "StringFormat": "12m",
+        "StringsType": "Polyester"
+      }
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
