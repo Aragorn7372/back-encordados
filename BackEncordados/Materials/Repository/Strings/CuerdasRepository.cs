@@ -12,6 +12,9 @@ public class CuerdasRepository(ILogger<CuerdasRepository>logger, MaterialsDbCont
         logger.LogInformation("Buscando cuerdas con filtro: search={Marca}, Page={Page}, PageSize={PageSize}", filter.Search,filter.Page,filter.Size);
         var query = context.Cuerdas.AsQueryable();
         query = query.Where(c=>!c.IsDeleted);
+        if (filter.TournamentId != null) 
+            query = query.Where(c => c.TournamentId == filter.TournamentId);
+            
         if (filter.Search.Length > 0)
         {
             query = query.Where(c =>EF.Functions.Like(c.Marca,$"%{filter.Search}%")
