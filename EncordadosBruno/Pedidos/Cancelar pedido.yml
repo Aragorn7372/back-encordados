@@ -3,6 +3,19 @@ info:
   type: http
   seq: 8
 
+http:
+  method: PATCH
+  url: "{{api-url}}/api/Purchased/cancel/01KR42ME5P1Q2BGWW1DY11Z4TJ"
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
 docs: |
   # Cancelar Pedido
 
@@ -30,16 +43,3 @@ docs: |
   - [ ] Intentar cancelar pedido de otro usuario (403)
   - [ ] Intentar cancelar pedido inexistente (404)
   - [ ] Intentar sin token (401)
-
-http:
-  method: PATCH
-  url: "{{api-url}}/api/Purchased/cancel/01KR424NQJDA22KTM967R9RW9N"
-  auth:
-    type: bearer
-    token: "{{token_juan}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5

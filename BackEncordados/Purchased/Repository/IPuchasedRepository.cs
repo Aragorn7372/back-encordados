@@ -8,9 +8,12 @@ public interface IPuchasedRepository
     Task<(IEnumerable<Pedidos> Items, int TotalCount)> FindAllAsync(FilterPurchasedDto filter);
     Task<Pedidos?> FindByIdAsync(Ulid id);
     Task<Pedidos> CreatePurchasedAsync(Pedidos pedidos);
-    Task<Pedidos?> UpdatePurchasedAsync(Pedidos pedidos,  Ulid id);
+    Task<Pedidos?> UpdatePurchasedAsync(Pedidos pedidos, Ulid id);
     Task<Pedidos?> CancelPurchasedAsync(Ulid id);
-    Task<Pedidos?> ChangeStatusPurchasedAsync(Ulid id, string status);
-    Task<Pedidos?> ChangePaymentStatusPurchasedAsync(Ulid id, string payStatus);
+    Task<Pedidos?> ChangeStatusPurchasedAsync(Ulid id, string payStatus);
 
+    Task<PedidoLinea?> FindLineaByIdAsync(Ulid lineaId);
+    Task<PedidoLinea> CreateLineaAsync(PedidoLinea linea);
+    Task<PedidoLinea?> UpdateLineaAsync(PedidoLinea linea, Ulid lineaId);
+    Task<PedidoLinea?> ChangeLineaStatusAsync(Ulid lineaId, Status status);
 }

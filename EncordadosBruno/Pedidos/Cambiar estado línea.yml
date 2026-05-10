@@ -1,0 +1,64 @@
+info:
+  name: Cambiar estado de línea
+  type: http
+  seq: 11
+
+http:
+  method: PATCH
+  url: "{{api-url}}/api/Purchased/lineas/01KR42ME5P1Q2BGWW1DY11Z5AA/status?status=COMPLETED"
+  params:
+    - name: status
+      value: COMPLETED
+      type: query
+  auth:
+    type: bearer
+    token: "{{token_carlos}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Cambiar Estado de Línea
+
+  Permite a un admin, owner o encordador cambiar el estado de una línea de pedido.
+
+  ## Authorization
+  RequireEncorderRole (Admin, Owner, Encorder)
+
+  ## HTTP Method
+  `PATCH /api/Purchased/lineas/{lineaId}/status?status={status}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `lineaId` | string (ULID) | ID único de la línea de pedido |
+
+  ## Parameters (Query)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `status` | string | Nuevo estado (PENDING, IN_PROGRESS, COMPLETED, CANCELED, DELIVERED_TOpLAYER) |
+
+  ## Estados Disponibles
+  - `PENDING`: Pendiente
+  - `IN_PROGRESS`: En progreso
+  - `COMPLETED`: Completado
+  - `CANCELED`: Cancelado
+  - `DELIVERED_TOpLAYER`: Entregado al jugador
+
+  ## Responses
+  - **200 OK**: `PedidoLineaResponseDto` con estado actualizado
+  - **400 Bad Request**: Estado inválido
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos (solo Admin, Owner, Encorder)
+  - **404 Not Found**: Línea no encontrada
+
+  ## Test Cases
+  - [ ] Cambiar estado a COMPLETED (con token encordador)
+  - [ ] Cambiar estado a IN_PROGRESS (con token admin)
+   - [ ] Cambiar estado a PENDING
+  - [ ] Estado inválido (400)
+  - [ ] Línea inexistente (404)
+  - [ ] Intentar con token de usuario (403)

@@ -18,27 +18,28 @@ docs: |
   ```json
   {
     "TournamentId": 1,
-    "TypeString": "Babolat RPM Blast",
-    "TypeWork": "ENCORDADO",
-    "DateString": "2026-06-15T00:00:00Z",
-    "Logotype": true,
-    "RaquetModel": "Wilson Clash 100",
-    "Price": 28.50,
-    "Nudos": 1,
     "PlayerName": "jugador_juan",
     "AssignedToName": "carlos_encordador",
     "Machine": "Máquina Alpha-1",
     "Comments": "Nuevo pedido para el Torneo Madrileño",
     "PayStatus": "PENDING_PAYMENT",
-    "Status": "PENDING",
-    "StringSetup": {
-      "StringV": "Babolat RPM Blast",
-      "TensionV": 26.0,
-      "PreStetchV": 2,
-      "StringH": "Babolat Pro",
-      "TensionH": 25.5,
-      "PreStetchH": 1
-    }
+    "Lineas": [
+      {
+        "RaquetModel": "Wilson Clash 100",
+        "Nudos": 1,
+        "DateString": "2026-06-15T00:00:00Z",
+        "Logotype": true,
+        "Color": "Rojo",
+        "StringSetup": {
+          "StringV": "Babolat RPM Blast",
+          "TensionV": 26.0,
+          "PreStetchV": 2,
+          "StringH": "Babolat Pro",
+          "TensionH": 25.5,
+          "PreStetchH": 1
+        }
+      }
+    ]
   }
   ```
 
@@ -46,23 +47,22 @@ docs: |
   | Campo | Tipo | Descripción |
   |-------|------|-------------|
   | `TournamentId` | long | ID del torneo asociado |
-  | `TypeString` | string | Modelo de cuerda |
-  | `TypeWork` | string | Tipo de trabajo (ENCORDADO, etc.) |
-  | `RaquetModel` | string | Modelo de raqueta |
-  | `Price` | decimal | Precio del servicio |
-  | `Status` | string | Estado inicial (PENDING) |
-  | `PayStatus` | string | Estado de pago (PENDING_PAYMENT) |
+  | `PlayerName` | string | Nombre de usuario del jugador |
+  | `AssignedToName` | string | Nombre de usuario del encordador |
+  | `Machine` | string | Máquina a usar |
+  | `PayStatus` | string | Estado de pago (PENDING_PAYMENT, PAID, OVERDUE) |
+  | `Lineas` | array | Array de líneas de pedido (mínimo 1) |
 
   ## Responses
   - **201 Created**: `PurchasedResponseDto` con datos del pedido creado
-  - **400 Bad Request**: Datos inválidos
+  - **400 Bad Request**: Datos inválidos o sin líneas
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Admin
 
   ## Test Cases
-  - [ ] Crear pedido con todos los campos
-  - [ ] Crear pedido con campos mínimos
-  - [ ] Crear pedido con tournament inexistente (404)
+  - [ ] Crear pedido con línea válida
+  - [ ] Crear pedido sin líneas (400)
+  - [ ] Crear pedido con player inexistente (400)
   - [ ] Intentar sin permisos de Admin (403)
 
 http:
@@ -73,27 +73,28 @@ http:
     data: |-
       {
         "TournamentId": 1,
-        "TypeString": "Babolat RPM Blast",
-        "TypeWork": "ENCORDADO",
-        "DateString": "2026-06-15T00:00:00Z",
-        "Logotype": true,
-        "RaquetModel": "Wilson Clash 100",
-        "Price": 28.50,
-        "Nudos": 1,
         "PlayerName": "jugador_juan",
         "AssignedToName": "carlos_encordador",
         "Machine": "Máquina Alpha-1",
         "Comments": "Nuevo pedido para el Torneo Madrileño",
         "PayStatus": "PENDING_PAYMENT",
-        "Status": "PENDING",
-        "StringSetup": {
-          "StringV": "Babolat RPM Blast",
-          "TensionV": 26.0,
-          "PreStetchV": 2,
-          "StringH": "Babolat Pro",
-          "TensionH": 25.5,
-          "PreStetchH": 1
-        }
+        "Lineas": [
+          {
+            "RaquetModel": "Wilson Clash 100",
+            "Nudos": 1,
+            "DateString": "2026-06-15T00:00:00Z",
+            "Logotype": true,
+            "Color": "Rojo",
+            "StringSetup": {
+              "StringV": "Babolat RPM Blast",
+              "TensionV": 26.0,
+              "PreStetchV": 2,
+              "StringH": "Babolat Pro",
+              "TensionH": 25.5,
+              "PreStetchH": 1
+            }
+          }
+        ]
       }
   auth:
     type: bearer

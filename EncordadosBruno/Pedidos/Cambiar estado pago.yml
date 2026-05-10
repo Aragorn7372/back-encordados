@@ -3,6 +3,23 @@ info:
   type: http
   seq: 10
 
+http:
+  method: PATCH
+  url: "{{api-url}}/api/Purchased/change-payment-status/01KR42ME5P1Q2BGWW1DY11Z5AA?paymentStatus=PAID"
+  params:
+    - name: paymentStatus
+      value: PAID
+      type: query
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
 docs: |
   # Cambiar Estado de Pago
 
@@ -35,16 +52,3 @@ docs: |
   - [ ] Cambiar estado de pago a PENDING_PAYMENT
   - [ ] Cambiar estado de pago de pedido inexistente (404)
   - [ ] Intentar sin permisos de encordador (403)
-
-http:
-  method: PATCH
-  url: "{{api-url}}/api/Purchased/change-payment-status/01KR42ME5P1Q2BGWW1DY11Z4TJ?paymentStatus=PAID"
-  auth:
-    type: bearer
-    token: "{{token_admin}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5

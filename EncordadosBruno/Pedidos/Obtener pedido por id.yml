@@ -3,6 +3,19 @@ info:
   type: http
   seq: 6
 
+http:
+  method: GET
+  url: "{{api-url}}/api/Purchased/01KR42ME5P1Q2BGWW1DY11Z4TJ"
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
 docs: |
   # Obtener Pedido por ID
 
@@ -30,16 +43,3 @@ docs: |
   - [ ] Intentar obtener pedido inexistente (404)
   - [ ] Admin obtiene cualquier pedido
   - [ ] User intenta obtener pedido de otro (403)
-
-http:
-  method: GET
-  url: "{{api-url}}/api/Purchased/01KR42ME5P1Q2BGWW1DY11Z4TJ"
-  auth:
-    type: bearer
-    token: "{{token_admin}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5
