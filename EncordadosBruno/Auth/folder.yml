@@ -3,5 +3,19 @@ info:
   type: folder
   seq: 1
 
+docs: |
+  # Auth
+
+  Endpoints de autenticación y registro de usuarios.
+
+  ## Descripción
+  Esta carpeta contiene los endpoints para:
+  - **SignUp**: Registro de nuevos usuarios en el sistema
+  - **SignIn**: Inicio de sesión que devuelve token JWT
+
+  ## Notas
+  - Los endpoints de autenticación son públicos (no requieren token)
+  - El login devuelve un token JWT que debe usarse en las demás requests
+
 request:
   auth: inherit

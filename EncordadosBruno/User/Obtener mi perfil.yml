@@ -3,6 +3,27 @@ info:
   type: http
   seq: 1
 
+docs: |
+  # Obtener Mi Perfil
+
+  Obtiene los datos del usuario autenticado actualmente.
+
+  ## Authorization
+  RequireUserRole
+
+  ## HTTP Method
+  `GET /api/User/me`
+
+  ## Responses
+  - **200 OK**: `UserResponseDto` con datos del usuario actual
+  - **401 Unauthorized**: Token inválido o expirado
+  - **404 Not Found**: No se encontró el usuario en el token
+
+  ## Test Cases
+  - [ ] Obtener perfil con usuario autenticado
+  - [ ] Intentar sin token (401)
+  - [ ] Intentar con token de usuario inexistente (404)
+
 http:
   method: GET
   url: "{{api-url}}/api/User/me"

@@ -3,6 +3,41 @@ info:
   type: http
   seq: 3
 
+docs: |
+  # Obtener Todos los Usuarios
+
+  Lista usuarios con soporte para filtros, búsqueda y paginación.
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `GET /api/User`
+
+  ## Parameters (Query)
+  | Parámetro | Tipo | Default | Descripción |
+  |-----------|------|---------|-------------|
+  | `findUsers` | boolean | null | Filtrar solo usuarios |
+  | `findEncorders` | boolean | null | Filtrar solo encordadores |
+  | `search` | string | "" | Búsqueda por nombre/username |
+  | `page` | int | 0 | Número de página |
+  | `size` | int | 10 | Tamaño de página |
+  | `sortBy` | string | "id" | Campo de ordenamiento |
+  | `direction` | string | "asc" | Dirección (asc/desc) |
+
+  ## Responses
+  - **200 OK**: `PageResponseDto<UserResponseDto>`
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Admin
+
+  ## Test Cases
+  - [ ] Listar usuarios con paginación por defecto
+  - [ ] Filtrar solo usuarios (findUsers=true)
+  - [ ] Filtrar solo encordadores (findEncorders=true)
+  - [ ] Buscar por nombre/username
+  - [ ] Ordenar por diferentes campos
+  - [ ] Verificar paginación (page, size)
+
 http:
   method: GET
   url: "{{api-url}}/api/User?findUsers=true&page=0&size=10&sortBy=createdAt&direction=desc"

@@ -3,6 +3,49 @@ info:
   type: http
   seq: 1
 
+docs: |
+  # Crear Torneo
+
+  Crea un nuevo torneo en el sistema.
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `POST /api/Tournaments`
+
+  ## Body (JSON)
+  ```json
+  {
+    "Name": "Torneo Nacional Madrid 2026",
+    "EndTournament": "2026-09-15T00:00:00Z",
+    "StartTournament": "2026-09-01T00:00:00Z",
+    "Logotype": "/logos/torneo-nacional-madrid.jpg"
+  }
+  ```
+
+  ## Campos
+  | Campo | Tipo | Descripción |
+  |-------|------|-------------|
+  | `Name` | string | Nombre del torneo |
+  | `StartTournament` | datetime | Fecha de inicio |
+  | `EndTournament` | datetime | Fecha de fin |
+  | `Logotype` | string | Ruta al logo del torneo |
+
+  ## Responses
+  - **201 Created**: `TournamentResponseDto` con datos del torneo creado
+  - **400 Bad Request**: Datos inválidos
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Admin
+  - **404 Not Found**: Usuario no encontrado
+  - **409 Conflict**: Ya existe un torneo con ese nombre
+
+  ## Test Cases
+  - [ ] Crear torneo con datos válidos
+  - [ ] Crear torneo con fechas inválidas (fin < inicio)
+  - [ ] Crear torneo con nombre duplicado (409)
+  - [ ] Intentar sin permisos de Admin (403)
+
 http:
   method: POST
   url: "{{api-url}}/api/Tournaments"

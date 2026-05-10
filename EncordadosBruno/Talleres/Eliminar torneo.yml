@@ -3,6 +3,33 @@ info:
   type: http
   seq: 6
 
+docs: |
+  # Eliminar Torneo
+
+  Elimina un torneo del sistema.
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `DELETE /api/Tournaments/{id}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | long | ID numérico del torneo |
+
+  ## Responses
+  - **204 No Content**: Torneo eliminado exitosamente
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Admin
+  - **404 Not Found**: Torneo no encontrado
+
+  ## Test Cases
+  - [ ] Eliminar torneo existente por ID
+  - [ ] Intentar eliminar torneo inexistente (404)
+  - [ ] Intentar sin permisos de Admin (403)
+
 http:
   method: DELETE
   url: "{{api-url}}/api/Tournaments/1"

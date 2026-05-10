@@ -3,6 +3,38 @@ info:
   type: http
   seq: 1
 
+docs: |
+  # Obtener Pedidos
+
+  Lista pedidos con soporte para filtros y paginación. Los resultados se filtran según el rol del usuario.
+
+  ## Authorization
+  Multi-rol (Admin/Owner ve todos, Encorder ve los suyos, User ve los suyos)
+
+  ## HTTP Method
+  `GET /api/Purchased`
+
+  ## Parameters (Query)
+  | Parámetro | Tipo | Default | Descripción |
+  |-----------|------|---------|-------------|
+  | `search` | string | "" | Búsqueda por nombre de jugador |
+  | `page` | int | 0 | Número de página |
+  | `size` | int | 10 | Tamaño de página |
+  | `sortBy` | string | "id" | Campo de ordenamiento |
+  | `direction` | string | "asc" | Dirección (asc/desc) |
+
+  ## Responses
+  - **200 OK**: `PageResponseDto<PurchasedResponseDto>`
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: Rol no tiene acceso
+
+  ## Test Cases
+  - [ ] Admin obtiene todos los pedidos
+  - [ ] Encorder obtiene solo sus pedidos
+  - [ ] User obtiene solo sus pedidos
+  - [ ] Verificar paginación
+  - [ ] Buscar por nombre de jugador
+
 http:
   method: GET
   url: "{{api-url}}/api/Purchased"

@@ -3,6 +3,50 @@ info:
   type: http
   seq: 5
 
+docs: |
+  # Actualizar Cuerda
+
+  Actualiza los datos de una cuerda existente.
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `PUT /api/Cuerdas/{id}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | long | ID numérico de la cuerda |
+
+  ## Body (JSON)
+  ```json
+  {
+    "Marca": "Babolat",
+    "TournamentId": 1,
+    "Modelo": "RPM Blast 2.0",
+    "Stock": 150,
+    "Precio": 19.99,
+    "StringFormat": "12m",
+    "StringsType": "Polyester"
+  }
+  ```
+
+  ## Responses
+  - **200 OK**: `CuerdaResponseDto` con datos actualizados
+  - **400 Bad Request**: Datos inválidos
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Admin
+  - **404 Not Found**: Cuerda no encontrada
+  - **409 Conflict**: Ya existe otra cuerda con ese modelo
+
+  ## Test Cases
+  - [ ] Actualizar stock de cuerda
+  - [ ] Actualizar precio de cuerda
+  - [ ] Actualizar modelo de cuerda
+  - [ ] Intentar actualizar cuerda inexistente (404)
+  - [ ] Intentar sin permisos de Admin (403)
+
 http:
   method: PUT
   url: "{{api-url}}/api/Cuerdas/1"

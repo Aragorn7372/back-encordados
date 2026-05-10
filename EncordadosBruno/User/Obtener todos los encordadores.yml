@@ -3,6 +3,36 @@ info:
   type: http
   seq: 4
 
+docs: |
+  # Obtener Todos los Encordadores
+
+  Lista usuarios con rol Encordador con soporte para filtros y paginación.
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `GET /api/User/encorders`
+
+  ## Parameters (Query)
+  | Parámetro | Tipo | Default | Descripción |
+  |-----------|------|---------|-------------|
+  | `search` | string | "" | Búsqueda por nombre/username |
+  | `page` | int | 0 | Número de página |
+  | `size` | int | 10 | Tamaño de página |
+  | `sortBy` | string | "name" | Campo de ordenamiento |
+  | `direction` | string | "asc" | Dirección (asc/desc) |
+
+  ## Responses
+  - **200 OK**: `PageResponseDto<UserResponseDto>` con solo encordadores
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Admin
+
+  ## Test Cases
+  - [ ] Listar encordadores con paginación por defecto
+  - [ ] Buscar encordador por nombre
+  - [ ] Ordenar encordadores por nombre
+
 http:
   method: GET
   url: "{{api-url}}/api/User/encorders?page=0&size=10&sortBy=name&direction=asc"
