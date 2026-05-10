@@ -14,7 +14,7 @@ public class MaterialsRepository(ILogger<MaterialsRepository>logger,MaterialsDbC
         query = query.Where(m=>!m.IsDeleted);
         if(filter.TournamentId != null)
             query = query.Where(m => m.TournamentId == filter.TournamentId);
-        if (filter.Search.Length > 0)
+        if (!string.IsNullOrEmpty(filter.Search))
         {
             query = query.Where(m =>
                 EF.Functions.Like(m.Marca,$"%{filter.Search}%")

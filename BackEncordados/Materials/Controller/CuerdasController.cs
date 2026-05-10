@@ -21,7 +21,7 @@ public class CuerdasController(ILogger<CuerdasController> logger, ICuerdasServic
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [Authorize(policy: "RequireAdminRole")]
     public async Task<IActionResult> GetAll(
-        [FromQuery] long tournamentId,
+        [FromQuery] long? tournamentId,
         [FromQuery] string sortBy = "id",
         [FromQuery] int page = 0,
         [FromQuery] int size = 10,
