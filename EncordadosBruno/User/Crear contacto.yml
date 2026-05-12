@@ -1,0 +1,58 @@
+info:
+  name: Crear contacto
+  type: http
+  seq: 12
+
+docs: |
+  # Crear Contacto
+
+  Crea un nuevo usuario de tipo contacto y lo asigna a un torneo específico.
+
+  ## Authorization
+  RequireEncoderRole
+
+  ## HTTP Method
+  `POST /api/User/create-contact`
+
+  ## Request Body
+  | Campo | Tipo | Descripción |
+  |-------|------|-------------|
+  | `name` | string | Nombre del contacto (3-200 caracteres) |
+  | `email` | string? | Email del contacto (opcional) |
+  | `phone` | string? | Teléfono del contacto (opcional) |
+  | `tournamentId` | long | ID del torneo (obligatorio, >=1) |
+
+  ## Responses
+  - **200 OK**: Contacto creado exitosamente con `UserResponseDto`
+  - **400 Bad Request**: Datos inválidos
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Encorder
+  - **409 Conflict**: Error al crear contacto
+
+  ## Test Cases
+  - [ ] Crear contacto con datos válidos
+  - [ ] Crear contacto solo con name y tournamentId
+  - [ ] Crear contacto sin permisos de Encorder (403)
+  - [ ] Crear contacto sin tournamentId (400)
+
+http:
+  method: POST
+  url: "{{api-url}}/api/User/create-contact"
+  auth:
+    type: bearer
+    token: "{{token_encorder_carlos}}"
+  body:
+    type: json
+    json: |
+      {
+        "name": "Contacto Test",
+        "email": "contacto@test.com",
+        "phone": "600123456",
+        "tournamentId": 1
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

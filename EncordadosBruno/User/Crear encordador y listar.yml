@@ -1,0 +1,37 @@
+info:
+  name: Crear encordador y listar
+  type: http
+  seq: 8
+
+docs: |
+  # Crear encordador y listar
+
+  Primero crea un encordador con el usuario Juan (ID: 01KR424NQJR7CEHQW4STCQ3GGE) en el torneo 1,
+  luego lista los encordadores del torneo 1 para verificar que aparece.
+
+  ## Authorization
+  RequireEncoderRole
+
+  ## HTTP Method
+  `POST /api/User/create-encoder` -> `GET /api/User/encorders/1`
+
+  ## Test Cases
+  - [ ] Crear encordador exitosamente
+  - [ ] Listar encordadores y verificar que Juan aparece
+
+http:
+  method: POST
+  url: "{{api-url}}/api/User/create-encoder"
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+  body:
+    type: json
+    json: |
+      "01KR424NQJR7CEHQW4STCQ3GGE"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

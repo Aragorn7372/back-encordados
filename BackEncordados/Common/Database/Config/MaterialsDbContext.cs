@@ -208,7 +208,7 @@ public class MaterialsDbContext(DbContextOptions<MaterialsDbContext> options): D
                 Modelo = "Graphene 360+",
                 Stock = 10,
                 Precio = 199.99,
-                Type = MaterialType.Raquet,
+                Type = MaterialType.Otro,
                 IsDeleted = false,
                 CreatedAt = now.AddMonths(-4),
                 UpdatedAt = now.AddMonths(-3)
