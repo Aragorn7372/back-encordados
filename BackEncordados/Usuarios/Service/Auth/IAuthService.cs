@@ -1,4 +1,5 @@
-﻿using BackEncordados.Usuarios.Dto;
+﻿using BackEncordados.Common.Utils;
+using BackEncordados.Usuarios.Dto;
 using BackEncordados.Usuarios.Errors;
 using CSharpFunctionalExtensions;
 
@@ -18,4 +19,7 @@ public interface IAuthService
     /// <param name="dto">Credenciales de acceso.</param>
     /// <returns>Resultado con respuesta de autenticación.</returns>
     Task<Result<AuthResponseDto, AuthError>> SignInAsync(LoginDto dto);
+    
+    Task<Result<Unit, AuthError>> ChangePasswordAsync(Guid guid,ChangePasswordRequestDto dto);
+    Task<Result<Unit, AuthError>> GetEmailAsync(string userEmail);
 }

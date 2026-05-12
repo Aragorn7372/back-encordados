@@ -6,13 +6,18 @@ info:
 docs: |
   # Obtener Todos los Encordadores
 
-  Lista usuarios con rol Encordador con soporte para filtros y paginación.
+  Lista usuarios con rol Encordador de un torneo específico con soporte para filtros y paginación.
 
   ## Authorization
   RequireAdminRole
 
   ## HTTP Method
-  `GET /api/User/encorders`
+  `GET /api/User/encorders/{tournamentId}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `tournamentId` | long | ID del torneo (obligatorio) |
 
   ## Parameters (Query)
   | Parámetro | Tipo | Default | Descripción |
@@ -24,18 +29,18 @@ docs: |
   | `direction` | string | "asc" | Dirección (asc/desc) |
 
   ## Responses
-  - **200 OK**: `PageResponseDto<UserResponseDto>` con solo encordadores
+  - **200 OK**: `PageResponseDto<UserWithIdDto>` con solo encordadores (campos: userId, username, imageUrl, name)
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Admin
 
   ## Test Cases
-  - [ ] Listar encordadores con paginación por defecto
+  - [ ] Listar encordadores del torneo 1 con paginación por defecto
   - [ ] Buscar encordador por nombre
   - [ ] Ordenar encordadores por nombre
 
 http:
   method: GET
-  url: "{{api-url}}/api/User/encorders?page=0&size=10&sortBy=name&direction=asc"
+  url: "{{api-url}}/api/User/encorders/1?page=0&size=10&sortBy=name&direction=asc"
   auth:
     type: bearer
     token: "{{token_admin}}"

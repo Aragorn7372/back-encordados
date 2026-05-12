@@ -6,17 +6,18 @@ info:
 docs: |
   # Obtener Todos los Usuarios
 
-  Lista usuarios con soporte para filtros, búsqueda y paginación.
+  Lista usuarios de un torneo específico con soporte para filtros, búsqueda y paginación.
 
   ## Authorization
   RequireAdminRole
 
   ## HTTP Method
-  `GET /api/User`
+  `GET /api/User?tournamentId={tournamentId}`
 
   ## Parameters (Query)
   | Parámetro | Tipo | Default | Descripción |
   |-----------|------|---------|-------------|
+  | `tournamentId` | long | - | ID del torneo (obligatorio) |
   | `findUsers` | boolean | null | Filtrar solo usuarios |
   | `findEncorders` | boolean | null | Filtrar solo encordadores |
   | `search` | string | "" | Búsqueda por nombre/username |
@@ -26,21 +27,20 @@ docs: |
   | `direction` | string | "asc" | Dirección (asc/desc) |
 
   ## Responses
-  - **200 OK**: `PageResponseDto<UserResponseDto>`
+  - **200 OK**: `PageResponseDto<UserWithIdDto>` con campos: userId, username, imageUrl, name
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Admin
 
   ## Test Cases
-  - [ ] Listar usuarios con paginación por defecto
+  - [ ] Listar usuarios de torneo 1 con paginación por defecto
   - [ ] Filtrar solo usuarios (findUsers=true)
-  - [ ] Filtrar solo encordadores (findEncorders=true)
   - [ ] Buscar por nombre/username
   - [ ] Ordenar por diferentes campos
   - [ ] Verificar paginación (page, size)
 
 http:
   method: GET
-  url: "{{api-url}}/api/User?findUsers=true&page=0&size=10&sortBy=createdAt&direction=desc"
+  url: "{{api-url}}/api/User?tournamentId=1&findUsers=true&page=0&size=10&sortBy=createdAt&direction=desc"
   auth:
     type: bearer
     token: "{{token_admin}}"

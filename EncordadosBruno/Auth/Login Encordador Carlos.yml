@@ -20,7 +20,7 @@ runtime:
     - type: after-response
       code: |-
         const data = res.getBody();
-        bru.setEnvVar("token_carlos", data.token);
+        bru.setEnvVar("token_encorder_carlos", data.token);
         bru.setEnvVar("user_id_carlos", data.user.id || "01KR424NQJKSBKBMH15K4V835W");
 
 settings:

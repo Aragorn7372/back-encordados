@@ -6,5 +6,5 @@ public enum MaterialType
     Overgrip,
     LeadTape,
     Silicone,
-    Raquet
+    Otro
 }

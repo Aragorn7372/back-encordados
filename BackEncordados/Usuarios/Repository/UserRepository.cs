@@ -36,11 +36,16 @@ public class UserRepository(
     public async Task<(IEnumerable<User> Items, int TotalCount)> FindAllAsync(FilterUserDto filter)
     {
         var query = context.Users.AsQueryable();
-        query= query.Where(u => !u.IsDeleted);
+        query = query.Where(u => !u.IsDeleted);
+        
+        if (filter.TournamentId.HasValue)
+            query = query.Where(u => u.TournamentId == filter.TournamentId);
+        
         if (filter.FindUsers == true)
             query = query.Where(u => u.Role == User.UserRoles.USER);
         else if (filter.FindEncorders == true)
             query = query.Where(u => u.Role == User.UserRoles.ENCORDER);
+        
         if (filter.Search.Length > 0)
         {
             query = query.Where(u => EF.Functions.Like(u.Email, $"{filter.Search}%") 

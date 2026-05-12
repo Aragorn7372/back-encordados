@@ -10,17 +10,22 @@ docs: |
 
   ## Descripción
   Esta carpeta contiene los endpoints para:
-  - **GET /User**: Listar usuarios con filtros y paginación
+  - **GET /User**: Listar usuarios de un torneo con filtros y paginación
   - **GET /User/me**: Obtener perfil del usuario autenticado
   - **GET /User/{id}**: Obtener usuario por ID
-  - **GET /User/encorders**: Listar solo encordadores
-  - **PATCH /User/{id}**: Actualizar datos de usuario
+  - **GET /User/encorders/{tournamentId}**: Listar encordadores de un torneo
+  - **GET /User/users/{tournament}**: Listar usuarios de un torneo (encorder)
+  - **PATCH /User/{id}**: Actualizar datos de usuario (Admin)
+  - **PATCH /User/me**: Actualizar perfil del usuario autenticado
   - **DELETE /User/{id}**: Eliminar usuario (Admin)
   - **DELETE /User/me**: Autoeiminarse
-  - **POST /User/{id}/roles**: Asignar rol a usuario
+  - **POST /User/{id}/roles**: Asignar rol a usuario (Admin)
+  - **POST /User/create-encoder**: Crear encordador (enviar solo ULID del usuario)
+  - **POST /User/create-contact**: Crear contacto en torneo
 
   ## Roles
   - **Admin**: Acceso total
+  - **Encorder**: Puede crear contactos y ver usuarios del torneo
   - **User**: Solo puede ver/modificar su propio perfil
 
 request:

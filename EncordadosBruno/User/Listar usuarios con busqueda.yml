@@ -1,0 +1,33 @@
+info:
+  name: Listar usuarios con busqueda
+  type: http
+  seq: 6
+
+docs: |
+  # Listar usuarios con búsqueda
+
+  Lista usuarios del torneo 1 filtrados por nombre/username.
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `GET /api/User?tournamentId=1&search={search}`
+
+  ## Test Cases
+  - [ ] Buscar por nombre parcial "Juan"
+  - [ ] Buscar por username "jugador"
+  - [ ] Buscar sin resultados
+
+http:
+  method: GET
+  url: "{{api-url}}/api/User?tournamentId=1&search=Juan&page=0&size=10"
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
