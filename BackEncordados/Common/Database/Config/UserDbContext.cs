@@ -26,6 +26,7 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
             entity.HasIndex(e => e.Email).IsUnique();
             entity.HasIndex(e => e.Username).IsUnique();
             entity.HasQueryFilter(u => !u.IsDeleted);
+            entity.Property(u => u.TournamentId).IsRequired(false);
         });
     }
 
@@ -48,7 +49,7 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
         var users = new List<User>
         {
             
-            // Usuario ADMIN
+// Usuario ADMIN
             new() {
                 Id = Ulid.Parse("01ARZ3NDEKTSV4RRFFQ69G5FAV"),
                 Username = "admin_encordados",
@@ -60,7 +61,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 IsDeleted = false,
                 ImageUrl = "/images/users/default.jpg",
                 CreatedAt = DateTime.UtcNow.AddMonths(-6),
-                UpdatedAt = DateTime.UtcNow.AddMonths(-6)
+                UpdatedAt = DateTime.UtcNow.AddMonths(-6),
+                TournamentId = null
             },
 
             // Usuario OWNER
@@ -75,10 +77,11 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 IsDeleted = false,
                 ImageUrl = "/images/users/default.jpg",
                 CreatedAt = DateTime.UtcNow.AddMonths(-5),
-                UpdatedAt = DateTime.UtcNow.AddMonths(-5)
+                UpdatedAt = DateTime.UtcNow.AddMonths(-5),
+                TournamentId = null
             },
 
-             
+              
             // Usuario ENCORDER 1
             new() {
                 Id = carlos,
@@ -91,7 +94,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 IsDeleted = false,
                 ImageUrl = "/images/users/default.jpg",
                 CreatedAt = DateTime.UtcNow.AddMonths(-4),
-                UpdatedAt = DateTime.UtcNow.AddMonths(-4)
+                UpdatedAt = DateTime.UtcNow.AddMonths(-4),
+                TournamentId = null
             },
 
             // Usuario ENCORDER 2
@@ -106,7 +110,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 IsDeleted = false,
                 ImageUrl = "/images/users/default.jpg",
                 CreatedAt = DateTime.UtcNow.AddMonths(-3),
-                UpdatedAt = DateTime.UtcNow.AddMonths(-3)
+                UpdatedAt = DateTime.UtcNow.AddMonths(-3),
+                TournamentId = null
             },
 
             // Usuario JUGADOR 1
@@ -121,7 +126,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 IsDeleted = false,
                 ImageUrl = "/images/users/default.jpg",
                 CreatedAt = DateTime.UtcNow.AddMonths(-2),
-                UpdatedAt = DateTime.UtcNow.AddMonths(-2)
+                UpdatedAt = DateTime.UtcNow.AddMonths(-2),
+                TournamentId = 1
             },
 
             // Usuario JUGADOR 2
@@ -136,7 +142,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 IsDeleted = false,
                 ImageUrl = "/images/users/default.jpg",
                 CreatedAt = DateTime.UtcNow.AddMonths(-1),
-                UpdatedAt = DateTime.UtcNow.AddMonths(-1)
+                UpdatedAt = DateTime.UtcNow.AddMonths(-1),
+                TournamentId = 1
             },
 
             // Usuario JUGADOR 3
@@ -151,7 +158,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 IsDeleted = false,
                 ImageUrl = "/images/users/default.jpg",
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
+                TournamentId = 1
             }
         };
 

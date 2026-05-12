@@ -24,3 +24,4 @@ public record UserNotFoundError(string Error) : AuthError(Error);
 /// <param name="Error">Mensaje de error.</param>
 /// <returns>ValidationError (HTTP 400).</returns>
 public record ValidationError(string Error): AuthError(Error);
+public record PasswordChangeExpiredTimeout(string Error="el para cambiar la contraseña expiró o no se ha encontrado el usuario vuelva a intentarlo en otro momento o vuelva a solicitar el cambio de contraseña") : AuthError(Error);

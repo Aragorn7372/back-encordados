@@ -6,4 +6,5 @@ public static class CacheKeys
     public const string UserKey = "user_name_"; 
     public const string UserDataKey = "user_data_"; 
     public static readonly string PurchasedCacheKey = "purchased_";
+    public const string PasswordChange = "password_";
 }

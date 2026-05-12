@@ -1,4 +1,5 @@
 ﻿using BackEncordados.Common.Dto;
+using BackEncordados.Common.Utils;
 using BackEncordados.Usuarios.Dto;
 using BackEncordados.Usuarios.Errors;
 using BackEncordados.Usuarios.Mapper;
@@ -28,12 +29,12 @@ public class UserService(ILogger<UserService> logger, IUserRepository repository
             : Result.Failure<bool, AuthError>(new AuthError("User not found or user with that role"));
     }
 
-    public async Task<PageResponseDto<UserResponseDto>> GetAllUsersAsync(FilterUserDto filter)
+    public async Task<PageResponseDto<UserWithIdDto>> GetAllUsersAsync(FilterUserDto filter)
     {
         var paged = await repository.FindAllAsync(filter);
         int totalPages = filter.Size > 0 ? (int)Math.Ceiling(paged.TotalCount / (double)filter.Size) : 0;
-        return new PageResponseDto<UserResponseDto>(
-            Content: paged.Items.Select(item => item.ToDto()).ToList(),
+        return new PageResponseDto<UserWithIdDto>(
+            Content: paged.Items.Select(item => item.ToDtoWithId()).ToList(),
             TotalPages: totalPages,
             TotalElements: paged.TotalCount,
             PageSize: filter.Size,
@@ -83,5 +84,32 @@ public class UserService(ILogger<UserService> logger, IUserRepository repository
 
         var updated = await repository.UpdateAsync(user);
         return Result.Success<UserResponseDto, AuthError>(updated.ToDto());
+    }
+
+    public async Task<Result<UserResponseDto, AuthError>> CreateContacto(ContactoPostRequestDto request) {
+        logger.LogInformation("Creando contacto para el usuario con nombre: {Name}",request.Name);
+        return await repository.SaveAsync(request.ToModel()) is { } user
+            ? Result.Success<UserResponseDto, AuthError>(user.ToDto())
+                .Tap((() => logger.LogInformation("Contacto creado con ID: {Id}", user.Id)))
+            : Result.Failure<UserResponseDto, AuthError>(new ConflictError("Error creating contact"))
+                .TapError((() => logger.LogError("Error creating contact for user with name: {Name}", request.Name)));
+    }
+
+    public async Task<Result<Unit, AuthError>> CreateEncoderAsync(Ulid userId) {
+        logger.LogInformation("Creando encordador para usuario con ID: {UserId}", userId);
+        
+        var user = await repository.FindByIdAsync(userId);
+        if (user is null)
+            return Result.Failure<Unit, AuthError>(new UserNotFoundError("User not found"));
+        
+        if (user.Role == BackEncordados.Usuarios.Model.User.UserRoles.ENCORDER)
+            return Result.Failure<Unit, AuthError>(new ConflictError("User already is an encorder"));
+        
+        user.Role = BackEncordados.Usuarios.Model.User.UserRoles.ENCORDER;
+        
+        await repository.UpdateAsync(user);
+        logger.LogInformation("Usuario {UserId} asignado como ENCORDER", userId);
+        
+        return Result.Success<Unit, AuthError>(Unit.Value);
     }
 }

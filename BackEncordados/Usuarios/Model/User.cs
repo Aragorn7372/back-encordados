@@ -20,13 +20,16 @@ public class User : ITimestamped
     /// <summary>Email del usuario (obligatorio, único).</summary>
     public string Email { get; set; } = string.Empty;
     ///
-    public string Phone { get; set; } = string.Empty;
+    public string? Phone { get; set; } 
     
     /// <summary>Hash BCrypt de la contraseña (60 caracteres aprox).</summary>
     public string PasswordHash { get; set; } = string.Empty;
 
     /// <summary>Rol del usuario (USER o ADMIN).</summary>
     public string Role { get; set; } = UserRoles.USER;
+    
+    public long? TournamentId { get; set; }
+    
 
     /// <summary>Indica si el usuario está eliminado (soft-delete).</summary>
     public bool IsDeleted { get; set; }

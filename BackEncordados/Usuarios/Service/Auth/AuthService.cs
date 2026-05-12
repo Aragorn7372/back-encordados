@@ -1,8 +1,12 @@
-﻿using BackEncordados.Usuarios.Dto;
+﻿using BackEncordados.Common.Service.Cache;
+using BackEncordados.Common.Service.Cache.keys;
+using BackEncordados.Common.Utils;
+using BackEncordados.Usuarios.Dto;
 using BackEncordados.Usuarios.Errors;
 using BackEncordados.Usuarios.Model;
 using BackEncordados.Usuarios.Repository;
 using CSharpFunctionalExtensions;
+using BCrypt.Net;
 
 namespace BackEncordados.Usuarios.Service.Auth;
 
@@ -13,10 +17,11 @@ namespace BackEncordados.Usuarios.Service.Auth;
 public class AuthService(
     IUserRepository userRepository,
     IJwtService jwtService,
-    ILogger<AuthService> logger
+    ILogger<AuthService> logger,
+    ICacheService cache
 ) : IAuthService
 {
-
+    private const string CacheKey = CacheKeys.PasswordChange;
     /// <summary>
     /// Registra un nuevo usuario.
     /// Devuelve: Result.Success(AuthResponseDto) | Result.Failure(Validation/Conflict)
@@ -86,9 +91,40 @@ public class AuthService(
         return Result.Success<AuthResponseDto, AuthError>(authResponse);
     }
 
-   
+    public async Task<Result<Unit, AuthError>> ChangePasswordAsync(Guid guid, ChangePasswordRequestDto dto) {
+        logger.LogInformation("ChangePassword request for guid: {Guid}", guid);
+        var cached= await cache.GetAsync<Ulid?>(CacheKey+guid);
+        if (cached is null) 
+            return Result.Failure<Unit, AuthError>(new PasswordChangeExpiredTimeout())
+                .TapError((() => logger.LogInformation("Change password request for guid not found on cache: {Guid}", guid)));
+        var user= await userRepository.FindByIdAsync(cached.Value);
+        if (user is null)
+            return Result.Failure<Unit, AuthError>(new PasswordChangeExpiredTimeout())
+                .TapError((() => logger.LogInformation("Change password request for guid: {Guid} not found a user with {Id}", guid, cached.Value)));
+        if (BCrypt.Net.BCrypt.Verify(dto.NewPassword, user.PasswordHash)) {
+            return Result.Failure<Unit, AuthError>(new ValidationError("no puedes usar una contraseña anteriormente usada"))
+                .TapError((() => logger.LogInformation("Change password request for guid: {Guid} is the same that have before", guid)));
+        }
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        return await  userRepository.UpdateAsync(user) is { } result
+            ? Result.Success<Unit, AuthError>(Unit.Value)
+                .Tap((() => logger.LogInformation("Password has change for request {Guid}", guid)))
+            : Result.Failure<Unit, AuthError>(new PasswordChangeExpiredTimeout())
+                .TapError((() => logger.LogInformation("user no found with {Id}",cached.Value)));
+    }
+    
 
- 
+    public async Task<Result<Unit, AuthError>> GetEmailAsync(string userEmail) {
+        return await userRepository.FindByEmailAsync(userEmail) is { } result
+            ? await Result.Success<Unit, AuthError>(Unit.Value)
+                .TapAsync(async (_) => {
+                    var key = CacheKey + Guid.NewGuid();
+                    await cache.SetAsync(key, result.Id);
+                })
+            : Result.Failure<Unit, AuthError>(new UserNotFoundError("el email no existe o es invalido"))
+                .TapError((() => logger.LogInformation("user no found with email {Email}", userEmail)));
+    }
+
 
     /// <summary>
     /// Verifica duplicados de username y email.

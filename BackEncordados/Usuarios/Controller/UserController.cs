@@ -15,10 +15,11 @@ namespace BackEncordados.Usuarios.Controller;
 public class UserController(ILogger<UserController> logger, IUserService service) : ControllerBase
 {
     [HttpGet]
-    [ProducesResponseType(typeof(PageResponseDto<UserResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PageResponseDto<UserWithIdDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(Policy = "RequireAdminRole")]
     public async Task<IActionResult> GetAll(
+        [FromQuery] long? tournamentId,
         [FromQuery] bool? findUsers = null,
         [FromQuery] bool? findEncorders = null,
         [FromQuery] string sortBy = "id",
@@ -30,6 +31,7 @@ public class UserController(ILogger<UserController> logger, IUserService service
         var filter = new FilterUserDto(
             FindUsers: findUsers,
             FindEncorders: findEncorders,
+            TournamentId: tournamentId,
             Search: search,
             SortBy: sortBy,
             Page: page,
@@ -41,7 +43,7 @@ public class UserController(ILogger<UserController> logger, IUserService service
     }
 
     [HttpGet("encorders")]
-    [ProducesResponseType(typeof(PageResponseDto<UserResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PageResponseDto<UserWithIdDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(Policy = "RequireAdminRole")]
     public async Task<IActionResult> GetAllEncorders(
@@ -53,6 +55,7 @@ public class UserController(ILogger<UserController> logger, IUserService service
     {
         var filter = new FilterUserDto(
             FindUsers: null,
+            TournamentId: null,
             FindEncorders: true,
             Search: search,
             SortBy: sortBy,
@@ -64,11 +67,12 @@ public class UserController(ILogger<UserController> logger, IUserService service
         return Ok(result);
     }
 
-    [HttpGet("users")]
-    [ProducesResponseType(typeof(PageResponseDto<UserResponseDto>), StatusCodes.Status200OK)]
+    [HttpGet("users/{tournament:long}")]
+    [ProducesResponseType(typeof(PageResponseDto<UserWithIdDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(Policy = "RequireEncorderRole")]
     public async Task<IActionResult> GetAllUsers(
+        long tournament,
         [FromQuery] string sortBy = "id",
         [FromQuery] int page = 0,
         [FromQuery] int size = 10,
@@ -78,6 +82,7 @@ public class UserController(ILogger<UserController> logger, IUserService service
         var filter = new FilterUserDto(
             FindUsers: true,
             FindEncorders: null,
+            TournamentId: tournament,
             Search: search,
             SortBy: sortBy,
             Page: page,
@@ -142,7 +147,33 @@ public class UserController(ILogger<UserController> logger, IUserService service
                 _ => StatusCode(500, new { message = error.Error })
             });
     }
+    [HttpPatch("me")]
+    [ProducesResponseType(typeof(UserResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> PatchMe([FromBody] UserRequestDto request)
+    {
+        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+        if (userIdClaim is null || !Ulid.TryParse(userIdClaim.Value, out var userId))
+            return NotFound(new { message = "User ID claim not found or invalid" });
 
+        var result = await service.PatchUserAsync(userId, request);
+        return result.Match(
+            onSuccess: user => Ok(user),
+            onFailure: error => error switch
+            {
+                ValidationError validationError => BadRequest(new { message = validationError.Error }),
+                UserNotFoundError userNotFoundError => NotFound(new { message = userNotFoundError.Error }),
+                ConflictError conflictError => Conflict(new { message = conflictError.Error }),
+                _ => StatusCode(500, new { message = error.Error })
+            });
+    }
+    
+    [HttpPost("create")]
+    
     [HttpDelete("{id:ulid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -214,6 +245,48 @@ public class UserController(ILogger<UserController> logger, IUserService service
     public async Task<IActionResult> GiveRole(Ulid id, [FromQuery] string role)
     {
         var result = await service.GiveRoleToUserAsync(id, role);
+        if (result.IsSuccess)
+            return NoContent();
+
+        var error = result.Error;
+        return error switch
+        {
+            ValidationError validationError => BadRequest(new { message = validationError.Error }),
+            UserNotFoundError userNotFoundError => NotFound(new { message = userNotFoundError.Error }),
+            ConflictError conflictError => Conflict(new { message = conflictError.Error }),
+            _ => StatusCode(500, new { message = error.Error })
+        };
+    }
+    [HttpPost("create-contact")]
+    [ProducesResponseType(typeof(UserResponseDto),StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize(Policy = "RequireEncoderRole")]
+    public async Task<IActionResult> CreateContact([FromBody] ContactoPostRequestDto request)
+    {
+        return await service.CreateContacto(request).Match(
+            onSuccess: user => Ok(user),
+            onFailure: error => error switch
+            {
+                ValidationError validationError => BadRequest(new { message = validationError.Error }),
+                UserNotFoundError userNotFoundError => NotFound(new { message = userNotFoundError.Error }),
+                ConflictError conflictError => Conflict(new { message = conflictError.Error }),
+                _ => StatusCode(500, new { message = error.Error })
+            });
+    }
+    
+    [HttpPost("create-encoder")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [Authorize(Policy = "RequireEncoderRole")]
+    public async Task<IActionResult> CreateEncoder([FromBody] Ulid userId) {
+        
+        logger.LogInformation("Creating encoder for user with ID {UserId}", userId);
+        var result = await service.CreateEncoderAsync(userId);
         if (result.IsSuccess)
             return NoContent();
 

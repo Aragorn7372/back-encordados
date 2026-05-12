@@ -68,4 +68,46 @@ public class AuthController(
             }
         );
     }
+
+    [HttpPost("change-password-request")]
+    [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> SentEmailRequest([FromBody] string email)
+    {
+        logger.LogInformation("enviando email de recuperacion a {Email}", email);
+        var resultado = await authService.GetEmailAsync(email);
+        
+        if (resultado.IsSuccess) return Ok();
+        
+
+        var error = resultado.Error;
+        return error switch
+        {
+            UserNotFoundError => NotFound(new { message = error.Error }),
+            _ => StatusCode(500, new { message = error.Error })
+        };
+    }
+
+    [HttpPost("change-password/{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> ChangePassword(Guid id, [FromBody] ChangePasswordRequestDto dto) {
+        logger.LogInformation("cambiando contraseña del usuario con id {Id}", id);
+        var resultado = await authService.ChangePasswordAsync(id, dto);
+
+        if (resultado.IsSuccess) return NoContent();
+
+
+        var error = resultado.Error;
+        return error switch {
+            PasswordChangeExpiredTimeout => BadRequest(new { message = error.Error }),
+            UserNotFoundError => NotFound(new { message = error.Error }),
+            ValidationError validationError => BadRequest(new { message = validationError.Error }),
+            _ => StatusCode(500, new { message = error.Error })
+        };
+    }
+
 }

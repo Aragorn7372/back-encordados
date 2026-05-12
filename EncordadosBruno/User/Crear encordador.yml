@@ -1,0 +1,51 @@
+info:
+  name: Crear encordador
+  type: http
+  seq: 11
+
+docs: |
+  # Crear Encordador
+
+  Crea un usuario como encordador y lo asigna a un torneo específico.
+
+  ## Authorization
+  RequireEncoderRole
+
+  ## HTTP Method
+  `POST /api/User/create-encoder`
+
+  ## Request Body
+  | Campo | Tipo | Descripción |
+  |-------|------|-------------|
+  | `userId` | ULID | ID del usuario a convertir en encordador |
+
+  ## Responses
+  - **204 No Content**: Encordador creado exitosamente
+  - **400 Bad Request**: Datos inválidos
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Encorder
+  - **404 Not Found**: Usuario no encontrado
+  - **409 Conflict**: El usuario ya es encordador
+
+  ## Test Cases
+  - [ ] Crear encordador con usuario existente y torneo válido
+  - [ ] Crear encordador con usuario inexistente (404)
+  - [ ] Crear encordador con usuario que ya es encordador (409)
+  - [ ] Crear encordador sin permisos de Encorder (403)
+
+http:
+  method: POST
+  url: "{{api-url}}/api/User/create-encoder"
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+  body:
+    type: json
+    json: |
+      "{{user_id_juan}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
