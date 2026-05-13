@@ -1,7 +1,4 @@
-﻿using BackEncordados.Common.Database.Config;
-using BackEncordados.Common.Dto;
-using BackEncordados.Common.Errors;
-using BackEncordados.Common.Utils;
+﻿using BackEncordados.Common.Dto;
 using BackEncordados.Talleres.Dto;
 using BackEncordados.Talleres.Error;
 using BackEncordados.Talleres.Service;
@@ -27,19 +24,14 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [Authorize(Policy = "RequireAdminRole")]
-    public async Task<IActionResult> CreateTournament([FromBody] TournamentRequestDto request) {
-        logger.LogInformation("Received request to create tournament: {@Request}", request);
-        return await tournamentsService.CreateTournament(request).Match(
+    public async Task<IActionResult> CreateTournament([FromBody] TournamentAdminRequestDto adminRequest) {
+        logger.LogInformation("Received adminRequest to create tournament: {@Request}", adminRequest);
+        return await tournamentsService.CreateTournament(adminRequest).Match(
             onSuccess: tournament => CreatedAtAction(nameof(GetTournament), new { id = tournament.Id }, tournament),
             onFailure: error => error switch {
-                
-                DomainErrors e => e switch {
-                    
-                    UserNotFoundError => NotFound(e.Error),
-                    ConflictError => Conflict(e.Error),
-                    ValidationError => BadRequest(e.Error),
-                    _ => StatusCode(500, e.Error)
-                },
+                UserNotFoundError => NotFound(error.Error),
+                ConflictError => Conflict(error.Error),
+                ValidationError => BadRequest(error.Error),
                 _ => StatusCode(500, "An unexpected error occurred.")
             });
     }
@@ -54,11 +46,8 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
      return await tournamentsService.GetTournament(id).Match(
             success => Ok(success),
             error => error switch {
-                DomainErrors e => e switch {
-                    UserNotFoundError => NotFound(e.Error),
-                    TournamentNotFoundError => NotFound(e.Error),
-                    _ => StatusCode(500, e.Error)
-                },
+                UserNotFoundError => NotFound(error.Error),
+                TournamentNotFoundError => NotFound(error.Error),
                 _ => StatusCode(500, "An unexpected error occurred.")
             });
     }
@@ -72,7 +61,7 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
         return await tournamentsService.GetTournamentByName(name).Match(
             success => Ok(success),
             error => error switch {
-                DomainErrors e => e switch {
+                { } e => e switch {
                     UserNotFoundError => NotFound(e.Error),
                     TournamentNotFoundError => NotFound(e.Error),
                     _ => StatusCode(500, e.Error)
@@ -93,8 +82,7 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
         [FromQuery] string direction = "asc") {
         var filter = new FilterTournamentDto(search, null,page, pageSize, sortBy, direction);
         var role= User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
-        if (role != Usuarios.Model.User.UserRoles.ADMIN && 
-            role != Usuarios.Model.User.UserRoles.OWNER) {
+        if (role != Usuarios.Model.User.UserRoles.ADMIN) {
             var idClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             if (Ulid.TryParse(idClaim, out Ulid userId))
                 filter.UserId = userId;
@@ -115,10 +103,7 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
         return await tournamentsService.DeleteTournament(id).Match(
             success =>   StatusCode(204, success),
             error => error switch {
-                DomainErrors e => e switch {
-                    TournamentNotFoundError => NotFound(e.Error),
-                    _ => StatusCode(500, e.Error)
-                },
+                TournamentNotFoundError => NotFound(error.Error),
                 _ => StatusCode(500, "An unexpected error occurred.")
             });
     }
@@ -127,18 +112,14 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(Policy = "RequireAdminRole")]
+    [Authorize(Policy = "RequireOwnerRole")]
     public async Task<IActionResult> UpdateTournament(long id, [FromBody] TournamentPatchDto request) {
         logger.LogInformation("Received request to update tournament: {id} with data: {@Request}", id, request);
         return await tournamentsService.UpdateTournament(id, request).Match(
             success => Ok(success),
             error => error switch {
-                DomainErrors e => e switch {
-                    TournamentNotFoundError => NotFound(e.Error),
-                    UserNotFoundError => NotFound(e.Error),
-                    ValidationError => BadRequest(e.Error),
-                    _ => StatusCode(500, e.Error)
-                },
+                TournamentNotFoundError => NotFound(error.Error),
+                ValidationError => BadRequest(error.Error),
                 _ => StatusCode(500, "An unexpected error occurred.")
             });
      }
@@ -148,7 +129,7 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(Policy = "RequireAdminRole")]
+    [Authorize(Policy = "RequireOwnerRole")]
     public async Task<IActionResult> PatchTournament(
         long id,
         [FromBody] WorkerMachineAssignmentRequestDto worker) {
@@ -156,12 +137,9 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
         return await tournamentsService.AssignWorkerMachine(id,worker).Match(
             success => Ok(success),
             error => error switch {
-                DomainErrors e => e switch {
-                    TournamentNotFoundError => NotFound(e.Error),
-                    UserNotFoundError => NotFound(e.Error),
-                    ValidationError => BadRequest(e.Error),
-                    _ => StatusCode(500, e.Error)
-                },
+                TournamentNotFoundError => NotFound(error.Error),
+                UserNotFoundError => NotFound(error.Error),
+                ValidationError => BadRequest(error.Error),
                 _ => StatusCode(500, "An unexpected error occurred.")
             });
         
@@ -171,7 +149,7 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(Policy = "RequireAdminRole")]
+    [Authorize(Policy = "RequireOwnerRole")]
     public async Task<IActionResult> RemoveWorkerFromTournament(
         long id,
         [FromBody] string worker) {
@@ -179,13 +157,10 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
         return await tournamentsService.UnassignWorkerMachine(id,worker).Match(
             success => Ok(success),
             error => error switch {
-                DomainErrors e => e switch {
-                    TournamentNotFoundError => NotFound(e.Error),
-                    UserNotFoundError => NotFound(e.Error),
-                    ValidationError => BadRequest(e.Error),
-                    _ => StatusCode(500, e.Error)
-                }, 
-                _ => StatusCode(500, "An unexpected error occurred.") 
+                TournamentNotFoundError => NotFound(error.Error),
+                UserNotFoundError => NotFound(error.Error),
+                ValidationError => BadRequest(error.Error),
+                _ => StatusCode(500, "An unexpected error occurred.")
             });
     }  
     
@@ -193,18 +168,36 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
     [ProducesResponseType(typeof(List<WorkerMachineAssignmentResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(Policy = "RequireAdminRole")]
+    [Authorize(Policy = "RequireOwnerRole")]
     public async Task<IActionResult> GetAssignedWorkers(long id) {
         logger.LogInformation("Received request to get assigned workers for tournament: {id}", id);
         return await tournamentsService.GetAssignedWorkerMachines(id).Match(
             success => Ok(success),
             error => error switch {
-                DomainErrors e => e switch {
-                    TournamentNotFoundError => NotFound(e.Error),
-                    _ => StatusCode(500, e.Error)
-                },
-                _ => StatusCode(500, "An unexpected error occurred.")
+                    TournamentNotFoundError => NotFound(error.Error),
+                    _ => StatusCode(500, error.Error)
             });
      }
+    [HttpPost("owner-create")]
+    [ProducesResponseType(typeof(TournamentResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType( StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [Authorize(Policy = "RequireOwnerRole")]
+    public async Task<IActionResult> CreateTournament([FromBody] TournamentRequestDto adminRequest) {
+        logger.LogInformation("Received adminRequest to create tournament: {@Request}", adminRequest);
+        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+        if (userIdClaim is null || !Ulid.TryParse(userIdClaim.Value, out var userId))
+            return NotFound(new { message = "User ID claim not found or invalid" });
+        return await tournamentsService.OwnerCreateTournament(adminRequest,userId).Match(
+            onSuccess: tournament => CreatedAtAction(nameof(GetTournament), new { id = tournament.Id }, tournament),
+            onFailure: error => error switch {
+                UserNotFoundError => NotFound(error.Error),
+                ConflictError => Conflict(error.Error),
+                ValidationError => BadRequest(error.Error),
+                _ => StatusCode(500, "An unexpected error occurred.")
+            });
+    }
 
 }

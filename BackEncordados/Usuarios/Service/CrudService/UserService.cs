@@ -3,6 +3,7 @@ using BackEncordados.Common.Utils;
 using BackEncordados.Usuarios.Dto;
 using BackEncordados.Usuarios.Errors;
 using BackEncordados.Usuarios.Mapper;
+using BackEncordados.Usuarios.Model;
 using BackEncordados.Usuarios.Repository;
 using CSharpFunctionalExtensions;
 
@@ -102,10 +103,10 @@ public class UserService(ILogger<UserService> logger, IUserRepository repository
         if (user is null)
             return Result.Failure<Unit, AuthError>(new UserNotFoundError("User not found"));
         
-        if (user.Role == BackEncordados.Usuarios.Model.User.UserRoles.ENCORDER)
+        if (user.Role == User.UserRoles.ENCORDER)
             return Result.Failure<Unit, AuthError>(new ConflictError("User already is an encorder"));
         
-        user.Role = BackEncordados.Usuarios.Model.User.UserRoles.ENCORDER;
+        user.Role = User.UserRoles.ENCORDER;
         
         await repository.UpdateAsync(user);
         logger.LogInformation("Usuario {UserId} asignado como ENCORDER", userId);

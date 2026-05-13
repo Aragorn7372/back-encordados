@@ -5,6 +5,7 @@ namespace BackEncordados.Talleres.Model;
 public record Tournaments: ITimestamped
 {
     public long Id { get; set; }
+    public Ulid Owner { get; set; }
     public string Title { get; set; } = string.Empty;
 
     /// <summary>Fecha de creación en UTC.</summary>

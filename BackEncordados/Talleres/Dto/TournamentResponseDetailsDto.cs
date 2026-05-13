@@ -8,5 +8,6 @@ public record TournamentResponseDetailsDto(
     DateTime StartDate,
     DateTime EndDate,
     string Logotype,
-    List<UserResponseDto> User
+    List<UserResponseDto> User,
+    UserResponseDto Owner
     );

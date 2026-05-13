@@ -2,11 +2,14 @@
 
 namespace BackEncordados.Talleres.Dto;
 
-public class TournamentRequestDto {
+public class TournamentAdminRequestDto
+{
     [Required]
     [MaxLength(200)]
     [MinLength(1)]
     public string Name { get; set; }=string.Empty;
+    [Required]
+    public Ulid OwnerId { get; set; }
     [Required]
     public DateTime EndTournament { get; set; }
     [Required]
