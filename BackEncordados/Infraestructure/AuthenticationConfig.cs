@@ -53,8 +53,8 @@ public static class AuthenticationConfig
             .AddPolicy("RequireAdminRole", policy => policy.RequireRole(User.UserRoles.ADMIN))
             .AddPolicy("RequireOwnerRole", policy => policy.RequireRole(User.UserRoles.OWNER,User.UserRoles.ADMIN))
             .AddPolicy("RequireUserRole", policy => policy.RequireRole(User.UserRoles.USER,User.UserRoles.ADMIN,User.UserRoles.OWNER,User.UserRoles.ENCORDER))
-            .AddPolicy("RequireEncorderRole", policy =>policy.RequireRole(User.UserRoles.OWNER,User.UserRoles.ENCORDER,User.UserRoles.ADMIN));
-        
+            .AddPolicy("RequireEncorderRole", policy =>policy.RequireRole(User.UserRoles.OWNER,User.UserRoles.ENCORDER,User.UserRoles.ADMIN))
+            .AddPolicy("RequireSupervisorRole", policy => policy.RequireRole(User.UserRoles.OWNER,User.UserRoles.ADMIN,User.UserRoles.SUPERVISOR,User.UserRoles.ENCORDER));
 
         return services;
     }

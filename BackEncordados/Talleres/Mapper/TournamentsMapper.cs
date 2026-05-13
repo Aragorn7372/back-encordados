@@ -16,7 +16,7 @@ public static class TournamentsMapper
                 tournament.Logotype
             );
         }
-        public static TournamentResponseDetailsDto ToTournamentResponseDetailsDto(this Tournaments tournament, List<UserResponseDto> users,UserResponseDto owner)
+        public static TournamentResponseDetailsDto ToTournamentResponseDetailsDto(this Tournaments tournament, List<UserResponseDto> users,UserResponseDto owner,List<UserResponseDto> supervisors)
         {
             return new TournamentResponseDetailsDto(
                 tournament.Id,
@@ -25,7 +25,8 @@ public static class TournamentsMapper
                 tournament.EndTournament,
                 tournament.Logotype,
                 users,
-                owner
+                owner,
+                supervisors
             );
         }
 

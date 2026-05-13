@@ -9,6 +9,7 @@ using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Role = BackEncordados.Usuarios.Model.User.UserRoles;
 
 namespace BackEncordados.Purchased.Controller;
 
@@ -44,14 +45,13 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
             Direction: direction);
         var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
 
-        if (role == Usuarios.Model.User.UserRoles.ADMIN)
+        if (role == Role.ADMIN)
         {
             return Ok(await service.FindAllAsync(filter));
         }
 
-        if (role == Usuarios.Model.User.UserRoles.ENCORDER ||
-            role == Usuarios.Model.User.UserRoles.USER || role == Usuarios.Model.User.UserRoles.OWNER) {
-            if (role == Usuarios.Model.User.UserRoles.OWNER && tournamentId is null)
+        if (role == Role.ENCORDER || role == Role.USER || role == Role.OWNER || role == Role.SUPERVISOR) {
+            if ((role == Role.OWNER || role == Role.SUPERVISOR) && tournamentId is null)
                 return Forbid();
             
             var idClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
@@ -62,11 +62,11 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
             }
 
             filter.UserId = idClaim;
-            if (role == Usuarios.Model.User.UserRoles.ENCORDER)
+            if (role == Role.ENCORDER)
             {
                 filter.IsEncorder = true;
             }
-            else if (role == Usuarios.Model.User.UserRoles.USER)
+            else if (role == Role.USER)
             {
                 filter.IsUser = true;
             }
@@ -157,7 +157,7 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
             var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
             var isUser = false;
             var idUser = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (role == Usuarios.Model.User.UserRoles.USER)
+            if (role == Role.USER)
             {
                 isUser = true;
             }

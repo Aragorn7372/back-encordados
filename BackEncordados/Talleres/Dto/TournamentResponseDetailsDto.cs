@@ -9,5 +9,6 @@ public record TournamentResponseDetailsDto(
     DateTime EndDate,
     string Logotype,
     List<UserResponseDto> User,
-    UserResponseDto Owner
+    UserResponseDto Owner,
+    List<UserResponseDto> Supevisors
     );

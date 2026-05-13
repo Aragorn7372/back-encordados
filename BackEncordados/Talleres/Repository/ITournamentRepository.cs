@@ -15,4 +15,6 @@ public interface ITournamentRepository
     Task<Tournaments?> RemoveWorker(long id,Ulid workerId);
  
     Task<IEnumerable<WorkerMachineAssignment>?> GetAssignedWorkerMachinesAsync(long tournamentId);
+    Task<Tournaments?> AsignSupervisor(long id,Ulid supervisorId);
+    Task<Tournaments?> RemoveSupervisor(long id,Ulid supervisorId);
 }

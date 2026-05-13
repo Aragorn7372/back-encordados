@@ -45,6 +45,8 @@ public class UserRepository(
             query = query.Where(u => u.Role == User.UserRoles.USER);
         else if (filter.FindEncorders == true)
             query = query.Where(u => u.Role == User.UserRoles.ENCORDER);
+        else if (filter.FindSupervisors == true) 
+            query = query.Where(u => u.Role == User.UserRoles.SUPERVISOR);
         
         if (filter.Search.Length > 0)
         {

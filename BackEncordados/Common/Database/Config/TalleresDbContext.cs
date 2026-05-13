@@ -67,6 +67,16 @@ public class TalleresDbContext(DbContextOptions<TalleresDbContext> options)
                         c => c == null ? 0 : c.Aggregate(0, (acc, v) => HashCode.Combine(acc, v)),
                         c => c == null ? new List<Ulid>() : c.ToList()))
                 .HasColumnType("text");
+
+            entity.Property(x => x.SupervisorList)
+                .HasConversion(
+                    ulidListConverter,
+                    new ValueComparer<List<Ulid>>(
+                        (c1, c2) => c1 != null && c2 != null && c1.SequenceEqual(c2),
+                        c => c == null ? 0 : c.Aggregate(0, (acc, v) => HashCode.Combine(acc, v)),
+                        c => c == null ? new List<Ulid>() : c.ToList()))
+                .HasColumnType("text");
+
             entity.Property(x => x.IsDeleted)
                 .IsRequired()
                 .HasDefaultValue(false);
@@ -100,8 +110,9 @@ private void SeedData(ModelBuilder modelBuilder)
 
         var carlos = Ulid.Parse("01KR424NQJKSBKBMH15K4V835W");
         var maria = Ulid.Parse("01KR424NQJKMNYS1FEC7NXBBH2");
-        var owner1 = Ulid.Parse("01KR424NQJKV5H2R4P8M3X9YZQ");
-        var owner2 = Ulid.Parse("01KR424NQJKW6J3S5Q9N4Y1ART");
+        var owner = Ulid.Parse("01KR42E3NRTHEKKH1VHSNZK74D");
+        var supervisor1 = Ulid.Parse("01KR424NQJKTASKDL3M5NP7GHS");
+        var supervisor2 = Ulid.Parse("01KR424NQJKUBMAEM4N6OQ8JIT");
 
         modelBuilder.Entity<Tournaments>().HasData(
             new Tournaments
@@ -112,7 +123,8 @@ private void SeedData(ModelBuilder modelBuilder)
                 StartTournament = now.AddDays(-7),
                 EndTournament = now.AddDays(7),
                 WorkersList = new List<Ulid> { carlos, maria },
-                Owner = owner1,
+                SupervisorList = new List<Ulid> { supervisor1 },
+                Owner = owner,
                 IsDeleted = false,
                 CreatedAt = now.AddMonths(-2),
                 UpdatedAt = now.AddMonths(-2)
@@ -125,7 +137,8 @@ private void SeedData(ModelBuilder modelBuilder)
                 StartTournament = now.AddDays(14),
                 EndTournament = now.AddDays(28),
                 WorkersList = new List<Ulid> { carlos },
-                Owner = owner2,
+                SupervisorList = new List<Ulid> { supervisor2 },
+                Owner = owner,
                 IsDeleted = false,
                 CreatedAt = now.AddMonths(-1),
                 UpdatedAt = now.AddMonths(-1)
@@ -138,7 +151,7 @@ private void SeedData(ModelBuilder modelBuilder)
                 StartTournament = now.AddDays(-60),
                 EndTournament = now.AddDays(-45),
                 WorkersList = new List<Ulid> { maria },
-                Owner = owner1,
+                Owner = owner,
                 IsDeleted = false,
                 CreatedAt = now.AddMonths(-4),
                 UpdatedAt = now.AddMonths(-3)
@@ -151,7 +164,8 @@ private void SeedData(ModelBuilder modelBuilder)
                 StartTournament = now.AddDays(35),
                 EndTournament = now.AddDays(42),
                 WorkersList = new List<Ulid> { carlos, maria },
-                Owner = owner2,
+                SupervisorList = new List<Ulid> { supervisor1, supervisor2 },
+                Owner = owner,
                 IsDeleted = false,
                 CreatedAt = now.AddDays(-30),
                 UpdatedAt = now.AddDays(-30)

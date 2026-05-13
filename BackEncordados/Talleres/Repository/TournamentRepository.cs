@@ -14,7 +14,8 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
         query = query.Where(x => !x.IsDeleted );
         if(filter.UserId != null) {
             query = query.Where(x => x.WorkersList.Contains(filter.UserId.Value)
-            || x.Owner==filter.UserId.Value);
+            || x.Owner==filter.UserId.Value
+            || x.SupervisorList.Contains(filter.UserId.Value));
         }
         if (!string.IsNullOrWhiteSpace(filter.Search)) {
             var isId = long.TryParse(filter.Search, out var id) ? id : -1;
@@ -162,5 +163,45 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
         logger.LogInformation("Obteniendo máquinas asignadas para el torneo con ID {Id}", tournamentId);
         return await context.Partidos
             .FirstOrDefaultAsync(x => x.Id == tournamentId && !x.IsDeleted) is { } tournament ? tournament.WorkerMachineAssignments : null;
+    }
+
+    public async Task<Tournaments?> AsignSupervisor(long id, Ulid supervisorId) {
+        logger.LogInformation(
+            "Asignando supervisor con ulid {WorkerId} al torneo con ID {Id}",
+            supervisorId, id);
+
+        var existingTournament = await context.Partidos
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (existingTournament == null || existingTournament.IsDeleted)
+            return null;
+
+        if (!existingTournament.SupervisorList.Contains(supervisorId))
+            existingTournament.SupervisorList.Add(supervisorId);
+        
+        var saved=context.Partidos.Update(existingTournament);
+        await context.SaveChangesAsync();
+
+        return saved.Entity;
+    }
+
+    public async Task<Tournaments?> RemoveSupervisor(long id, Ulid supervisorId) {
+        logger.LogInformation(
+            "Eliminando supervisor con ulid {SupervisorId} del torneo con ID {Id}",
+            supervisorId, id);
+
+        var existingTournament = await context.Partidos
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (existingTournament == null || existingTournament.IsDeleted)
+            return null;
+
+        if (existingTournament.SupervisorList.Contains(supervisorId))
+            existingTournament.SupervisorList.Remove(supervisorId);
+        
+        var saved =context.Partidos.Update(existingTournament);
+        await context.SaveChangesAsync();
+
+        return saved.Entity;
     }
 }

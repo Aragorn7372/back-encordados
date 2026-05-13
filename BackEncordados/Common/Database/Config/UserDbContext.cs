@@ -39,6 +39,7 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
         var userPasswordHash = BCrypt.Net.BCrypt.HashPassword("user123", workFactor: 11);
         var encorderPasswordHash = BCrypt.Net.BCrypt.HashPassword("encorder123", workFactor: 11);
         var ownerPasswordHash = BCrypt.Net.BCrypt.HashPassword("owner123", workFactor: 11);
+        var supervisorPasswordHash = BCrypt.Net.BCrypt.HashPassword("supervisor123", workFactor: 11);
         var juan = Ulid.Parse("01KR424NQJR7CEHQW4STCQ3GGE");
         var ana = Ulid.Parse("01KR424NQJ683QVB6F0P1B4XGM");
         var pedro = Ulid.Parse("01KR424NQJD66APFZ2SM3RNPHZ");
@@ -46,6 +47,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
         var maria = Ulid.Parse("01KR424NQJKMNYS1FEC7NXBBH2");
         var admin= Ulid.Parse("01KR42E3NRSSH7MRQ6KX38DA6B");
         var owner= Ulid.Parse("01KR42E3NRTHEKKH1VHSNZK74D");
+        var supervisor1 = Ulid.Parse("01KR424NQJKTASKDL3M5NP7GHS");
+        var supervisor2 = Ulid.Parse("01KR424NQJKUBMAEM4N6OQ8JIT");
         var users = new List<User>
         {
             
@@ -67,7 +70,7 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
 
             // Usuario OWNER
             new() {
-                Id = Ulid.Parse("01ARZ3NDEKTSV4RRFFQ69G5FBV"),
+                Id = Ulid.Parse("01KR42E3NRTHEKKH1VHSNZK74D"),
                 Username = "owner_principal",
                 Name = "Propietario",
                 Email = "owner@encordados.com",
@@ -160,6 +163,38 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 TournamentId = 1
+            },
+
+            // Usuario SUPERVISOR 1
+            new() {
+                Id = supervisor1,
+                Username = "supervisor_luis",
+                Name = "Luis Fernández",
+                Email = "luis@encordados.com",
+                Phone = "989012345",
+                PasswordHash = supervisorPasswordHash,
+                Role = User.UserRoles.SUPERVISOR,
+                IsDeleted = false,
+                ImageUrl = "/images/users/default.jpg",
+                CreatedAt = DateTime.UtcNow.AddMonths(-3),
+                UpdatedAt = DateTime.UtcNow.AddMonths(-3),
+                TournamentId = null
+            },
+
+            // Usuario SUPERVISOR 2
+            new() {
+                Id = supervisor2,
+                Username = "supervisor_pablo",
+                Name = "Pablo Sánchez",
+                Email = "pablo@encordados.com",
+                Phone = "990123456",
+                PasswordHash = supervisorPasswordHash,
+                Role = User.UserRoles.SUPERVISOR,
+                IsDeleted = false,
+                ImageUrl = "/images/users/default.jpg",
+                CreatedAt = DateTime.UtcNow.AddMonths(-2),
+                UpdatedAt = DateTime.UtcNow.AddMonths(-2),
+                TournamentId = null
             }
         };
 
