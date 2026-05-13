@@ -17,7 +17,7 @@ public class UserController(ILogger<UserController> logger, IUserService service
     [HttpGet]
     [ProducesResponseType(typeof(PageResponseDto<UserWithIdDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(Policy = "RequireAdminRole")]
+    [Authorize(Policy = "RequireOwnerRole")]
     public async Task<IActionResult> GetAll(
         [FromQuery] long? tournamentId,
         [FromQuery] bool? findUsers = null,
@@ -45,7 +45,7 @@ public class UserController(ILogger<UserController> logger, IUserService service
     [HttpGet("encorders")]
     [ProducesResponseType(typeof(PageResponseDto<UserWithIdDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(Policy = "RequireAdminRole")]
+    [Authorize(Policy = "RequireOwnerRole")]
     public async Task<IActionResult> GetAllEncorders(
         [FromQuery] string sortBy = "id",
         [FromQuery] int page = 0,
@@ -118,17 +118,10 @@ public class UserController(ILogger<UserController> logger, IUserService service
     public async Task<IActionResult> GetMe()
     {
         logger.LogInformation("GetMe called - User authenticated: {IsAuthenticated}", User.Identity?.IsAuthenticated);
-        logger.LogInformation("Total claims received: {ClaimCount}", User.Claims.Count());
-        foreach (var claim in User.Claims)
-        {
-            logger.LogInformation("Claim Type: {ClaimType}, Value: {ClaimValue}", claim.Type, claim.Value);
-        }
         
         var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
         if (userIdClaim is null)
         {
-            logger.LogWarning("NameIdentifier claim not found. Looking for alternative claim types...");
-            logger.LogWarning("Available claim types: {ClaimTypes}", string.Join(", ", User.Claims.Select(c => c.Type)));
             return NotFound(new { message = "User ID claim not found or invalid" });
         }
         
@@ -172,7 +165,6 @@ public class UserController(ILogger<UserController> logger, IUserService service
             });
     }
     
-    [HttpPost("create")]
     
     [HttpDelete("{id:ulid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -195,7 +187,7 @@ public class UserController(ILogger<UserController> logger, IUserService service
     [HttpDelete("me")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(Policy = "RequireUserRole")]
+    [Authorize]
     public async Task<IActionResult> DeleteMe()
     {
         var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
@@ -282,7 +274,7 @@ public class UserController(ILogger<UserController> logger, IUserService service
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    [Authorize(Policy = "RequireEncoderRole")]
+    [Authorize(Policy = "RequireOwnerRole")]
     public async Task<IActionResult> CreateEncoder([FromBody] Ulid userId) {
         
         logger.LogInformation("Creating encoder for user with ID {UserId}", userId);

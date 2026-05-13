@@ -18,7 +18,7 @@ public class MaterialsController(ILogger<MaterialsController> logger, IMaterials
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [Authorize(policy: "RequireAdminRole")]
+    [Authorize(policy: "RequireOwnerRole")]
     public async Task<IActionResult> GetAll(
         [FromQuery] long? tournamentId,
         [FromQuery] string sortBy = "id",
@@ -42,7 +42,7 @@ public class MaterialsController(ILogger<MaterialsController> logger, IMaterials
     [ProducesResponseType(typeof(MaterialResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(policy: "RequireAdminRole")]
+    [Authorize(policy: "RequireOwnerRole")]
     public async Task<IActionResult> GetById(long id) {
         logger.LogInformation("Get material by id {Id}", id);
         return await service.FindByIdAsync(id).Match(
@@ -58,7 +58,7 @@ public class MaterialsController(ILogger<MaterialsController> logger, IMaterials
     [ProducesResponseType(typeof(MaterialResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(policy: "RequireAdminRole")]
+    [Authorize(policy: "RequireOwnerRole")]
     public async Task<IActionResult> GetByName(string name) {
         logger.LogInformation("Get material by name {Name}", name);
         return await service.FindByNameAsync(name).Match(

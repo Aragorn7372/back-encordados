@@ -1,25 +1,30 @@
 ﻿using BackEncordados.Common.Dto;
+using BackEncordados.Common.Errors;
 using BackEncordados.Common.Utils;
 using BackEncordados.Talleres.Dto;
 using BackEncordados.Talleres.Error;
 using BackEncordados.Talleres.Mapper;
 using BackEncordados.Talleres.Repository;
+using BackEncordados.Usuarios.Errors;
 using BackEncordados.Usuarios.Mapper;
+using BackEncordados.Usuarios.Model;
 using BackEncordados.Usuarios.Repository;
 using CSharpFunctionalExtensions;
+using ConflictError = BackEncordados.Talleres.Error.ConflictError;
+using ValidationError = BackEncordados.Talleres.Error.ValidationError;
 
 namespace BackEncordados.Talleres.Service;
 
 public class TournamentService(ILogger<TournamentService> logger,ITournamentRepository repository, IUserRepository userRepository): ITournamentService
 {
-    public async Task<Result<TournamentResponseDetailsDto, TournamentsErrors>> GetTournament(long id)
+    public async Task<Result<TournamentResponseDetailsDto, DomainErrors>> GetTournament(long id)
     {
         logger.LogInformation("Getting tournament {Id}", id);
         var tournament = await repository.FindByIdAsync(id);
         if (tournament is null)
         {
             logger.LogWarning("Tournament with id {Id} not found", id);
-            return Result.Failure<TournamentResponseDetailsDto, TournamentsErrors>(new TournamentNotFoundError());
+            return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new TournamentNotFoundError());
         }
         var userTasks = tournament.WorkersList.Select(w => userRepository.FindByIdAsync(w));
         var fetchedUsers = await Task.WhenAll(userTasks);
@@ -28,9 +33,11 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
                 .Where(u => u != null)
                 .Select(u => u!.ToDto()) 
             .ToList();
-
-        var responseDto = tournament.ToTournamentResponseDetailsDto(validUsers);
-        return Result.Success<TournamentResponseDetailsDto, TournamentsErrors>(responseDto);
+        var owner = await userRepository.FindByIdAsync(tournament.Owner);
+        if (owner is null) 
+            return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new UserNotFoundError("owner de torneo no encontrado"));
+        var responseDto = tournament.ToTournamentResponseDetailsDto(validUsers,owner.ToDto());
+        return Result.Success<TournamentResponseDetailsDto, DomainErrors>(responseDto);
     }
 
     public async Task<PageResponseDto<TournamentResponseDto>> GetAllTournamentsAsync(FilterTournamentDto filter)
@@ -49,11 +56,15 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
         );
     }
 
-    public async Task<Result<TournamentResponseDetailsDto, TournamentsErrors>> CreateTournament(
-        TournamentRequestDto request)
+    public async Task<Result<TournamentResponseDetailsDto, DomainErrors>> CreateTournament(
+        TournamentAdminRequestDto adminRequest)
     {
-        logger.LogInformation("Creating tournament with title {Title}", request.Name);
-        var saved = await repository.SaveAsync(request.ToTournaments());
+        logger.LogInformation("Creating tournament with title {Title}", adminRequest.Name);
+        var user = await userRepository.FindByIdAsync(adminRequest.OwnerId);
+        if (user is null || user.Role!= User.UserRoles.OWNER) 
+            return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new UserNotFoundError("usuario invalido o no encontrado"))
+                .TapError((() => logger.LogInformation("Usuario invalido o no encontrado con id {Id}",adminRequest.OwnerId)));
+        var saved = await repository.SaveAsync(adminRequest.ToTournaments());
         var userTasks = saved.WorkersList.Select(w => userRepository.FindByIdAsync(w));
         var fetchedUsers = await Task.WhenAll(userTasks);
 
@@ -62,8 +73,8 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
             .Select(u => u!.ToDto())
             .ToList();
 
-        var responseDto = saved.ToTournamentResponseDetailsDto(validUsers);
-        return Result.Success<TournamentResponseDetailsDto, TournamentsErrors>(responseDto);
+        var responseDto = saved.ToTournamentResponseDetailsDto(validUsers,user.ToDto());
+        return Result.Success<TournamentResponseDetailsDto, DomainErrors>(responseDto);
     }
 
     public async Task<Result<TournamentResponseDto, TournamentsErrors>> UpdateTournament(long id, TournamentPatchDto request)
@@ -100,19 +111,19 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
             : Result.Failure<Unit, TournamentsErrors>(new TournamentNotFoundError());
     }
 
-    public async Task<Result<TournamentResponseDetailsDto, TournamentsErrors>> AssignWorkerMachine(long tournamentId, WorkerMachineAssignmentRequestDto request)
+    public async Task<Result<TournamentResponseDetailsDto, DomainErrors>> AssignWorkerMachine(long tournamentId, WorkerMachineAssignmentRequestDto request)
     {
         logger.LogInformation("Assigning worker machine {Id}", tournamentId);
         var workerUlid= Ulid.TryParse(request.UserId, out var ulid) ? ulid : Ulid.Empty;
         if (workerUlid == Ulid.Empty)        {
             logger.LogWarning("Invalid user id {Id}", request.UserId);
-            return Result.Failure<TournamentResponseDetailsDto, TournamentsErrors>(new ValidationError("Invalid user id"));
+            return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new ValidationError("Invalid user id"));
         }
         var tournamentUpdated =await repository.AsignWorker(tournamentId, workerUlid, request.MachineName);
         if (tournamentUpdated is null)
         {
             logger.LogWarning("Tournament with id {Id} not found", tournamentId);
-            return Result.Failure<TournamentResponseDetailsDto, TournamentsErrors>(new TournamentNotFoundError());
+            return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new TournamentNotFoundError());
         }
         var users= tournamentUpdated.WorkersList.Select(async w => await userRepository.FindByIdAsync(w)).Where(u => u != null).ToList();
         var userTasks = tournamentUpdated.WorkersList.Select(w => userRepository.FindByIdAsync(w));
@@ -122,24 +133,26 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
             .Where(u => u != null)
             .Select(u => u!.ToDto()) 
             .ToList();
-
-        var responseDto = tournamentUpdated.ToTournamentResponseDetailsDto(validUsers);
-        return Result.Success<TournamentResponseDetailsDto, TournamentsErrors>(responseDto);
+        var owner = await userRepository.FindByIdAsync(tournamentUpdated.Owner);
+        if (owner is null) 
+            return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new UserNotFoundError("owner de torneo no encontrado"));
+        var responseDto = tournamentUpdated.ToTournamentResponseDetailsDto(validUsers,owner.ToDto());
+        return Result.Success<TournamentResponseDetailsDto, DomainErrors>(responseDto);
     }
 
-    public async Task<Result<TournamentResponseDetailsDto, TournamentsErrors>> UnassignWorkerMachine(long tournamentId, string request)
+    public async Task<Result<TournamentResponseDetailsDto, DomainErrors>> UnassignWorkerMachine(long tournamentId, string request)
     {
         logger.LogInformation("Assigning worker machine {Id}", tournamentId);
         var workerUlid= Ulid.TryParse(request, out var ulid) ? ulid : Ulid.Empty;
         if (workerUlid == Ulid.Empty)        {
             logger.LogWarning("Invalid user id {Id}", request);
-            return Result.Failure<TournamentResponseDetailsDto, TournamentsErrors>(new ValidationError("Invalid user id"));
+            return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new ValidationError("Invalid user id"));
         }
         var tournamentUpdated =await repository.RemoveWorker(tournamentId, workerUlid);
         if (tournamentUpdated is null)
         {
             logger.LogWarning("Tournament with id {Id} not found", tournamentId);
-            return Result.Failure<TournamentResponseDetailsDto, TournamentsErrors>(new TournamentNotFoundError());
+            return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new TournamentNotFoundError());
         }
         var users= tournamentUpdated.WorkersList.Select(async w => await userRepository.FindByIdAsync(w)).Where(u => u != null).ToList();
         var userTasks = tournamentUpdated.WorkersList.Select(w => userRepository.FindByIdAsync(w));
@@ -150,8 +163,11 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
             .Select(u => u!.ToDto()) 
             .ToList();
 
-        var responseDto = tournamentUpdated.ToTournamentResponseDetailsDto(validUsers);
-        return Result.Success<TournamentResponseDetailsDto, TournamentsErrors>(responseDto);
+        var owner = await userRepository.FindByIdAsync(tournamentUpdated.Owner);
+        if (owner is null) 
+            return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new UserNotFoundError("owner de torneo no encontrado"));
+        var responseDto = tournamentUpdated.ToTournamentResponseDetailsDto(validUsers,owner.ToDto());
+        return Result.Success<TournamentResponseDetailsDto, DomainErrors>(responseDto);
     }
 
     public async Task<Result<IEnumerable<WorkerMachineAssignmentResponseDto>, TournamentsErrors>> GetAssignedWorkerMachines(long tournamentId)
@@ -181,14 +197,14 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
         return Result.Success<IEnumerable<WorkerMachineAssignmentResponseDto>, TournamentsErrors>(responseDtos);
     }
 
-    public async Task<Result<TournamentResponseDetailsDto, TournamentsErrors>> GetTournamentByName(string name)
+    public async Task<Result<TournamentResponseDetailsDto, DomainErrors>> GetTournamentByName(string name)
     {
         logger.LogInformation("Getting tournament {Id}", name);
         var tournament = await repository.FindByNameAsync(name);
         if (tournament is null)
         {
             logger.LogWarning("Tournament with id {Id} not found", name);
-            return Result.Failure<TournamentResponseDetailsDto, TournamentsErrors>(new TournamentNotFoundError());
+            return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new TournamentNotFoundError());
         }
         var userTasks = tournament.WorkersList.Select(w => userRepository.FindByIdAsync(w));
         var fetchedUsers = await Task.WhenAll(userTasks);
@@ -197,8 +213,29 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
             .Where(u => u != null)
             .Select(u => u!.ToDto()) 
             .ToList();
-
-        var responseDto = tournament.ToTournamentResponseDetailsDto(validUsers);
-        return Result.Success<TournamentResponseDetailsDto, TournamentsErrors>(responseDto);
+        var owner = await userRepository.FindByIdAsync(tournament.Owner);
+        if (owner is null) 
+            return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new UserNotFoundError("owner de torneo no encontrado"));
+        var responseDto = tournament.ToTournamentResponseDetailsDto(validUsers,owner.ToDto());
+        return Result.Success<TournamentResponseDetailsDto, DomainErrors>(responseDto);
     }
+
+    public async Task<Result<TournamentResponseDetailsDto, DomainErrors>> OwnerCreateTournament(TournamentRequestDto request, Ulid ownerId) {
+        var user= await userRepository.FindByIdAsync(ownerId);
+        if (user is null || user.Role!= User.UserRoles.OWNER) 
+            return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new UserNotFoundError("usuario invalido o no encontrado"))
+                .TapError((() => logger.LogInformation("Usuario con id {Id} invalido o no encontrado",ownerId)));
+        var saved = await repository.SaveAsync(request.ToTournaments(ownerId));
+        var userTasks = saved.WorkersList.Select(w => userRepository.FindByIdAsync(w));
+        var fetchedUsers = await Task.WhenAll(userTasks);
+
+        var validUsers = fetchedUsers
+            .Where(u => u != null)
+            .Select(u => u!.ToDto())
+            .ToList();
+
+        var responseDto = saved.ToTournamentResponseDetailsDto(validUsers,user.ToDto());
+        return Result.Success<TournamentResponseDetailsDto, DomainErrors>(responseDto);
+    }
+    
 }

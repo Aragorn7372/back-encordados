@@ -44,15 +44,16 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
             Direction: direction);
         var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
 
-        if (role == Usuarios.Model.User.UserRoles.ADMIN ||
-            role == Usuarios.Model.User.UserRoles.OWNER)
+        if (role == Usuarios.Model.User.UserRoles.ADMIN)
         {
             return Ok(await service.FindAllAsync(filter));
         }
 
         if (role == Usuarios.Model.User.UserRoles.ENCORDER ||
-            role == Usuarios.Model.User.UserRoles.USER)
-        {
+            role == Usuarios.Model.User.UserRoles.USER || role == Usuarios.Model.User.UserRoles.OWNER) {
+            if (role == Usuarios.Model.User.UserRoles.OWNER && tournamentId is null)
+                return Forbid();
+            
             var idClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(idClaim))
             {
@@ -104,7 +105,7 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
     [ProducesResponseType(typeof(PurchasedResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(policy: "RequireAdminRole")]
+    [Authorize(policy: "RequireEncoderRole")]
     public async Task<IActionResult> Create(PurchasedRequestDto request)
     {
         logger.LogInformation("Create purchased {@Request}", request);
@@ -122,7 +123,7 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
     [ProducesResponseType(typeof(PurchasedResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(policy: "RequireAdminRole")]
+    [Authorize(policy: "RequireEncorderRole")]
     public async Task<IActionResult> Update(string id, PurchasedPatchDto request)
     {
         logger.LogInformation("Update purchased with id {Id} {@Request}", id, request);
@@ -147,7 +148,7 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Transactional(typeof(PedidosDbContext))]
-    [Authorize(policy: "RequireUserRole")]
+    [Authorize(policy: "RequireEncorderRole")]
     public async Task<IActionResult> CancelPurchased(string id)
     {
         logger.LogInformation("Cancel purchased with id {Id}", id);
@@ -203,7 +204,7 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(policy: "RequireAdminRole")]
+    [Authorize(policy: "RequireEncorderRole")]
     public async Task<IActionResult> AddLinea(string pedidoId, PedidoLineaRequestDto request)
     {
         logger.LogInformation("Add linea to pedido {PedidoId}", pedidoId);
@@ -225,7 +226,7 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
     [ProducesResponseType(typeof(PedidoLineaResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(policy: "RequireAdminRole")]
+    [Authorize(policy: "RequireEncorderRole")]
     public async Task<IActionResult> UpdateLinea(string lineaId, PedidoLineaPatchDto request)
     {
         logger.LogInformation("Update linea with id {LineaId} {@Request}", lineaId, request);
@@ -249,7 +250,7 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(policy: "RequireUserRole")]
+    [Authorize(policy: "RequireEncorderRole")]
     public async Task<IActionResult> CancelLinea(string lineaId)
     {
         logger.LogInformation("Cancel linea with id {LineaId}", lineaId);

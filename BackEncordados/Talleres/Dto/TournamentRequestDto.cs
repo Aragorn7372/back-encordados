@@ -2,8 +2,7 @@
 
 namespace BackEncordados.Talleres.Dto;
 
-public class TournamentRequestDto
-{
+public class TournamentRequestDto {
     [Required]
     [MaxLength(200)]
     [MinLength(1)]
