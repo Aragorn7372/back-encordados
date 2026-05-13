@@ -19,7 +19,7 @@ public class CuerdasController(ILogger<CuerdasController> logger, ICuerdasServic
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [Authorize(policy: "RequireAdminRole")]
+    [Authorize(policy: "RequireOwnerRole")]
     public async Task<IActionResult> GetAll(
         [FromQuery] long? tournamentId,
         [FromQuery] string sortBy = "id",
@@ -43,7 +43,7 @@ public class CuerdasController(ILogger<CuerdasController> logger, ICuerdasServic
     [ProducesResponseType(typeof(CuerdaResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(policy: "RequireAdminRole")]
+    [Authorize(policy: "RequireOwnerRole")]
     public async Task<IActionResult> GetById(long id) {
         logger.LogInformation("Get cuerda by id {Id}", id);
         return await service.FindByIdAsync(id).Match(
@@ -59,7 +59,7 @@ public class CuerdasController(ILogger<CuerdasController> logger, ICuerdasServic
     [ProducesResponseType(typeof(CuerdaResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(policy: "RequireAdminRole")]
+    [Authorize(policy: "RequireOwnerRole")]
     public async Task<IActionResult> GetByName(string name) {
         logger.LogInformation("Get cuerda by name {Name}", name);
         return await service.FindByNameAsync(name).Match(

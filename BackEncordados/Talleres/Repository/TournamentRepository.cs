@@ -13,7 +13,8 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
         var query = context.Partidos.AsQueryable();
         query = query.Where(x => !x.IsDeleted );
         if(filter.UserId != null) {
-            query = query.Where(x => x.WorkersList.Contains(filter.UserId.Value));
+            query = query.Where(x => x.WorkersList.Contains(filter.UserId.Value)
+            || x.Owner==filter.UserId.Value);
         }
         if (!string.IsNullOrWhiteSpace(filter.Search)) {
             var isId = long.TryParse(filter.Search, out var id) ? id : -1;

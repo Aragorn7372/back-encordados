@@ -16,7 +16,7 @@ public static class TournamentsMapper
                 tournament.Logotype
             );
         }
-        public static TournamentResponseDetailsDto ToTournamentResponseDetailsDto(this Tournaments tournament, List<UserResponseDto> users)
+        public static TournamentResponseDetailsDto ToTournamentResponseDetailsDto(this Tournaments tournament, List<UserResponseDto> users,UserResponseDto owner)
         {
             return new TournamentResponseDetailsDto(
                 tournament.Id,
@@ -24,14 +24,27 @@ public static class TournamentsMapper
                 tournament.StartTournament,
                 tournament.EndTournament,
                 tournament.Logotype,
-                users
+                users,
+                owner
             );
         }
 
-        public static Tournaments ToTournaments(this TournamentRequestDto tournamentRequestDto)
+        public static Tournaments ToTournaments(this TournamentAdminRequestDto tournamentAdminRequestDto)
         {
             return new Tournaments
             {
+                Owner = tournamentAdminRequestDto.OwnerId,
+                Title = tournamentAdminRequestDto.Name,
+                EndTournament = tournamentAdminRequestDto.EndTournament,
+                StartTournament = tournamentAdminRequestDto.StartTournament,
+                Logotype = tournamentAdminRequestDto.Logotype
+            };
+        }
+        public static Tournaments ToTournaments(this TournamentRequestDto tournamentRequestDto, Ulid ownerId)
+        {
+            return new Tournaments
+            {
+                Owner = ownerId,
                 Title = tournamentRequestDto.Name,
                 EndTournament = tournamentRequestDto.EndTournament,
                 StartTournament = tournamentRequestDto.StartTournament,
