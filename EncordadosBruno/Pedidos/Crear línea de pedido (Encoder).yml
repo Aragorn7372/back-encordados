@@ -1,10 +1,10 @@
 info:
-  name: Crear línea de pedido
+  name: Crear línea de pedido (Encoder)
   type: http
-  seq: 12
+  seq: 8
 
 docs: |
-  # Crear Línea de Pedido
+  # Crear Línea de Pedido como Encoder
 
   Añade una nueva línea a un pedido existente.
 
@@ -17,62 +17,51 @@ docs: |
   ## Parameters (Path)
   | Parámetro | Tipo | Descripción |
   |-----------|------|-------------|
-  | `pedidoId` | string (ULID) | ID único del pedido |
+  | `pedidoId` | string | ID del pedido |
 
   ## Body (JSON)
   ```json
   {
-    "RaquetModel": "Wilson Pro Staff",
+    "RaquetModel": "Babolat Pure Drive",
     "Nudos": 2,
-    "DateString": "2026-07-01T00:00:00Z",
+    "DateString": "2026-06-20T00:00:00Z",
     "Logotype": false,
     "Color": "Azul",
     "StringSetup": {
-      "StringV": "Luxilon ALU Power",
-      "TensionV": 28.0,
+      "StringV": "Babolat RPM Blast",
+      "TensionV": 27.0,
       "PreStetchV": 3,
-      "StringH": "Luxilon Big Hitter",
-      "TensionH": 27.0,
+      "StringH": "Babolat Pro",
+      "TensionH": 26.0,
       "PreStetchH": 2
     }
   }
   ```
-
-  ## Campos
-  | Campo | Tipo | Descripción |
-  |-------|------|-------------|
-  | `RaquetModel` | string | Modelo de raqueta (requerido) |
-  | `Nudos` | byte | Número de nudos |
-  | `DateString` | datetime | Fecha de encordado |
-  | `Logotype` | bool | Si lleva logo |
-  | `Color` | string? | Color opcional |
-  | `StringSetup` | object | Configuración de cuerdas |
 
   ## Responses
   - **201 Created**: `PedidoLineaResponseDto` con datos de la línea creada
   - **400 Bad Request**: Datos inválidos
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Encoder
-  - **404 Not Found**: Pedido no encontrado
 
 http:
   method: POST
-  url: "{{api-url}}/api/Purchased/01KR42ME5P1Q2BGWW1DY11Z4TJ/lineas"
+  url: "{{api-url}}/api/Purchased/01ARZ3NDEKTSV4RRFFQ69G1FAV/lineas"
   body:
     type: json
     data: |-
       {
-        "RaquetModel": "Wilson Pro Staff",
+        "RaquetModel": "Babolat Pure Drive",
         "Nudos": 2,
-        "DateString": "2026-07-01T00:00:00Z",
+        "DateString": "2026-06-20T00:00:00Z",
         "Logotype": false,
         "Color": "Azul",
         "StringSetup": {
-          "StringV": "Luxilon ALU Power",
-          "TensionV": 28.0,
+          "StringV": "Babolat RPM Blast",
+          "TensionV": 27.0,
           "PreStetchV": 3,
-          "StringH": "Luxilon Big Hitter",
-          "TensionH": 27.0,
+          "StringH": "Babolat Pro",
+          "TensionH": 26.0,
           "PreStetchH": 2
         }
       }

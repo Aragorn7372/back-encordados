@@ -1,33 +1,33 @@
 info:
-  name: Obtener material por nombre
+  name: Obtener trabajadores de torneo (Owner)
   type: http
-  seq: 3
+  seq: 9
 
 docs: |
-  # Obtener Material por Nombre
+  # Obtener Trabajadores de Torneo como Owner
 
-  Obtiene los detalles de un material específico buscando por nombre/modelo.
+  Obtiene la lista de trabajadores asignados a un torneo.
 
   ## Authorization
   RequireOwnerRole
 
   ## HTTP Method
-  `GET /api/Materials/name/{name}`
+  `GET /api/Tournaments/{id}/workers`
 
   ## Parameters (Path)
   | Parámetro | Tipo | Descripción |
   |-----------|------|-------------|
-  | `name` | string | Nombre o modelo del material |
+  | `id` | long | ID numérico del torneo |
 
   ## Responses
-  - **200 OK**: `MaterialResponseDto` con datos del material
+  - **200 OK**: `List<WorkerMachineAssignmentResponseDto>` con trabajadores asignados
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Owner
-  - **404 Not Found**: Material no encontrado
+  - **404 Not Found**: Torneo no encontrado
 
 http:
   method: GET
-  url: "{{api-url}}/api/Materials/name/Grip"
+  url: "{{api-url}}/api/Tournaments/1/workers"
   auth:
     type: bearer
     token: "{{token_owner}}"

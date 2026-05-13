@@ -1,10 +1,10 @@
 info:
-  name: Actualizar pedido
+  name: Actualizar pedido (Encoder)
   type: http
-  seq: 7
+  seq: 3
 
 docs: |
-  # Actualizar Pedido
+  # Actualizar Pedido como Encoder
 
   Actualiza los datos de un pedido existente.
 
@@ -17,23 +17,18 @@ docs: |
   ## Parameters (Path)
   | Parámetro | Tipo | Descripción |
   |-----------|------|-------------|
-  | `id` | string (ULID) | ID único del pedido |
+  | `id` | string | ID del pedido |
 
-  ## Body (JSON - todos los campos opcionales)
+  ## Body (JSON)
   ```json
   {
+    "PlayerName": "jugador_juan",
+    "AssignedToName": "carlos_encordador_actualizado",
     "Machine": "Máquina Beta-2",
-    "Comments": "Pedido actualizado por encoder",
+    "Comments": "Comentarios actualizados",
     "PayStatus": "PAID"
   }
   ```
-
-  ## Campos Actualizables
-  | Campo | Tipo | Descripción |
-  |-------|------|-------------|
-  | `Machine` | string? | Máquina a usar |
-  | `Comments` | string? | Comentarios del pedido |
-  | `PayStatus` | string? | Estado de pago (PENDING_PAYMENT, PAID, OVERDUE) |
 
   ## Responses
   - **200 OK**: `PurchasedResponseDto` con datos actualizados
@@ -44,13 +39,15 @@ docs: |
 
 http:
   method: PUT
-  url: "{{api-url}}/api/Purchased/01KR42ME5P1Q2BGWW1DY11Z4TJ"
+  url: "{{api-url}}/api/Purchased/01ARZ3NDEKTSV4RRFFQ69G1FAV"
   body:
     type: json
     data: |-
       {
+        "PlayerName": "jugador_juan",
+        "AssignedToName": "carlos_encordador_actualizado",
         "Machine": "Máquina Beta-2",
-        "Comments": "Pedido actualizado por admin",
+        "Comments": "Comentarios actualizados",
         "PayStatus": "PAID"
       }
   auth:

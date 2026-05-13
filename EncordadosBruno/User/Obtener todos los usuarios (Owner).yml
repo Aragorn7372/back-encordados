@@ -1,10 +1,10 @@
 info:
-  name: Obtener todos los usuarios
+  name: Obtener todos los usuarios (Owner)
   type: http
   seq: 3
 
 docs: |
-  # Obtener Todos los Usuarios
+  # Obtener Todos los Usuarios como Owner
 
   Lista usuarios de un torneo específico con soporte para filtros, búsqueda y paginación.
 

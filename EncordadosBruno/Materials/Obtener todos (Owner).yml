@@ -1,10 +1,10 @@
 info:
-  name: Obtener todos los materiales
+  name: Obtener todos los materiales (Owner)
   type: http
   seq: 1
 
 docs: |
-  # Obtener Todos los Materiales
+  # Obtener Todos los Materiales como Owner
 
   Lista materiales con soporte para búsqueda y paginación.
 
@@ -26,13 +26,7 @@ docs: |
   ## Responses
   - **200 OK**: `PageResponseDto<MaterialResponseDto>`
   - **401 Unauthorized**: Token inválido o expirado
-  - **403 Forbidden**: No tiene permisos de Admin
-
-  ## Test Cases
-  - [ ] Listar materiales con paginación por defecto
-  - [ ] Buscar material por nombre/modelo
-  - [ ] Ordenar por diferentes campos
-  - [ ] Intentar sin permisos de Admin (403)
+  - **403 Forbidden**: No tiene permisos de Owner
 
 http:
   method: GET

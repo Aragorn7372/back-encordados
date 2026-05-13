@@ -1,10 +1,10 @@
 info:
-  name: Crear nuevo pedido de encordado
+  name: Crear nuevo pedido (Encoder)
   type: http
   seq: 2
 
 docs: |
-  # Crear Nuevo Pedido
+  # Crear Nuevo Pedido como Encoder
 
   Crea un nuevo pedido de encordado de raqueta.
 
@@ -42,16 +42,6 @@ docs: |
     ]
   }
   ```
-
-  ## Campos Principales
-  | Campo | Tipo | Descripción |
-  |-------|------|-------------|
-  | `TournamentId` | long | ID del torneo asociado |
-  | `PlayerName` | string | Nombre de usuario del jugador |
-  | `AssignedToName` | string | Nombre de usuario del encordador |
-  | `Machine` | string | Máquina a usar |
-  | `PayStatus` | string | Estado de pago (PENDING_PAYMENT, PAID, OVERDUE) |
-  | `Lineas` | array | Array de líneas de pedido (mínimo 1) |
 
   ## Responses
   - **201 Created**: `PurchasedResponseDto` con datos del pedido creado

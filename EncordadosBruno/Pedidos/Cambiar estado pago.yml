@@ -12,7 +12,7 @@ http:
       type: query
   auth:
     type: bearer
-    token: "{{token_admin}}"
+    token: "{{token_encoder}}"
 
 settings:
   encodeUrl: true
@@ -26,7 +26,7 @@ docs: |
   Permite a un encordador cambiar el estado de pago de un pedido.
 
   ## Authorization
-  RequireEcorderRole
+  RequireEncoderRole
 
   ## HTTP Method
   `PATCH /api/Purchased/change-payment-status/{id}?paymentStatus={paymentStatus}`
@@ -44,11 +44,5 @@ docs: |
   ## Responses
   - **200 OK**: `PurchasedResponseDto` con estado de pago actualizado
   - **401 Unauthorized**: Token inválido o expirado
-  - **403 Forbidden**: No tiene permisos de encordador
+  - **403 Forbidden**: No tiene permisos de Encoder
   - **404 Not Found**: Pedido no encontrado
-
-  ## Test Cases
-  - [ ] Cambiar estado de pago a PAID
-  - [ ] Cambiar estado de pago a PENDING_PAYMENT
-  - [ ] Cambiar estado de pago de pedido inexistente (404)
-  - [ ] Intentar sin permisos de encordador (403)
