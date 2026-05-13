@@ -28,15 +28,21 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
         }
         var userTasks = tournament.WorkersList.Select(w => userRepository.FindByIdAsync(w));
         var fetchedUsers = await Task.WhenAll(userTasks);
-
+        
         var validUsers = fetchedUsers
                 .Where(u => u != null)
                 .Select(u => u!.ToDto()) 
             .ToList();
+        var supervisorTasks = tournament.SupervisorList.Select(w => userRepository.FindByIdAsync(w));
+        var fetchedSupervisors = await Task.WhenAll(supervisorTasks);
+        var validSupervisors = fetchedSupervisors
+            .Where(s => s != null)
+            .Select(s => s!.ToDto())
+            .ToList();
         var owner = await userRepository.FindByIdAsync(tournament.Owner);
         if (owner is null) 
             return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new UserNotFoundError("owner de torneo no encontrado"));
-        var responseDto = tournament.ToTournamentResponseDetailsDto(validUsers,owner.ToDto());
+        var responseDto = tournament.ToTournamentResponseDetailsDto(validUsers,owner.ToDto(),validSupervisors);
         return Result.Success<TournamentResponseDetailsDto, DomainErrors>(responseDto);
     }
 
@@ -72,8 +78,13 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
             .Where(u => u != null)
             .Select(u => u!.ToDto())
             .ToList();
-
-        var responseDto = saved.ToTournamentResponseDetailsDto(validUsers,user.ToDto());
+        var supervisorTasks = saved.SupervisorList.Select(w => userRepository.FindByIdAsync(w));
+        var fetchedSupervisors = await Task.WhenAll(supervisorTasks);
+        var validSupervisors = fetchedSupervisors
+            .Where(s => s != null)
+            .Select(s => s!.ToDto())
+            .ToList();
+        var responseDto = saved.ToTournamentResponseDetailsDto(validUsers,user.ToDto(),validSupervisors);
         return Result.Success<TournamentResponseDetailsDto, DomainErrors>(responseDto);
     }
 
@@ -133,10 +144,16 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
             .Where(u => u != null)
             .Select(u => u!.ToDto()) 
             .ToList();
+        var supervisorTasks = tournamentUpdated.SupervisorList.Select(w => userRepository.FindByIdAsync(w));
+        var fetchedSupervisors = await Task.WhenAll(supervisorTasks);
+        var validSupervisors = fetchedSupervisors
+            .Where(s => s != null)
+            .Select(s => s!.ToDto())
+            .ToList();
         var owner = await userRepository.FindByIdAsync(tournamentUpdated.Owner);
         if (owner is null) 
             return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new UserNotFoundError("owner de torneo no encontrado"));
-        var responseDto = tournamentUpdated.ToTournamentResponseDetailsDto(validUsers,owner.ToDto());
+        var responseDto = tournamentUpdated.ToTournamentResponseDetailsDto(validUsers,owner.ToDto(),validSupervisors);
         return Result.Success<TournamentResponseDetailsDto, DomainErrors>(responseDto);
     }
 
@@ -162,11 +179,16 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
             .Where(u => u != null)
             .Select(u => u!.ToDto()) 
             .ToList();
-
+        var supervisorTasks = tournamentUpdated.SupervisorList.Select(w => userRepository.FindByIdAsync(w));
+        var fetchedSupervisors = await Task.WhenAll(supervisorTasks);
+        var validSupervisors = fetchedSupervisors
+            .Where(s => s != null)
+            .Select(s => s!.ToDto())
+            .ToList();
         var owner = await userRepository.FindByIdAsync(tournamentUpdated.Owner);
         if (owner is null) 
             return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new UserNotFoundError("owner de torneo no encontrado"));
-        var responseDto = tournamentUpdated.ToTournamentResponseDetailsDto(validUsers,owner.ToDto());
+        var responseDto = tournamentUpdated.ToTournamentResponseDetailsDto(validUsers,owner.ToDto(),validSupervisors);
         return Result.Success<TournamentResponseDetailsDto, DomainErrors>(responseDto);
     }
 
@@ -213,10 +235,16 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
             .Where(u => u != null)
             .Select(u => u!.ToDto()) 
             .ToList();
+        var supervisorTasks = tournament.SupervisorList.Select(w => userRepository.FindByIdAsync(w));
+        var fetchedSupervisors = await Task.WhenAll(supervisorTasks);
+        var validSupervisors = fetchedSupervisors
+            .Where(s => s != null)
+            .Select(s => s!.ToDto())
+            .ToList();
         var owner = await userRepository.FindByIdAsync(tournament.Owner);
         if (owner is null) 
             return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new UserNotFoundError("owner de torneo no encontrado"));
-        var responseDto = tournament.ToTournamentResponseDetailsDto(validUsers,owner.ToDto());
+        var responseDto = tournament.ToTournamentResponseDetailsDto(validUsers,owner.ToDto(),validSupervisors);
         return Result.Success<TournamentResponseDetailsDto, DomainErrors>(responseDto);
     }
 
@@ -233,9 +261,82 @@ public class TournamentService(ILogger<TournamentService> logger,ITournamentRepo
             .Where(u => u != null)
             .Select(u => u!.ToDto())
             .ToList();
-
-        var responseDto = saved.ToTournamentResponseDetailsDto(validUsers,user.ToDto());
+        var supervisorTasks = saved.SupervisorList.Select(w => userRepository.FindByIdAsync(w));
+        var fetchedSupervisors = await Task.WhenAll(supervisorTasks);
+        var validSupervisors = fetchedSupervisors
+            .Where(s => s != null)
+            .Select(s => s!.ToDto())
+            .ToList();
+        var responseDto = saved.ToTournamentResponseDetailsDto(validUsers,user.ToDto(),validSupervisors);
         return Result.Success<TournamentResponseDetailsDto, DomainErrors>(responseDto);
     }
-    
+
+    public async Task<Result<TournamentResponseDetailsDto, DomainErrors>> AssingSupervisor(SupervisorAsignmentRequestDto request) {
+        
+        logger.LogInformation("Assigning worker machine {Id}", request.TournamentId);
+        var supervisorId= Ulid.TryParse(request.SupervisorId, out var ulid) ? ulid : Ulid.Empty;
+        if (supervisorId == Ulid.Empty)        {
+            logger.LogWarning("Invalid user id {Id}", request.SupervisorId);
+            return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new ValidationError("Invalid user id"));
+        }
+        var tournamentUpdated =await repository.AsignSupervisor(request.TournamentId, supervisorId);
+        if (tournamentUpdated is null)
+        {
+            logger.LogWarning("Tournament with id {Id} not found", request.SupervisorId);
+            return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new TournamentNotFoundError());
+        }
+        var users= tournamentUpdated.WorkersList.Select(async w => await userRepository.FindByIdAsync(w)).Where(u => u != null).ToList();
+        var userTasks = tournamentUpdated.WorkersList.Select(w => userRepository.FindByIdAsync(w));
+        var fetchedUsers = await Task.WhenAll(userTasks);
+
+        var validUsers = fetchedUsers
+            .Where(u => u != null)
+            .Select(u => u!.ToDto()) 
+            .ToList();
+        var supervisorTasks = tournamentUpdated.SupervisorList.Select(w => userRepository.FindByIdAsync(w));
+        var fetchedSupervisors = await Task.WhenAll(supervisorTasks);
+        var validSupervisors = fetchedSupervisors
+            .Where(s => s != null)
+            .Select(s => s!.ToDto())
+            .ToList();
+        var owner = await userRepository.FindByIdAsync(tournamentUpdated.Owner);
+        if (owner is null) 
+            return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new UserNotFoundError("owner de torneo no encontrado"));
+        var responseDto = tournamentUpdated.ToTournamentResponseDetailsDto(validUsers,owner.ToDto(),validSupervisors);
+        return Result.Success<TournamentResponseDetailsDto, DomainErrors>(responseDto);
+    }
+
+    public async Task<Result<TournamentResponseDetailsDto, DomainErrors>> AnassingSupervisor(SupervisorAsignmentRequestDto request) {
+        logger.LogInformation("Assigning worker machine {Id}", request.TournamentId);
+        var supervisorId= Ulid.TryParse(request.SupervisorId, out var ulid) ? ulid : Ulid.Empty;
+        if (supervisorId == Ulid.Empty)        {
+            logger.LogWarning("Invalid user id {Id}", request);
+            return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new ValidationError("Invalid user id"));
+        }
+        var tournamentUpdated =await repository.RemoveSupervisor(request.TournamentId, supervisorId);
+        if (tournamentUpdated is null)
+        {
+            logger.LogWarning("Tournament with id {Id} not found", request.TournamentId);
+            return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new TournamentNotFoundError());
+        }
+        var users= tournamentUpdated.WorkersList.Select(async w => await userRepository.FindByIdAsync(w)).Where(u => u != null).ToList();
+        var userTasks = tournamentUpdated.WorkersList.Select(w => userRepository.FindByIdAsync(w));
+        var fetchedUsers = await Task.WhenAll(userTasks);
+
+        var validUsers = fetchedUsers
+            .Where(u => u != null)
+            .Select(u => u!.ToDto()) 
+            .ToList();
+        var supervisorTasks = tournamentUpdated.SupervisorList.Select(w => userRepository.FindByIdAsync(w));
+        var fetchedSupervisors = await Task.WhenAll(supervisorTasks);
+        var validSupervisors = fetchedSupervisors
+            .Where(s => s != null)
+            .Select(s => s!.ToDto())
+            .ToList();
+        var owner = await userRepository.FindByIdAsync(tournamentUpdated.Owner);
+        if (owner is null) 
+            return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new UserNotFoundError("owner de torneo no encontrado"));
+        var responseDto = tournamentUpdated.ToTournamentResponseDetailsDto(validUsers,owner.ToDto(),validSupervisors);
+        return Result.Success<TournamentResponseDetailsDto, DomainErrors>(responseDto);
+    }
 }
