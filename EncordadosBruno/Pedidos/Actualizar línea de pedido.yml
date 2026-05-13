@@ -9,7 +9,7 @@ docs: |
   Actualiza los datos de una línea de pedido existente.
 
   ## Authorization
-  RequireAdminRole
+  RequireEncoderRole
 
   ## HTTP Method
   `PUT /api/Purchased/lineas/{lineaId}`
@@ -49,14 +49,8 @@ docs: |
   - **200 OK**: `PedidoLineaResponseDto` con datos actualizados
   - **400 Bad Request**: Datos inválidos
   - **401 Unauthorized**: Token inválido o expirado
-  - **403 Forbidden**: No tiene permisos de Admin
+  - **403 Forbidden**: No tiene permisos de Encoder
   - **404 Not Found**: Línea no encontrada
-
-  ## Test Cases
-  - [ ] Actualizar modelo de raqueta
-  - [ ] Actualizar estado de línea
-  - [ ] Actualizar línea inexistente (404)
-  - [ ] Intentar sin permisos de Admin (403)
 
 http:
   method: PUT
@@ -78,7 +72,7 @@ http:
       }
   auth:
     type: bearer
-    token: "{{token_admin}}"
+    token: "{{token_encoder}}"
 
 settings:
   encodeUrl: true

@@ -9,7 +9,7 @@ docs: |
   Lista materiales con soporte para búsqueda y paginación.
 
   ## Authorization
-  RequireAdminRole
+  RequireOwnerRole
 
   ## HTTP Method
   `GET /api/Materials`
@@ -39,7 +39,7 @@ http:
   url: "{{api-url}}/api/Materials?page=0&size=10&sortBy=createdAt&direction=desc"
   auth:
     type: bearer
-    token: "{{token_admin}}"
+    token: "{{token_owner}}"
 
 settings:
   encodeUrl: true

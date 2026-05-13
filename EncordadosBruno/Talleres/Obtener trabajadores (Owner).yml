@@ -1,0 +1,39 @@
+info:
+  name: Obtener trabajadores de torneo (Owner)
+  type: http
+  seq: 9
+
+docs: |
+  # Obtener Trabajadores de Torneo como Owner
+
+  Obtiene la lista de trabajadores asignados a un torneo.
+
+  ## Authorization
+  RequireOwnerRole
+
+  ## HTTP Method
+  `GET /api/Tournaments/{id}/workers`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | long | ID numérico del torneo |
+
+  ## Responses
+  - **200 OK**: `List<WorkerMachineAssignmentResponseDto>` con trabajadores asignados
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Owner
+  - **404 Not Found**: Torneo no encontrado
+
+http:
+  method: GET
+  url: "{{api-url}}/api/Tournaments/1/workers"
+  auth:
+    type: bearer
+    token: "{{token_owner}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

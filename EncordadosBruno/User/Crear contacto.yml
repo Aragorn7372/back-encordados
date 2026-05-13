@@ -43,7 +43,7 @@ http:
     token: "{{token_encorder_carlos}}"
   body:
     type: json
-    json: |
+    data: |
       {
         "name": "Contacto Test",
         "email": "contacto@test.com",

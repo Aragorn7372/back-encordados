@@ -9,7 +9,7 @@ docs: |
   Añade una nueva línea a un pedido existente.
 
   ## Authorization
-  RequireAdminRole
+  RequireEncoderRole
 
   ## HTTP Method
   `POST /api/Purchased/{pedidoId}/lineas`
@@ -52,13 +52,8 @@ docs: |
   - **201 Created**: `PedidoLineaResponseDto` con datos de la línea creada
   - **400 Bad Request**: Datos inválidos
   - **401 Unauthorized**: Token inválido o expirado
-  - **403 Forbidden**: No tiene permisos de Admin
+  - **403 Forbidden**: No tiene permisos de Encoder
   - **404 Not Found**: Pedido no encontrado
-
-  ## Test Cases
-  - [ ] Crear línea con todos los campos
-  - [ ] Crear línea con pedido inexistente (404)
-  - [ ] Intentar sin permisos de Admin (403)
 
 http:
   method: POST
@@ -83,7 +78,7 @@ http:
       }
   auth:
     type: bearer
-    token: "{{token_admin}}"
+    token: "{{token_encoder}}"
 
 settings:
   encodeUrl: true

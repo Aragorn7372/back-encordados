@@ -19,7 +19,7 @@ public class CuerdasController(ILogger<CuerdasController> logger, ICuerdasServic
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [Authorize(policy: "RequireOwnerRole")]
+    [Authorize(policy: "RequireEncorderRole")]
     public async Task<IActionResult> GetAll(
         [FromQuery] long? tournamentId,
         [FromQuery] string sortBy = "id",
