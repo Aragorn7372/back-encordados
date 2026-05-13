@@ -1,0 +1,39 @@
+info:
+  name: Cancelar pedido (Encoder)
+  type: http
+  seq: 6
+
+docs: |
+  # Cancelar Pedido como Encoder
+
+  Cancela un pedido existente.
+
+  ## Authorization
+  RequireEncoderRole
+
+  ## HTTP Method
+  `DELETE /api/Purchased/{id}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | string | ID del pedido |
+
+  ## Responses
+  - **204 No Content**: Pedido cancelado exitosamente
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Encoder
+  - **404 Not Found**: Pedido no encontrado
+
+http:
+  method: DELETE
+  url: "{{api-url}}/api/Purchased/01ARZ3NDEKTSV4RRFFQ69G1FAV"
+  auth:
+    type: bearer
+    token: "{{token_encoder}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

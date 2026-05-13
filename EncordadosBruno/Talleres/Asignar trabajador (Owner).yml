@@ -1,0 +1,61 @@
+info:
+  name: Asignar trabajador a torneo (Owner)
+  type: http
+  seq: 7
+
+docs: |
+  # Asignar Trabajador a Torneo como Owner
+
+  Asigna un trabajador (encordador) y su máquina a un torneo.
+
+  ## Authorization
+  RequireOwnerRole
+
+  ## HTTP Method
+  `PATCH /api/Tournaments/add-worker/{id}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | long | ID numérico del torneo |
+
+  ## Body (JSON)
+  ```json
+  {
+    "UserId": "{{user_id_carlos}}",
+    "MachineName": "Máquina Alpha-1"
+  }
+  ```
+
+  ## Campos
+  | Campo | Tipo | Descripción |
+  |-------|------|-------------|
+  | `UserId` | ULID | ID del usuario trabajador/encordador |
+  | `MachineName` | string | Nombre de la máquina asignada |
+
+  ## Responses
+  - **200 OK**: `TournamentResponseDto` con trabajador asignado
+  - **400 Bad Request**: Datos inválidos
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Owner
+  - **404 Not Found**: Torneo o usuario no encontrado
+
+http:
+  method: PATCH
+  url: "{{api-url}}/api/Tournaments/add-worker/1"
+  body:
+    type: json
+    data: |-
+      {
+        "UserId": "{{user_id_carlos}}",
+        "MachineName": "Máquina Alpha-1"
+      }
+  auth:
+    type: bearer
+    token: "{{token_owner}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,42 @@
+info:
+  name: Obtener todas las cuerdas (Owner)
+  type: http
+  seq: 1
+
+docs: |
+  # Obtener Todas las Cuerdas como Owner
+
+  Lista cuerdas con soporte para búsqueda y paginación.
+
+  ## Authorization
+  RequireOwnerRole
+
+  ## HTTP Method
+  `GET /api/Cuerdas`
+
+  ## Parameters (Query)
+  | Parámetro | Tipo | Default | Descripción |
+  |-----------|------|---------|-------------|
+  | `search` | string | "" | Búsqueda por nombre |
+  | `page` | int | 0 | Número de página |
+  | `size` | int | 10 | Tamaño de página |
+  | `sortBy` | string | "id" | Campo de ordenamiento |
+  | `direction` | string | "asc" | Dirección (asc/desc) |
+
+  ## Responses
+  - **200 OK**: `PageResponseDto<CuerdaResponseDto>`
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Owner
+
+http:
+  method: GET
+  url: "{{api-url}}/api/Cuerdas?page=0&size=10&sortBy=createdAt&direction=desc"
+  auth:
+    type: bearer
+    token: "{{token_owner}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -10,24 +10,20 @@ docs: |
   luego lista los encordadores del torneo 1 para verificar que aparece.
 
   ## Authorization
-  RequireEncoderRole
+  RequireOwnerRole
 
   ## HTTP Method
   `POST /api/User/create-encoder` -> `GET /api/User/encorders/1`
-
-  ## Test Cases
-  - [ ] Crear encordador exitosamente
-  - [ ] Listar encordadores y verificar que Juan aparece
 
 http:
   method: POST
   url: "{{api-url}}/api/User/create-encoder"
   auth:
     type: bearer
-    token: "{{token_admin}}"
+    token: "{{token_owner}}"
   body:
     type: json
-    json: |
+    data: |
       "01KR424NQJR7CEHQW4STCQ3GGE"
 
 settings:

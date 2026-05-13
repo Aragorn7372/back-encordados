@@ -255,7 +255,7 @@ public class UserController(ILogger<UserController> logger, IUserService service
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(Policy = "RequireEncoderRole")]
+    [Authorize(Policy = "RequireEncorderRole")]
     public async Task<IActionResult> CreateContact([FromBody] ContactoPostRequestDto request)
     {
         return await service.CreateContacto(request).Match(

@@ -9,7 +9,7 @@ docs: |
   Actualiza los datos de un pedido existente.
 
   ## Authorization
-  RequireAdminRole
+  RequireEncoderRole
 
   ## HTTP Method
   `PUT /api/Purchased/{id}`
@@ -23,7 +23,7 @@ docs: |
   ```json
   {
     "Machine": "Máquina Beta-2",
-    "Comments": "Pedido actualizado por admin",
+    "Comments": "Pedido actualizado por encoder",
     "PayStatus": "PAID"
   }
   ```
@@ -39,15 +39,8 @@ docs: |
   - **200 OK**: `PurchasedResponseDto` con datos actualizados
   - **400 Bad Request**: Datos inválidos
   - **401 Unauthorized**: Token inválido o expirado
-  - **403 Forbidden**: No tiene permisos de Admin
+  - **403 Forbidden**: No tiene permisos de Encoder
   - **404 Not Found**: Pedido no encontrado
-
-  ## Test Cases
-  - [ ] Actualizar máquina del pedido
-  - [ ] Actualizar comentarios del pedido
-  - [ ] Actualizar estado de pago
-  - [ ] Intentar actualizar pedido inexistente (404)
-  - [ ] Intentar sin permisos de Admin (403)
 
 http:
   method: PUT
@@ -62,7 +55,7 @@ http:
       }
   auth:
     type: bearer
-    token: "{{token_admin}}"
+    token: "{{token_encoder}}"
 
 settings:
   encodeUrl: true

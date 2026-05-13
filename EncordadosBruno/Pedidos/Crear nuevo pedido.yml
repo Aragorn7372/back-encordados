@@ -9,7 +9,7 @@ docs: |
   Crea un nuevo pedido de encordado de raqueta.
 
   ## Authorization
-  RequireAdminRole
+  RequireEncoderRole
 
   ## HTTP Method
   `POST /api/Purchased`
@@ -57,13 +57,7 @@ docs: |
   - **201 Created**: `PurchasedResponseDto` con datos del pedido creado
   - **400 Bad Request**: Datos inválidos o sin líneas
   - **401 Unauthorized**: Token inválido o expirado
-  - **403 Forbidden**: No tiene permisos de Admin
-
-  ## Test Cases
-  - [ ] Crear pedido con línea válida
-  - [ ] Crear pedido sin líneas (400)
-  - [ ] Crear pedido con player inexistente (400)
-  - [ ] Intentar sin permisos de Admin (403)
+  - **403 Forbidden**: No tiene permisos de Encoder
 
 http:
   method: POST
@@ -98,7 +92,7 @@ http:
       }
   auth:
     type: bearer
-    token: "{{token_admin}}"
+    token: "{{token_encoder}}"
 
 settings:
   encodeUrl: true

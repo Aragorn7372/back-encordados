@@ -105,7 +105,7 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
     [ProducesResponseType(typeof(PurchasedResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(policy: "RequireEncoderRole")]
+    [Authorize(policy: "RequireEncorderRole")]
     public async Task<IActionResult> Create(PurchasedRequestDto request)
     {
         logger.LogInformation("Create purchased {@Request}", request);
@@ -180,7 +180,7 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
     [ProducesResponseType(typeof(PurchasedResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(policy: "RequireEcorderRole")]
+    [Authorize(policy: "RequireEncorderRole")]
     public async Task<IActionResult> ChangePaymentStatusPurchased(string id, [FromQuery] string paymentStatus)
     {
         logger.LogInformation("Change payment status purchased with id {Id} to payment status {PaymentStatus}", id, paymentStatus);

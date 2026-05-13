@@ -9,23 +9,20 @@ docs: |
   Intenta crear un encordador con un ID de usuario inexistente para verificar error 404.
 
   ## Authorization
-  RequireEncoderRole
+  RequireOwnerRole
 
   ## HTTP Method
   `POST /api/User/create-encoder`
-
-  ## Test Cases
-  - [ ] Crear encordador con usuario inexistente (404)
 
 http:
   method: POST
   url: "{{api-url}}/api/User/create-encoder"
   auth:
     type: bearer
-    token: "{{token_admin}}"
+    token: "{{token_owner}}"
   body:
     type: json
-    json: |
+    data: |
       "01KR424NQJR7CEHQW4STCQ3XXX"
 
 settings:

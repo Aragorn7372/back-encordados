@@ -4,3 +4,7 @@ variables:
     value: http://localhost:5032
   - name: token
     value: ""
+  - name: token_owner
+    value: ""
+  - name: token_encoder
+    value: ""

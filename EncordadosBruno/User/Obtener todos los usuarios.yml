@@ -9,7 +9,7 @@ docs: |
   Lista usuarios de un torneo específico con soporte para filtros, búsqueda y paginación.
 
   ## Authorization
-  RequireAdminRole
+  RequireOwnerRole
 
   ## HTTP Method
   `GET /api/User?tournamentId={tournamentId}`
@@ -29,21 +29,14 @@ docs: |
   ## Responses
   - **200 OK**: `PageResponseDto<UserWithIdDto>` con campos: userId, username, imageUrl, name
   - **401 Unauthorized**: Token inválido o expirado
-  - **403 Forbidden**: No tiene permisos de Admin
-
-  ## Test Cases
-  - [ ] Listar usuarios de torneo 1 con paginación por defecto
-  - [ ] Filtrar solo usuarios (findUsers=true)
-  - [ ] Buscar por nombre/username
-  - [ ] Ordenar por diferentes campos
-  - [ ] Verificar paginación (page, size)
+  - **403 Forbidden**: No tiene permisos de Owner
 
 http:
   method: GET
   url: "{{api-url}}/api/User?tournamentId=1&findUsers=true&page=0&size=10&sortBy=createdAt&direction=desc"
   auth:
     type: bearer
-    token: "{{token_admin}}"
+    token: "{{token_owner}}"
 
 settings:
   encodeUrl: true
