@@ -3,6 +3,7 @@
 public record FilterUserDto(
     bool? FindUsers,
     bool? FindEncorders,
+    bool? FindSupervisors,
     long? TournamentId,
     string Search,
     int Page = 0,

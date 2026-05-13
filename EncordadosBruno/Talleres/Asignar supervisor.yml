@@ -1,0 +1,56 @@
+info:
+  name: Asignar supervisor a torneo
+  type: http
+  seq: 1
+
+docs: |
+  # Asignar Supervisor a Torneo
+
+  Asigna un supervisor a un torneo existente.
+
+  ## Authorization
+  RequireOwnerRole
+
+  ## HTTP Method
+  `PATCH /api/Tournaments/assign-supervisor`
+
+  ## Body (JSON)
+  ```json
+  {
+    "TournamentId": 1,
+    "SupervisorId": "{{supervisor_id_luis}}"
+  }
+  ```
+
+  ## Campos
+  | Campo | Tipo | Descripción |
+  |-------|------|-------------|
+  | `TournamentId` | long | ID numérico del torneo |
+  | `SupervisorId` | ULID | ID del usuario supervisor |
+
+  ## Responses
+  - **200 OK**: `TournamentResponseDetailsDto` con supervisor asignado
+  - **400 Bad Request**: Datos inválidos
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Owner
+  - **404 Not Found**: Torneo o supervisor no encontrado
+
+http:
+  method: PATCH
+  url: "{{api-url}}/api/Tournaments/assign-supervisor"
+  body:
+    type: json
+    data: |-
+      {
+        "TournamentId": 1,
+        "SupervisorId": "{{supervisor_id_luis}}"
+      }
+  auth:
+    type: bearer
+    token: "{{token_owner}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

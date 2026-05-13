@@ -57,6 +57,6 @@ public class User : ITimestamped
         public const string OWNER = "OWNER";
         
         public const string ENCORDER = "ENCORDER";
-        
+        public const string SUPERVISOR = "SUPERVISOR";
     }
 }

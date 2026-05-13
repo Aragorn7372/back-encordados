@@ -1,0 +1,42 @@
+info:
+  name: Obtener supervisores
+  type: http
+  seq: 1
+
+docs: |
+  # Obtener Supervisores
+
+  Obtiene la lista de todos los usuarios con rol SUPERVISOR.
+
+  ## Authorization
+  RequireOwnerRole
+
+  ## HTTP Method
+  `GET /api/User/supervisors`
+
+  ## Query Parameters
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `search` | string | Búsqueda por nombre/email (opcional) |
+  | `page` | int | Número de página (default: 0) |
+  | `size` | int | Tamaño de página (default: 10) |
+  | `sortBy` | string | Campo de ordenación (default: "id") |
+  | `direction` | string | Dirección: "asc" o "desc" |
+
+  ## Responses
+  - **200 OK**: Lista paginada de supervisores
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Owner
+
+http:
+  method: GET
+  url: "{{api-url}}/api/User/supervisors?page=0&size=10"
+  auth:
+    type: bearer
+    token: "{{token_owner}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

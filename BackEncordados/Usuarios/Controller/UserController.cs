@@ -22,6 +22,7 @@ public class UserController(ILogger<UserController> logger, IUserService service
         [FromQuery] long? tournamentId,
         [FromQuery] bool? findUsers = null,
         [FromQuery] bool? findEncorders = null,
+        [FromQuery] bool? findSupervisors = null,
         [FromQuery] string sortBy = "id",
         [FromQuery] int page = 0,
         [FromQuery] int size = 10,
@@ -31,6 +32,7 @@ public class UserController(ILogger<UserController> logger, IUserService service
         var filter = new FilterUserDto(
             FindUsers: findUsers,
             FindEncorders: findEncorders,
+            FindSupervisors: findSupervisors,
             TournamentId: tournamentId,
             Search: search,
             SortBy: sortBy,
@@ -40,6 +42,31 @@ public class UserController(ILogger<UserController> logger, IUserService service
 
         var result = await service.GetAllUsersAsync(filter);
         return Ok(result);
+    }
+
+    [HttpGet("supervisors")]
+    [ProducesResponseType(typeof(PageResponseDto<UserWithIdDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize(Policy = "RequireOwnerRole")]
+    public async Task<IActionResult> GetSupervisors(
+        [FromQuery] string sortBy = "id",
+        [FromQuery] int page = 0,
+        [FromQuery] int size = 10,
+        [FromQuery] string direction = "asc",
+        [FromQuery] string search = "") {
+            var filter = new FilterUserDto(
+                FindUsers: null,
+                TournamentId: null,
+                FindEncorders: null,
+                FindSupervisors: true,
+                Search: search,
+                SortBy: sortBy,
+                Page: page,
+                Size: size,
+                Direction: direction);
+
+            var result = await service.GetAllUsersAsync(filter);
+            return Ok(result);
     }
 
     [HttpGet("encorders")]
@@ -57,6 +84,7 @@ public class UserController(ILogger<UserController> logger, IUserService service
             FindUsers: null,
             TournamentId: null,
             FindEncorders: true,
+            FindSupervisors: null,
             Search: search,
             SortBy: sortBy,
             Page: page,
@@ -82,6 +110,7 @@ public class UserController(ILogger<UserController> logger, IUserService service
         var filter = new FilterUserDto(
             FindUsers: true,
             FindEncorders: null,
+            FindSupervisors: null,
             TournamentId: tournament,
             Search: search,
             SortBy: sortBy,

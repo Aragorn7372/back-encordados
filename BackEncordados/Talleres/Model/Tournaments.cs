@@ -18,6 +18,7 @@ public record Tournaments: ITimestamped
 
     public string Logotype { get; set; } = string.Empty;
     public List<Ulid> WorkersList {get; set;} = new ();
+    public List<Ulid> SupervisorList { get; set; } = new();
     public List<WorkerMachineAssignment> WorkerMachineAssignments { get; set; } = new ();
     public bool IsDeleted { get; set; }=false;
 };

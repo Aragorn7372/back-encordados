@@ -73,9 +73,9 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
     [ProducesResponseType(typeof(PageResponseDto<TournamentResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(Policy = "RequireEncorderRole")]
+    [Authorize(Policy = "RequireSupervisorRole")]
     public async Task<IActionResult> GetTournaments(
-        [FromQuery] string search,
+        [FromQuery] string search="",
         [FromQuery] int page = 0,
         [FromQuery] int pageSize = 10,
         [FromQuery] string sortBy = "name",
@@ -125,7 +125,7 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
      }
 
     [HttpPatch("add-worker/{id:long}")]
-    [ProducesResponseType(typeof(TournamentResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(TournamentResponseDetailsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -145,7 +145,7 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
         
     }
     [HttpPatch("remove-worker/{id:long}")]
-    [ProducesResponseType(typeof(TournamentResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(TournamentResponseDetailsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -179,7 +179,7 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
             });
      }
     [HttpPost("owner-create")]
-    [ProducesResponseType(typeof(TournamentResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(TournamentResponseDetailsDto), StatusCodes.Status201Created)]
     [ProducesResponseType( StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -199,5 +199,44 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
                 _ => StatusCode(500, "An unexpected error occurred.")
             });
     }
+
+    [HttpPatch("assign-supervisor")]
+    [ProducesResponseType(typeof(TournamentResponseDetailsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize(Policy = "RequireOwnerRole")]
+    public async Task<IActionResult> AssignSupervisorToTournament(
+        [FromBody] SupervisorAsignmentRequestDto request) {
+        logger.LogInformation("Received request to assign supervisor to tournament: {@Request}", request);
+        return await tournamentsService.AssingSupervisor(request).Match(
+            success => Ok(success),
+            error => error switch {
+                TournamentNotFoundError => NotFound(error.Error),
+                UserNotFoundError => NotFound(error.Error),
+                ValidationError => BadRequest(error.Error),
+                _ => StatusCode(500, "An unexpected error occurred.")
+            });
+    }
+    
+    [HttpPatch("remove-supervisor")]
+    [ProducesResponseType(typeof(TournamentResponseDetailsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize(Policy = "RequireOwnerRole")]
+    public async Task<IActionResult> RemoveSupervisorFromTournament(
+        [FromBody] SupervisorAsignmentRequestDto request) {
+        logger.LogInformation("Received request to remove supervisor from tournament: {@Request}", request);
+        return await tournamentsService.AnassingSupervisor(request).Match(
+            success => Ok(success),
+            error => error switch {
+                TournamentNotFoundError => NotFound(error.Error),
+                UserNotFoundError => NotFound(error.Error),
+                ValidationError => BadRequest(error.Error),
+                _ => StatusCode(500, "An unexpected error occurred.")
+            });
+     }
+    
 
 }

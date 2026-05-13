@@ -3,6 +3,26 @@ info:
   type: http
   seq: 6
 
+http:
+  method: GET
+  url: "{{api-url}}/api/User/users/1?page=0&size=10"
+  params:
+    - name: page
+      value: "0"
+      type: query
+    - name: size
+      value: "10"
+      type: query
+  auth:
+    type: bearer
+    token: "{{token_encorder_carlos}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
 docs: |
   # Listar usuarios con búsqueda
 
@@ -18,16 +38,3 @@ docs: |
   - [ ] Buscar por nombre parcial "Juan"
   - [ ] Buscar por username "jugador"
   - [ ] Buscar sin resultados
-
-http:
-  method: GET
-  url: "{{api-url}}/api/User?tournamentId=1&search=Juan&page=0&size=10"
-  auth:
-    type: bearer
-    token: "{{token_admin}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5
