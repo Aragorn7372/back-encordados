@@ -24,6 +24,9 @@ public class PurchasedRequestDto
 
     [Required(ErrorMessage = "El estado de pago es obligatorio")]
     public string PayStatus { get; init; } = string.Empty;
+    [Required]
+    [Range(0.01, double.MaxValue, ErrorMessage = "El precio debe ser un número positivo")]
+    public double Price { get; set; } 
 
     [Required(ErrorMessage = "Al menos una línea de pedido es obligatoria")]
     [MinLength(1, ErrorMessage = "Debe haber al menos una línea de pedido")]

@@ -10,6 +10,7 @@ public class Pedidos: ITimestamped
     public Ulid AssignedTo { get; set; }
     public string Machine { get; set; } = string.Empty;
     public string Comments { get; set; } = string.Empty;
+    public double Price { get; set; }
     public PaymentStatus PayStatus { get; set; } = PaymentStatus.PENDING_PAYMENT;
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

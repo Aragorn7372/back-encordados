@@ -12,17 +12,17 @@ docs: |
   RequireAdminRole
 
   ## HTTP Method
-  `POST /api/User/{id}/roles?role={roleName}`
+  `POST /api/User/{id}/roles`
 
   ## Parameters (Path)
   | Parámetro | Tipo | Descripción |
   |-----------|------|-------------|
   | `id` | ULID | ID único del usuario |
 
-  ## Parameters (Query)
-  | Parámetro | Tipo | Descripción |
-  |-----------|------|-------------|
-  | `role` | string | Nombre del rol a asignar (ADMIN, USER, ENCORDER) |
+  ## Body (JSON)
+  ```json
+  "ADMIN"
+  ```
 
   ## Responses
   - **204 No Content**: Rol asignado exitosamente
@@ -42,10 +42,13 @@ docs: |
 
 http:
   method: POST
-  url: "{{api-url}}/api/User/{{user_id_juan}}/roles?role=ADMIN"
+  url: "{{api-url}}/api/User/{{user_id_juan}}/roles"
   auth:
     type: bearer
     token: "{{token_admin}}"
+  body:
+    mode: json
+    json: "ADMIN"
 
 settings:
   encodeUrl: true

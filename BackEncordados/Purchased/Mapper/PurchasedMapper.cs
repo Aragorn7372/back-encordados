@@ -34,6 +34,7 @@ public static class PurchasedMapper
             PayStatus: pedido.PayStatus.ToString(),
             CreatedAt: pedido.CreatedAt,
             UpdatedAt: pedido.UpdatedAt,
+            Price: pedido.Price,
             Lineas: pedido.Lineas.Select(l => l.ToDto()).ToList()
         );
     }
@@ -51,6 +52,7 @@ public static class PurchasedMapper
             PayStatus = Enum.Parse<PaymentStatus>(dto.PayStatus, true),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
+            Price = dto.Price,
             Lineas = new List<PedidoLinea>()
         };
 
