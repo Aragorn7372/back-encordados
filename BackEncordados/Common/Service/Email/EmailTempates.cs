@@ -1,13 +1,9 @@
 ﻿namespace BackEncordados.Common.Service.Email;
 
-/// <summary>
-/// Plantillas base para emails de la tienda.
-/// </summary>
+
 public static class EmailTemplates
 {
-    /// <summary>
-    /// Crea el HTML base para un email de la tienda.
-    /// </summary>
+
     public static string CreateBase(string title, string content)
     {
         return $@"<!DOCTYPE html>
@@ -45,9 +41,7 @@ public static class EmailTemplates
 </html>";
     }
 
-    /// <summary>
-    /// Genera el contenido para email de nuevo producto.
-    /// </summary>
+
     public static string PedidoTerminado(string nombre, double precio, string category, long id)
     {
         return $@"

@@ -14,6 +14,5 @@ public class TournamentAdminRequestDto
     public DateTime EndTournament { get; set; }
     [Required]
     public DateTime StartTournament { get; set; }
-    [Required]
-    public string Logotype { get; set; }=string.Empty;
+    public IFormFile? Logotype { get; set; }
 }

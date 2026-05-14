@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using BackEncordados.Common.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
 namespace BackEncordados.Middleware;
@@ -37,6 +38,22 @@ namespace BackEncordados.Middleware;
 ///     <item>
 ///         <term>ArgumentException</term>
 ///         <description>400 ValidationError</description>
+///     </item>
+///     <item>
+///         <term>CloudinaryUploadException</term>
+///         <description>422 CloudinaryUploadError</description>
+///     </item>
+///     <item>
+///         <term>CloudinaryDeleteException</term>
+///         <description>422 CloudinaryDeleteError</description>
+///     </item>
+///     <item>
+///         <term>CloudinaryConfigurationException</term>
+///         <description>500 CloudinaryConfigurationError</description>
+///     </item>
+///     <item>
+///         <term>CloudinaryInvalidParameterException</term>
+///         <description>400 CloudinaryInvalidParameterError</description>
 ///     </item>
 ///     <item>
 ///         <term>DbUpdateException</term>
@@ -115,6 +132,34 @@ public async Task InvokeAsync(HttpContext context)
                 argument.Message,
                 (Dictionary<string, string[]>?)null,
                 "ValidationError"
+            ),
+
+            CloudinaryUploadException uploadEx => (
+                422,
+                uploadEx.Message,
+                (Dictionary<string, string[]>?)null,
+                "CloudinaryUploadError"
+            ),
+
+            CloudinaryDeleteException deleteEx => (
+                422,
+                deleteEx.Message,
+                (Dictionary<string, string[]>?)null,
+                "CloudinaryDeleteError"
+            ),
+
+            CloudinaryConfigurationException configEx => (
+                500,
+                configEx.Message,
+                (Dictionary<string, string[]>?)null,
+                "CloudinaryConfigurationError"
+            ),
+
+            CloudinaryInvalidParameterException paramEx => (
+                400,
+                paramEx.Message,
+                (Dictionary<string, string[]>?)null,
+                "CloudinaryInvalidParameterError"
             ),
 
             DbUpdateException => (

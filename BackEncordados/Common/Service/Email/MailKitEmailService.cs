@@ -4,38 +4,28 @@ using MimeKit;
 
 namespace BackEncordados.Common.Service.Email;
 
-/// <summary>
-/// Servicio de email usando MailKit.
-/// Envía emails a través de SMTP.
-/// </summary>
+
 public class MailKitEmailService(
     IConfiguration configuration,
     ILogger<MailKitEmailService> logger,
     Channel<EmailMessage> emailChannel
-) : IEmailService
-{
-    private readonly IConfiguration _configuration = configuration;
-    private readonly ILogger<MailKitEmailService> _logger = logger;
-    private readonly Channel<EmailMessage> _emailChannel = emailChannel;
+) : IEmailService {
 
-    /// <summary>
-    /// Envía un email inmediatamente usando SMTP.
-    /// Devuelve: UnitResult.Success | UnitResult.Failure(Validation/Internal)
-    /// </summary>
+
     public async Task SendEmailAsync(EmailMessage message)
     {
         try
         {
-            var smtpHost = _configuration["Smtp:Host"];
-            var smtpPort = int.Parse(_configuration["Smtp:Port"] ?? "587");
-            var smtpUser = _configuration["Smtp:Username"];
-            var smtpPassword = _configuration["Smtp:Password"];
-            var fromEmail = _configuration["Smtp:FromEmail"] ?? smtpUser;
-            var fromName = _configuration["Smtp:FromName"] ?? "TiendaApi";
+            var smtpHost = configuration["Smtp:Host"];
+            var smtpPort = int.Parse(configuration["Smtp:Port"] ?? "587");
+            var smtpUser = configuration["Smtp:Username"];
+            var smtpPassword = configuration["Smtp:Password"];
+            var fromEmail = configuration["Smtp:FromEmail"] ?? smtpUser;
+            var fromName = configuration["Smtp:FromName"] ?? "TiendaApi";
 
             if (string.IsNullOrEmpty(smtpHost) || string.IsNullOrEmpty(smtpUser))
             {
-                _logger.LogWarning("SMTP no configurado, omitiendo envío de email");
+                logger.LogWarning("SMTP no configurado, omitiendo envío de email");
                 return;
             }
 
@@ -61,30 +51,25 @@ public class MailKitEmailService(
             await client.SendAsync(mimeMessage);
             await client.DisconnectAsync(true);
 
-            _logger.LogInformation("Email enviado exitosamente a: {To}", message.To);
+            logger.LogInformation("Email enviado exitosamente a: {To}", message.To);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error al enviar email a: {To}", message.To);
+            logger.LogError(ex, "Error al enviar email a: {To}", message.To);
             throw;
         }
     }
-
-    /// <summary>
-    /// Encola un email para procesamiento en segundo plano.
-    /// Operación no bloqueante que añade al canal.
-    /// Devuelve: UnitResult.Success | UnitResult.Failure(Internal)
-    /// </summary>
+    
     public async Task EnqueueEmailAsync(EmailMessage message)
     {
         try
         {
-            await _emailChannel.Writer.WriteAsync(message);
-            _logger.LogInformation("Email encolado para procesamiento en segundo plano a: {To}", message.To);
+            await emailChannel.Writer.WriteAsync(message);
+            logger.LogInformation("Email encolado para procesamiento en segundo plano a: {To}", message.To);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error al encolar email para: {To}", message.To);
+            logger.LogError(ex, "Error al encolar email para: {To}", message.To);
         }
     }
 }

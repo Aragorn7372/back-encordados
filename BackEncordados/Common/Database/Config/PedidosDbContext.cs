@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BackEncordados.Common.Database.Config;
 
-public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbContext(options)
-{
+public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbContext(options) {
+    private const string Time = "CURRENT_TIMESTAMP";
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigurePedidos(modelBuilder);
@@ -13,7 +13,7 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
         SeedData(modelBuilder);
     }
 
-    private void ConfigurePedidos(ModelBuilder modelBuilder)
+    private static void ConfigurePedidos(ModelBuilder modelBuilder)
     {
         var builder = modelBuilder.Entity<Pedidos>();
 
@@ -43,11 +43,11 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
 
         builder.Property(p => p.CreatedAt)
             .IsRequired()
-            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            .HasDefaultValueSql(Time);
 
         builder.Property(p => p.UpdatedAt)
             .IsRequired()
-            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            .HasDefaultValueSql(Time);
 
         builder.HasMany(p => p.Lineas)
             .WithOne(l => l.Pedido)
@@ -59,7 +59,7 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
         builder.HasIndex(p => p.PayStatus);
     }
 
-    private void ConfigurePedidoLinea(ModelBuilder modelBuilder)
+    private static void ConfigurePedidoLinea(ModelBuilder modelBuilder)
     {
         var builder = modelBuilder.Entity<PedidoLinea>();
 
@@ -92,11 +92,11 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
 
         builder.Property(l => l.CreatedAt)
             .IsRequired()
-            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            .HasDefaultValueSql(Time);
 
         builder.Property(l => l.UpdatedAt)
             .IsRequired()
-            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            .HasDefaultValueSql(Time);
 
         builder.OwnsOne(l => l.StringSetup, sb =>
         {
