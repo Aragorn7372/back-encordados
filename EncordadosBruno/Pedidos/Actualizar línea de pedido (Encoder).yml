@@ -1,7 +1,38 @@
 info:
   name: Actualizar línea de pedido (Encoder)
   type: http
-  seq: 9
+  seq: 10
+
+http:
+  method: PUT
+  url: "{{api-url}}/api/Purchased/lineas/01ARZ3NDEKTSV4RRFFQ69G1FAV"
+  body:
+    type: json
+    data: |-
+      {
+        "RaquetModel": "Wilson Pro Staff",
+        "Nudos": 3,
+        "DateString": "2026-06-25T00:00:00Z",
+        "Logotype": true,
+        "Color": "Negro",
+        "StringSetup": {
+          "StringV": "Luxilon ALU Power",
+          "TensionV": 28.0,
+          "PreStetchV": 2,
+          "StringH": "Luxilon Multi",
+          "TensionH": 27.0,
+          "PreStetchH": 1
+        }
+      }
+  auth:
+    type: bearer
+    token: "{{token_encoder}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
 
 docs: |
   # Actualizar Línea de Pedido como Encoder
@@ -44,34 +75,3 @@ docs: |
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Encoder
   - **404 Not Found**: Línea no encontrada
-
-http:
-  method: PUT
-  url: "{{api-url}}/api/Purchased/lineas/01ARZ3NDEKTSV4RRFFQ69G1FAV"
-  body:
-    type: json
-    data: |-
-      {
-        "RaquetModel": "Wilson Pro Staff",
-        "Nudos": 3,
-        "DateString": "2026-06-25T00:00:00Z",
-        "Logotype": true,
-        "Color": "Negro",
-        "StringSetup": {
-          "StringV": "Luxilon ALU Power",
-          "TensionV": 28.0,
-          "PreStetchV": 2,
-          "StringH": "Luxilon Multi",
-          "TensionH": 27.0,
-          "PreStetchH": 1
-        }
-      }
-  auth:
-    type: bearer
-    token: "{{token_encoder}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5

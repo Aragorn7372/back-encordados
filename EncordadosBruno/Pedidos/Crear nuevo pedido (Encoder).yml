@@ -1,7 +1,48 @@
 info:
   name: Crear nuevo pedido (Encoder)
   type: http
-  seq: 2
+  seq: 3
+
+http:
+  method: POST
+  url: "{{api-url}}/api/Purchased"
+  body:
+    type: json
+    data: |-
+      {
+        "TournamentId": 1,
+        "PlayerName": "jugador_juan",
+        "AssignedToName": "carlos_encordador",
+        "Machine": "Máquina Alpha-1",
+        "Comments": "Nuevo pedido para el Torneo Madrileño",
+        "PayStatus": "PENDING_PAYMENT",
+        "Lineas": [
+          {
+            "RaquetModel": "Wilson Clash 100",
+            "Nudos": 1,
+            "DateString": "2026-06-15T00:00:00Z",
+            "Logotype": true,
+            "Color": "Rojo",
+            "StringSetup": {
+              "StringV": "Babolat RPM Blast",
+              "TensionV": 26.0,
+              "PreStetchV": 2,
+              "StringH": "Babolat Pro",
+              "TensionH": 25.5,
+              "PreStetchH": 1
+            }
+          }
+        ]
+      }
+  auth:
+    type: bearer
+    token: "{{token_encoder}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
 
 docs: |
   # Crear Nuevo Pedido como Encoder
@@ -48,44 +89,3 @@ docs: |
   - **400 Bad Request**: Datos inválidos o sin líneas
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Encoder
-
-http:
-  method: POST
-  url: "{{api-url}}/api/Purchased"
-  body:
-    type: json
-    data: |-
-      {
-        "TournamentId": 1,
-        "PlayerName": "jugador_juan",
-        "AssignedToName": "carlos_encordador",
-        "Machine": "Máquina Alpha-1",
-        "Comments": "Nuevo pedido para el Torneo Madrileño",
-        "PayStatus": "PENDING_PAYMENT",
-        "Lineas": [
-          {
-            "RaquetModel": "Wilson Clash 100",
-            "Nudos": 1,
-            "DateString": "2026-06-15T00:00:00Z",
-            "Logotype": true,
-            "Color": "Rojo",
-            "StringSetup": {
-              "StringV": "Babolat RPM Blast",
-              "TensionV": 26.0,
-              "PreStetchV": 2,
-              "StringH": "Babolat Pro",
-              "TensionH": 25.5,
-              "PreStetchH": 1
-            }
-          }
-        ]
-      }
-  auth:
-    type: bearer
-    token: "{{token_encoder}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5

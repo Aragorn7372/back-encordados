@@ -142,4 +142,22 @@ public class UserService(
         
         return Result.Success<Unit, AuthError>(Unit.Value);
     }
+
+    public async Task<Result<UserResponseDto, AuthError>> AddBonosAsync(Ulid userId, double cantidad)
+    {
+        logger.LogInformation("Añadiendo {Cantidad} bonos al usuario con ID: {UserId}", cantidad, userId);
+
+        if (cantidad <= 0)
+            return Result.Failure<UserResponseDto, AuthError>(new ValidationError("La cantidad de bonos debe ser mayor a 0"));
+
+        var user = await repository.FindByIdAsync(userId);
+        if (user is null)
+            return Result.Failure<UserResponseDto, AuthError>(new UserNotFoundError("User not found"));
+
+        user.Bonos += cantidad;
+        await repository.UpdateAsync(user);
+
+        logger.LogInformation("Bonos añadidos correctamente. Nuevo saldo: {Bonos}", user.Bonos);
+        return Result.Success<UserResponseDto, AuthError>(user.ToDto(cloudinary));
+    }
 }

@@ -105,6 +105,7 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
     [ProducesResponseType(typeof(PurchasedResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Transactional(typeof(PedidosDbContext), typeof(UserDbContext))]
     [Authorize(policy: "RequireEncorderRole")]
     public async Task<IActionResult> Create(PurchasedRequestDto request)
     {

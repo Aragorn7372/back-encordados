@@ -3,5 +3,6 @@
 public record UserResponseDto(
     string Username,
     string ImageUrl,
-    string Name
+    string Name,
+    double Bonos
     );

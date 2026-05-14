@@ -1,7 +1,33 @@
 info:
   name: Obtener todos los encordadores (Owner)
   type: http
-  seq: 4
+  seq: 7
+
+http:
+  method: GET
+  url: "{{api-url}}/api/User/encorders?page=0&size=10&sortBy=name&direction=asc"
+  params:
+    - name: page
+      value: "0"
+      type: query
+    - name: size
+      value: "10"
+      type: query
+    - name: sortBy
+      value: name
+      type: query
+    - name: direction
+      value: asc
+      type: query
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
 
 docs: |
   # Obtener Todos los Encordadores como Owner
@@ -32,16 +58,3 @@ docs: |
   - **200 OK**: `PageResponseDto<UserWithIdDto>` con solo encordadores (campos: userId, username, imageUrl, name)
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Owner
-
-http:
-  method: GET
-  url: "{{api-url}}/api/User/encorders/1?page=0&size=10&sortBy=name&direction=asc"
-  auth:
-    type: bearer
-    token: "{{token_owner}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5

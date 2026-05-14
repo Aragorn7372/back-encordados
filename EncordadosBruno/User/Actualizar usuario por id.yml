@@ -1,7 +1,39 @@
 info:
   name: Actualizar usuario por id
   type: http
-  seq: 8
+  seq: 12
+
+http:
+  method: PATCH
+  url: "{{api-url}}/api/User/{{user_id_juan}}"
+  body:
+    type: multipart-form
+    data:
+      - name: Name
+        type: text
+        value: Juan Martínez Actualizado
+      - name: Email
+        type: text
+        value: juan.actualizado@tenis.com
+      - name: Telefono
+        type: text
+        value: "956789999"
+      - name: Username
+        type: text
+        value: juan_updated
+      - name: Avatar
+        type: file
+        value:
+          - C:\Users\Aragorn\RiderProjects\BackEncordados\EncordadosBruno\image\Captura de pantalla 2026-02-21 221125.png
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
 
 docs: |
   # Actualizar Usuario por ID
@@ -45,35 +77,3 @@ docs: |
   - [ ] Intentar actualizar usuario inexistente (404)
   - [ ] Intentar con email duplicado (409)
   - [ ] Intentar sin permisos de Admin (403)
-
-http:
-  method: PATCH
-  url: "{{api-url}}/api/User/{{user_id_juan}}"
-  body:
-    type: multipart-form
-    data:
-      - name: Name
-        type: text
-        value: Juan Martínez Actualizado
-      - name: Email
-        type: text
-        value: juan.actualizado@tenis.com
-      - name: Telefono
-        type: text
-        value: "956789999"
-      - name: Username
-        type: text
-        value: juan_updated
-      - name: Avatar
-        type: file
-        value:
-          - C:\Users\Aragorn\RiderProjects\BackEncordados\EncordadosBruno\image\Captura de pantalla 2026-02-21 221125.png
-  auth:
-    type: bearer
-    token: "{{token_admin}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5

@@ -1,7 +1,30 @@
 info:
   name: Actualizar pedido (Encoder)
   type: http
-  seq: 3
+  seq: 5
+
+http:
+  method: PUT
+  url: "{{api-url}}/api/Purchased/01ARZ3NDEKTSV4RRFFQ69G1FAV"
+  body:
+    type: json
+    data: |-
+      {
+        "PlayerName": "jugador_juan",
+        "AssignedToName": "carlos_encordador_actualizado",
+        "Machine": "Máquina Beta-2",
+        "Comments": "Comentarios actualizados",
+        "PayStatus": "PAID"
+      }
+  auth:
+    type: bearer
+    token: "{{token_encoder}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
 
 docs: |
   # Actualizar Pedido como Encoder
@@ -36,26 +59,3 @@ docs: |
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Encoder
   - **404 Not Found**: Pedido no encontrado
-
-http:
-  method: PUT
-  url: "{{api-url}}/api/Purchased/01ARZ3NDEKTSV4RRFFQ69G1FAV"
-  body:
-    type: json
-    data: |-
-      {
-        "PlayerName": "jugador_juan",
-        "AssignedToName": "carlos_encordador_actualizado",
-        "Machine": "Máquina Beta-2",
-        "Comments": "Comentarios actualizados",
-        "PayStatus": "PAID"
-      }
-  auth:
-    type: bearer
-    token: "{{token_encoder}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5

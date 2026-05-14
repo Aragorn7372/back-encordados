@@ -1,7 +1,25 @@
 info:
   name: delete me
   type: http
-  seq: 2
+  seq: 4
+
+http:
+  method: DELETE
+  url: "{{api-url}}/api/User/me"
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: bru.deleteEnvVar("token")
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
 
 docs: |
   # Eliminar Mi Cuenta
@@ -27,21 +45,3 @@ docs: |
 
   ## Warning
   Esta acción es irreversible. Después de ejecutarse, el token de autenticación será eliminado.
-
-http:
-  method: DELETE
-  url: "{{api-url}}/api/User/me"
-  auth:
-    type: bearer
-    token: "{{token}}"
-
-runtime:
-  scripts:
-    - type: after-response
-      code: bru.deleteEnvVar("token")
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5

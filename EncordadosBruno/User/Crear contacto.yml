@@ -1,7 +1,7 @@
 info:
   name: Crear contacto
   type: http
-  seq: 12
+  seq: 18
 
 http:
   method: POST
