@@ -43,4 +43,5 @@ public class UserRequestDto
     }
     [MinLength(1, ErrorMessage = "El nombre de usuario debe tener mas de 1 letra")]
     public string? Username { get; set; }
+    public IFormFile? Avatar { get; set; }
 }

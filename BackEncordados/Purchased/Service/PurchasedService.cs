@@ -2,6 +2,7 @@
 using BackEncordados.Common.Errors;
 using BackEncordados.Common.Service.Cache;
 using BackEncordados.Common.Service.Cache.keys;
+using BackEncordados.Common.Service.Cloudinary;
 using BackEncordados.Purchased.Dto;
 using BackEncordados.Purchased.Errors;
 using BackEncordados.Purchased.Mapper;
@@ -16,7 +17,13 @@ using CSharpFunctionalExtensions;
 
 namespace BackEncordados.Purchased.Service;
 
-public class PurchasedService(IPuchasedRepository repository, IUserRepository userRepository, ILogger<PurchasedService> logger, ICacheService cache) : IPurchasedService
+public class PurchasedService(
+    IPuchasedRepository repository,
+    IUserRepository userRepository, 
+    ILogger<PurchasedService> logger, 
+    ICacheService cache,
+    ICloudinaryService cloudinary
+    ) : IPurchasedService
 {
     public async Task<PageResponseDto<PurchasedResponseDto>> FindAllAsync(FilterPurchasedDto filter)
     {
@@ -90,7 +97,7 @@ public class PurchasedService(IPuchasedRepository repository, IUserRepository us
         if (user == null || user.IsDeleted) return Result.Failure<UserResponseDto, DomainErrors>(new UserNotFoundError("User no exists or was deleted"))
             .TapError(() => logger.LogWarning("Usuario con ID {Id} no encontrado o eliminado en DB", userId));
 
-        var dto = user.ToDto();
+        var dto = user.ToDto(cloudinary);
         await cache.SetAsync(key, dto, TimeSpan.FromMinutes(10));
         return Result.Success<UserResponseDto, DomainErrors>(dto)
             .Tap(() => logger.LogInformation("Usuario con ID {Id} obtenido de DB y guardado en caché", userId));
@@ -112,7 +119,7 @@ public class PurchasedService(IPuchasedRepository repository, IUserRepository us
         var entity = request.ToEntity(player.Id, encorder.Id);
         await repository.CreatePurchasedAsync(entity);
 
-        var response = entity.ToDto(encorder.ToDto(), player.ToDto());
+        var response = entity.ToDto(encorder.ToDto(cloudinary), player.ToDto(cloudinary));
 
         await cache.SetAsync(CacheKeys.PurchasedCacheKey + entity.Id, response, TimeSpan.FromMinutes(5));
 

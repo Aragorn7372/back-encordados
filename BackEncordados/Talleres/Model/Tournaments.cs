@@ -1,4 +1,5 @@
 ﻿using BackEncordados.Common.Database.Helpers;
+using BackEncordados.Common.Service.Cloudinary;
 
 namespace BackEncordados.Talleres.Model;
 
@@ -16,7 +17,10 @@ public record Tournaments: ITimestamped
     public DateTime StartTournament { get; set; }=DateTime.UtcNow;
     public DateTime EndTournament { get; set; }=DateTime.UtcNow;
 
-    public string Logotype { get; set; } = string.Empty;
+    public string Logotype { get; set; } = CloudinaryConstants.DEFAULT_IMAGE_TALLERES;
+    
+    public string? LogotypePublicId { get; set; }
+    
     public List<Ulid> WorkersList {get; set;} = new ();
     public List<Ulid> SupervisorList { get; set; } = new();
     public List<WorkerMachineAssignment> WorkerMachineAssignments { get; set; } = new ();

@@ -1,4 +1,5 @@
 ﻿using BackEncordados.Common.Dto;
+using BackEncordados.Common.Service.Cloudinary;
 using BackEncordados.Common.Utils;
 using BackEncordados.Usuarios.Dto;
 using BackEncordados.Usuarios.Errors;
@@ -9,18 +10,27 @@ using CSharpFunctionalExtensions;
 
 namespace BackEncordados.Usuarios.Service.CrudService;
 
-public class UserService(ILogger<UserService> logger, IUserRepository repository) : IUserService
+public class UserService(ILogger<UserService> logger, IUserRepository repository,ICloudinaryService cloudinary) : IUserService
 {
     public async Task<Result<UserResponseDto, AuthError>> FindByIdAsync(Ulid id)
     {
         return await repository.FindByIdAsync(id) is { } user
-            ? Result.Success<UserResponseDto, AuthError>(user.ToDto())
-            : Result.Failure<UserResponseDto, AuthError>(new AuthError("User not found"));
+            ? Result.Success<UserResponseDto, AuthError>(user.ToDto(cloudinary))
+            : Result.Failure<UserResponseDto, AuthError>(new UserNotFoundError("User not found"));
     }
 
-    public Task DeleteUserAsync(Ulid id)
+    public async Task<Result<Unit,AuthError>> DeleteUserAsync(Ulid id)
     {
-        return repository.DeleteAsync(id);
+        return await repository.FindByIdAsync(id) is { } user
+        ? await Result.Success<Unit, AuthError>(Unit.Value).TapAsync(async _ => {
+            logger.LogInformation("Deletando usuario con ID: {Id}", id);
+            await repository.DeleteAsync(id);
+            if (user.ImageUrl != CloudinaryConstants.DEFAULT_IMAGE_USUARIOS) 
+                await cloudinary.DeleteAsync(user.CloudinaryPublicId!);
+        })
+        : Result.Failure<Unit, AuthError>(new UserNotFoundError("User not found"))
+            .TapError((() => logger.LogInformation("Deletando usuario con ID: {Id}", id)));
+        
     }
 
     public async Task<Result<bool, AuthError>> GiveRoleToUserAsync(Ulid id, string role)
@@ -35,7 +45,7 @@ public class UserService(ILogger<UserService> logger, IUserRepository repository
         var paged = await repository.FindAllAsync(filter);
         int totalPages = filter.Size > 0 ? (int)Math.Ceiling(paged.TotalCount / (double)filter.Size) : 0;
         return new PageResponseDto<UserWithIdDto>(
-            Content: paged.Items.Select(item => item.ToDtoWithId()).ToList(),
+            Content: paged.Items.Select(item => item.ToDtoWithId(cloudinary)).ToList(),
             TotalPages: totalPages,
             TotalElements: paged.TotalCount,
             PageSize: filter.Size,
@@ -56,19 +66,11 @@ public class UserService(ILogger<UserService> logger, IUserRepository repository
 
         string? username = request.Username?.Trim();
         string? email = request.Email?.Trim();
-
-        if (!string.IsNullOrEmpty(email) && !email.Equals(user.Email, StringComparison.OrdinalIgnoreCase))
-        {
-            var otherByEmail = await repository.FindByEmailAsync(email);
-            if (otherByEmail is not null && otherByEmail.Id != user.Id)
-                return Result.Failure<UserResponseDto, AuthError>(new ConflictError("Email already in use"));
-        }
-
-        if (!string.IsNullOrEmpty(username) && !username.Equals(user.Username, StringComparison.OrdinalIgnoreCase))
-        {
-            var otherByUsername = await repository.FindByUsernameAsync(username);
-            if (otherByUsername is not null && otherByUsername.Id != user.Id)
-                return Result.Failure<UserResponseDto, AuthError>(new ConflictError("Username already in use"));
+        if(request.Avatar is not null) {
+            if(user.ImageUrl != CloudinaryConstants.DEFAULT_IMAGE_USUARIOS) await cloudinary.DeleteAsync(user.CloudinaryPublicId!);
+            var upload= await cloudinary.UploadWithAutoNameAsync(request.Avatar,id.ToString(),CloudinaryConstants.FOLDER_USUARIOS);
+            user.ImageUrl = upload.ImageUrl;
+            user.CloudinaryPublicId = upload.PublicId;
         }
 
         if (request.Name is not null && request.Name.Trim().Length > 0)
@@ -84,13 +86,13 @@ public class UserService(ILogger<UserService> logger, IUserRepository repository
             user.Email = email;
 
         var updated = await repository.UpdateAsync(user);
-        return Result.Success<UserResponseDto, AuthError>(updated.ToDto());
+        return Result.Success<UserResponseDto, AuthError>(updated.ToDto(cloudinary));
     }
 
     public async Task<Result<UserResponseDto, AuthError>> CreateContacto(ContactoPostRequestDto request) {
         logger.LogInformation("Creando contacto para el usuario con nombre: {Name}",request.Name);
         return await repository.SaveAsync(request.ToModel()) is { } user
-            ? Result.Success<UserResponseDto, AuthError>(user.ToDto())
+            ? Result.Success<UserResponseDto, AuthError>(user.ToDto(cloudinary))
                 .Tap((() => logger.LogInformation("Contacto creado con ID: {Id}", user.Id)))
             : Result.Failure<UserResponseDto, AuthError>(new ConflictError("Error creating contact"))
                 .TapError((() => logger.LogError("Error creating contact for user with name: {Name}", request.Name)));

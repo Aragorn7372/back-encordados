@@ -24,7 +24,7 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [Authorize(Policy = "RequireAdminRole")]
-    public async Task<IActionResult> CreateTournament([FromBody] TournamentAdminRequestDto adminRequest) {
+    public async Task<IActionResult> CreateTournament([FromForm] TournamentAdminRequestDto adminRequest) {
         logger.LogInformation("Received adminRequest to create tournament: {@Request}", adminRequest);
         return await tournamentsService.CreateTournament(adminRequest).Match(
             onSuccess: tournament => CreatedAtAction(nameof(GetTournament), new { id = tournament.Id }, tournament),
@@ -185,7 +185,7 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [Authorize(Policy = "RequireOwnerRole")]
-    public async Task<IActionResult> CreateTournament([FromBody] TournamentRequestDto adminRequest) {
+    public async Task<IActionResult> CreateTournament([FromForm] TournamentRequestDto adminRequest) {
         logger.LogInformation("Received adminRequest to create tournament: {@Request}", adminRequest);
         var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
         if (userIdClaim is null || !Ulid.TryParse(userIdClaim.Value, out var userId))

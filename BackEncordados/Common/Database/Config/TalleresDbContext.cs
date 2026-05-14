@@ -1,4 +1,5 @@
 ﻿using BackEncordados.Common.Database.Helpers;
+using BackEncordados.Common.Service.Cloudinary;
 using BackEncordados.Talleres.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -10,10 +11,7 @@ public class TalleresDbContext(DbContextOptions<TalleresDbContext> options)
     : DbContext(options)
 {
     public DbSet<Tournaments> Partidos { get; set; } = null!;
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-    }
+    
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -24,7 +22,7 @@ public class TalleresDbContext(DbContextOptions<TalleresDbContext> options)
         base.OnModelCreating(modelBuilder);
     }
 
-    private void ConfigureTournaments(ModelBuilder modelBuilder)
+    private static void ConfigureTournaments(ModelBuilder modelBuilder)
     {
         var ulidListConverter = new ValueConverter<List<Ulid>, string>(
             v => string.Join(";", v),
@@ -47,6 +45,9 @@ public class TalleresDbContext(DbContextOptions<TalleresDbContext> options)
 
             entity.Property(x => x.Logotype)
                 .HasMaxLength(500);
+
+            entity.Property(x => x.LogotypePublicId)
+                .HasMaxLength(300);
 
             entity.ConfigureTimestamps();
 
@@ -119,7 +120,8 @@ private void SeedData(ModelBuilder modelBuilder)
             {
                 Id = 1,
                 Title = "Torneo Madrileño 2025",
-                Logotype = "/logos/torneo-madrid.jpg",
+                Logotype = CloudinaryConstants.DEFAULT_IMAGE_TALLERES,
+                LogotypePublicId = null,
                 StartTournament = now.AddDays(-7),
                 EndTournament = now.AddDays(7),
                 WorkersList = new List<Ulid> { carlos, maria },
@@ -129,11 +131,13 @@ private void SeedData(ModelBuilder modelBuilder)
                 CreatedAt = now.AddMonths(-2),
                 UpdatedAt = now.AddMonths(-2)
             },
+            
             new Tournaments
             {
                 Id = 2,
                 Title = "Open Circuit Barcelona",
-                Logotype = "/logos/torneo-barcelona.jpg",
+                Logotype = CloudinaryConstants.DEFAULT_IMAGE_TALLERES,
+                LogotypePublicId = null,
                 StartTournament = now.AddDays(14),
                 EndTournament = now.AddDays(28),
                 WorkersList = new List<Ulid> { carlos },
@@ -147,7 +151,8 @@ private void SeedData(ModelBuilder modelBuilder)
             {
                 Id = 3,
                 Title = "Campeonato Regional Valencia",
-                Logotype = "/logos/torneo-valencia.jpg",
+                Logotype = CloudinaryConstants.DEFAULT_IMAGE_TALLERES,
+                LogotypePublicId = null,
                 StartTournament = now.AddDays(-60),
                 EndTournament = now.AddDays(-45),
                 WorkersList = new List<Ulid> { maria },
@@ -160,7 +165,8 @@ private void SeedData(ModelBuilder modelBuilder)
             {
                 Id = 4,
                 Title = "Cup Toledo - Elite",
-                Logotype = "/logos/torneo-toledo.jpg",
+                Logotype = CloudinaryConstants.DEFAULT_IMAGE_TALLERES,
+                LogotypePublicId = null,
                 StartTournament = now.AddDays(35),
                 EndTournament = now.AddDays(42),
                 WorkersList = new List<Ulid> { carlos, maria },
