@@ -2,6 +2,7 @@
 using BackEncordados.Common.Database.Helpers;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.EntityFrameworkCore.Extensions;
+using Npgsql;
 using Serilog;
 
 namespace BackEncordados.Infraestructure;
@@ -17,11 +18,12 @@ namespace BackEncordados.Infraestructure;
 ///     <item>IConfiguration: Configuración de la app</item>
 /// </list>
 /// 
-/// <para><b>Características:</b></para>
+    /// <para><b>Características:</b></para>
 /// <list type="bullet">
-///     <item>Usuarios: InMemory (dev) o Turso SQLite (prod)</item>
-///     <item>Pedidos: InMemory (dev) o Turso SQLite (prod)</item>
-///     <item>Talleres: InMemory (dev) o Turso SQLite (prod)</item>
+///     <item>Usuarios: InMemory (dev) o PostgreSQL (prod)</item>
+///     <item>Pedidos: InMemory (dev) o MongoDB (prod)</item>
+///     <item>Talleres: InMemory (dev) o MongoDB (prod)</item>
+///     <item>Materials: InMemory (dev) o PostgreSQL (prod)</item>
 /// </list>
 /// 
 /// <para><b>Configuración de contraseña:</b></para>
@@ -40,7 +42,7 @@ public static class DbConfig
     /// <remarks>
     /// <list type="number">
     ///     <item>Desarrollo: UseInMemoryDatabase</item>
-    ///     <item>Producción: UseSqlite con Turso</item>
+    ///     <item>Producción: UseNpgsql con PostgreSQL</item>
     ///     <item>Configura Identity para usuarios</item>
     /// </list>
     /// </remarks>
@@ -59,11 +61,11 @@ public static class DbConfig
              if(isDevelopment) options.UseInMemoryDatabase("UserDatabase");
              else
              {
-                 Log.Information("Modo producción activado - Conectando a Turso (SQLite)");
+                 Log.Information("Modo producción activado - Conectando a PostgreSQL (Usuarios)");
                  var connectionString = configuration["DATABASE_URL_USER"] 
                                         ?? configuration.GetConnectionString("DefaultConnection") 
                                         ?? throw new InvalidOperationException("No se encontró DATABASE_URL_USER o DefaultConnection");
-                 options.UseSqlite(connectionString);
+                 options.UseNpgsql(connectionString);
                  options.EnableSensitiveDataLogging(); 
                  options.EnableDetailedErrors(); 
              }
@@ -77,11 +79,11 @@ public static class DbConfig
              if(isDevelopment) options.UseInMemoryDatabase("MaterialsDatabase");
              else
              {
-                 Log.Information("Modo producción activado - Conectando a Turso (SQLite)");
+                 Log.Information("Modo producción activado - Conectando a PostgreSQL (Materials)");
                  var connectionString = configuration["DATABASE_URL_MATERIALS"] 
                                         ?? configuration.GetConnectionString("DefaultConnection") 
-                                        ?? throw new InvalidOperationException("No se encontró DATABASE_URL_USER o DefaultConnection");
-                 options.UseSqlite(connectionString);
+                                        ?? throw new InvalidOperationException("No se encontró DATABASE_URL_MATERIALS o DefaultConnection");
+                 options.UseNpgsql(connectionString);
                  options.EnableSensitiveDataLogging(); 
                  options.EnableDetailedErrors(); 
              }
