@@ -1,6 +1,8 @@
 ﻿using BackEncordados.Common.Service.Cache;
 using BackEncordados.Common.Service.Cache.keys;
+using BackEncordados.Common.Service.Email;
 using BackEncordados.Common.Utils;
+using BackEncordados.Infraestructure;
 using BackEncordados.Usuarios.Dto;
 using BackEncordados.Usuarios.Errors;
 using BackEncordados.Usuarios.Model;
@@ -18,14 +20,11 @@ public class AuthService(
     IUserRepository userRepository,
     IJwtService jwtService,
     ILogger<AuthService> logger,
-    ICacheService cache
-) : IAuthService
-{
+    ICacheService cache,
+    IEmailService emailService
+) : IAuthService {
     private const string CacheKey = CacheKeys.PasswordChange;
-    /// <summary>
-    /// Registra un nuevo usuario.
-    /// Devuelve: Result.Success(AuthResponseDto) | Result.Failure(Validation/Conflict)
-    /// </summary>
+
     public async Task<Result<AuthResponseDto, AuthError>> SignUpAsync(RegisterDto dto)
     {
         var sanitizedUsername = dto.Username.Replace("\n", "").Replace("\r", "");
@@ -54,13 +53,22 @@ public class AuthService(
 
         logger.LogInformation("User registered successfully: {Username}", sanitizedUsername);
 
-        return Result.Success<AuthResponseDto, AuthError>(authResponse);
+        return await Result.Success<AuthResponseDto, AuthError>(authResponse).TapAsync(async _=> {
+            logger.LogInformation("User registered successfully: {Username}", sanitizedUsername);
+             await SendWelcomeEmail(dto.Username, dto.Email);
+        });
     }
 
-    /// <summary>
-    /// Autentica un usuario existente.
-    /// Devuelve: Result.Success(AuthResponseDto) | Result.Failure(Validation/Unauthorized/NotFound)
-    /// </summary>
+    private async Task SendWelcomeEmail(string username, string email) {
+        var message = new EmailMessage {
+            To = email,
+            Subject = "Bienvenido a Encordados Maestros",
+            Body = EmailTemplates.AccountCreated(username, email),
+            IsHtml = true
+        };
+        await emailService.EnqueueEmailAsync(message);
+    }
+
     public async Task<Result<AuthResponseDto, AuthError>> SignInAsync(LoginDto dto)
     {
         var sanitizedUsername = dto.Username.Replace("\n", "").Replace("\r", "");
@@ -107,8 +115,11 @@ public class AuthService(
         }
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
         return await  userRepository.UpdateAsync(user) is { } result
-            ? Result.Success<Unit, AuthError>(Unit.Value)
-                .Tap((() => logger.LogInformation("Password has change for request {Guid}", guid)))
+            ? await Result.Success<Unit, AuthError>(Unit.Value)
+                .TapAsync((async _ => {
+                    logger.LogInformation("Password has change for request {Guid}", guid);
+                    await cache.RemoveAsync(CacheKey+guid);
+                }))
             : Result.Failure<Unit, AuthError>(new PasswordChangeExpiredTimeout())
                 .TapError((() => logger.LogInformation("user no found with {Id}",cached.Value)));
     }
@@ -119,17 +130,24 @@ public class AuthService(
             ? await Result.Success<Unit, AuthError>(Unit.Value)
                 .TapAsync(async (_) => {
                     var key = CacheKey + Guid.NewGuid();
-                    await cache.SetAsync(key, result.Id);
+                    await cache.SetAsync(key, result.Id,TimeSpan.FromMinutes(60));
+                    await SendPasswordChangeEmail(userEmail, key);
                 })
             : Result.Failure<Unit, AuthError>(new UserNotFoundError("el email no existe o es invalido"))
                 .TapError((() => logger.LogInformation("user no found with email {Email}", userEmail)));
     }
-
-
-    /// <summary>
-    /// Verifica duplicados de username y email.
-    /// Devuelve: UnitResult.Success | UnitResult.Failure(Conflict)
-    /// </summary>
+    
+    private Task SendPasswordChangeEmail(string email, string guid) {
+        var passwordUrl= $"{AppConfig.Current.FrontendUrl}/changePassword?guid={guid}";
+        var message = new EmailMessage {
+            To = email,
+            Subject = "Solicitud de cambio de contraseña",
+            Body = EmailTemplates.PasswordReset(passwordUrl),
+            IsHtml = true
+        };
+        return emailService.EnqueueEmailAsync(message);
+    }
+    
     private async Task<UnitResult<AuthError>> CheckDuplicatesAsync(RegisterDto dto)
     {
         var existingUser = await userRepository.FindByUsernameAsync(dto.Username);
@@ -146,11 +164,7 @@ public class AuthService(
 
         return UnitResult.Success<AuthError>();
     }
-
-    /// <summary>
-    /// Genera la respuesta de autenticación con token JWT.
-    /// Devuelve: AuthResponseDto
-    /// </summary>
+    
     private AuthResponseDto GenerateAuthResponse(User user)
     {
         var token = jwtService.GenerateToken(user);

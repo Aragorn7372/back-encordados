@@ -3,6 +3,8 @@ using BackEncordados.Common.Errors;
 using BackEncordados.Common.Service.Cache;
 using BackEncordados.Common.Service.Cache.keys;
 using BackEncordados.Common.Service.Cloudinary;
+using BackEncordados.Common.Service.Email;
+using BackEncordados.Common.Utils;
 using BackEncordados.Purchased.Dto;
 using BackEncordados.Purchased.Errors;
 using BackEncordados.Purchased.Mapper;
@@ -22,7 +24,8 @@ public class PurchasedService(
     IUserRepository userRepository, 
     ILogger<PurchasedService> logger, 
     ICacheService cache,
-    ICloudinaryService cloudinary
+    ICloudinaryService cloudinary,
+    IEmailService emailService
     ) : IPurchasedService
 {
     public async Task<PageResponseDto<PurchasedResponseDto>> FindAllAsync(FilterPurchasedDto filter)
@@ -188,9 +191,44 @@ public class PurchasedService(
         var response = purchasedCanceled.ToDto(encorderResult.Value, playerResult.Value);
         await cache.SetAsync(CacheKeys.PurchasedCacheKey + id, response, TimeSpan.FromMinutes(5));
         logger.LogInformation("Pedido con ID {Id} cancelado exitosamente", id);
-        return Result.Success<PurchasedResponseDto, DomainErrors>(response);
+        return await Result.Success<PurchasedResponseDto, DomainErrors>(response)
+            .TapAsync(async response => {
+                logger.LogInformation(
+                    "Correo de cancelación enviado al jugador con ID {PlayerId} para el pedido con ID {Id}",
+                    response.Id, id);
+                var email= await GetValidUserWithEmailAsync(response.Player.Username);
+                if (email.IsSuccess) await SendCancelEmailAsync(id.ToString(), email.Value);
+            });
     }
-
+    
+    private async Task SendCancelEmailAsync(string orderId, string email) {
+        var message = new EmailMessage {
+            To = email,
+            Subject = "Pedido cancelado",
+            Body = EmailTemplates.OrderCancelled(orderId),
+            IsHtml = true
+        };
+        await emailService.EnqueueEmailAsync(message);
+    }
+    private async Task<Result<string ,DomainErrors>> GetValidUserWithEmailAsync(string username)
+    {
+        var user = await userRepository.FindByUsernameAsync(username);
+    
+        if (user == null)
+            return Result.Failure< string , DomainErrors>(
+                new UserNotFoundError($"Usuario '{username}' no encontrado"));
+    
+        if (user.IsDeleted)
+            return Result.Failure<string , DomainErrors>(
+                new UserNotFoundError($"Usuario '{username}' ha sido eliminado"));
+    
+        // Validar que sea un usuario real (con email válido de usuario, no contacto)
+        if (string.IsNullOrWhiteSpace(user.Email) || !user.Email.Contains("@"))
+            return Result.Failure<string , DomainErrors>(
+                new Usuarios.Errors.ValidationError($"El usuario '{username}' no tiene un email válido"));
+    
+        return Result.Success<string , DomainErrors>((user.Email));
+    }
     public async Task<Result<PurchasedResponseDto, DomainErrors>> ChangePaymentStatusPurchasedAsync(Ulid id, string payStatus)
     {
         logger.LogInformation("Cambiando el estatus de pago al pedido con ID {Id}", id);
@@ -210,25 +248,28 @@ public class PurchasedService(
         var response = purchased.ToDto(encorderResult.Value, playerResult.Value);
         await cache.SetAsync(CacheKeys.PurchasedCacheKey + id, response, TimeSpan.FromMinutes(5));
         logger.LogInformation("Estatus de pago del pedido con ID {Id} cambiado exitosamente a {PayStatusEnum}", id, payStatusEnum);
-        return Result.Success<PurchasedResponseDto, DomainErrors>(response);
+        return await Result.Success<PurchasedResponseDto, DomainErrors>(response).TapAsync(async response => {
+            if (payStatusEnum == PaymentStatus.PAID)
+            {
+                logger.LogInformation(
+                    "Correo de confirmación de pago enviado al jugador con ID {PlayerId} para el pedido con ID {Id}",
+                    response.Id, id);
+                var email = await GetValidUserWithEmailAsync(response.Player.Username);
+                if (email.IsSuccess) await SendPaidEmailAsync(id.ToString(), response.Price, email.Value);
+            }
+        });
     }
-
-    public async Task<Result<PedidoLineaResponseDto, DomainErrors>> AddLineaAsync(Ulid pedidoId, PedidoLineaRequestDto request)
-    {
-        logger.LogInformation("Añadiendo línea al pedido {PedidoId}", pedidoId);
-        var pedido = await repository.FindByIdAsync(pedidoId);
-        if (pedido is null)
-            return Result.Failure<PedidoLineaResponseDto, DomainErrors>(new PurchasedNotFoundError())
-                .TapError(() => logger.LogWarning("Pedido con ID {PedidoId} no encontrado", pedidoId));
-
-        var linea = request.ToEntity(pedidoId);
-        var savedLinea = await repository.CreateLineaAsync(linea);
-
-        await cache.RemoveAsync(CacheKeys.PurchasedCacheKey + pedidoId);
-
-        return Result.Success<PedidoLineaResponseDto, DomainErrors>(savedLinea.ToDto())
-            .Tap(() => logger.LogInformation("Línea añadida con ID {LineaId}", savedLinea.Id));
+    Task SendPaidEmailAsync(string orderId,double price, string email) {
+        var message = new EmailMessage {
+            To = email,
+            Subject = "Pago confirmado",
+            Body = EmailTemplates.PaymentConfirmed(orderId,price),
+            IsHtml = true
+        };
+        return emailService.EnqueueEmailAsync(message);
     }
+    
+    
 
     public async Task<Result<PedidoLineaResponseDto, DomainErrors>> UpdateLineaAsync(Ulid lineaId, PedidoLineaPatchDto request)
     {
@@ -296,7 +337,52 @@ public class PurchasedService(
 
         await cache.RemoveAsync(CacheKeys.PurchasedCacheKey + updatedLinea.PedidoId);
 
-        return Result.Success<PedidoLineaResponseDto, DomainErrors>(updatedLinea.ToDto())
+        return await Result.Success<PedidoLineaResponseDto, DomainErrors>(updatedLinea.ToDto())
+            .TapAsync(async _ => {
+                var pedido = await repository.FindByIdAsync(updatedLinea.PedidoId);
+                if (pedido != null)
+                {
+                    var player = await userRepository.FindByIdAsync(pedido.PlayerId);
+                    if (player != null && !string.IsNullOrWhiteSpace(player.Email) && player.Email.Contains("@"))
+                    {
+                        if (statusEnum == Status.COMPLETED)
+                        {
+                            logger.LogInformation("Correo de línea completada enviado al jugador para la línea con ID {LineaId}", lineaId);
+                            await SendLineaCompletedEmailAsync(lineaId.ToString(), pedido.Id.ToString(), player.Email,existingLinea.RaquetModel);
+                        }
+                        else if (statusEnum == Status.DELIVERED_TOpLAYER)
+                        {
+                            logger.LogInformation("Correo de línea entregada enviado al jugador para la línea con ID {LineaId}", lineaId);
+                            await SendLineaDeliveredEmailAsync(lineaId.ToString(), pedido.Id.ToString(), player.Email,existingLinea.RaquetModel);
+                        }
+                    }
+                }
+            })
             .Tap(() => logger.LogInformation("Estado de línea con ID {LineaId} cambiado exitosamente a {Status}", lineaId, statusEnum));
     }
+
+    private async Task SendLineaCompletedEmailAsync(string lineaId, string pedidoId, string email,string productName)
+    {
+        var message = new EmailMessage
+        {
+            To = email,
+            Subject = "Línea completada",
+            Body = EmailTemplates.LineaCompleted(lineaId, pedidoId,productName),
+            IsHtml = true
+        };
+        await emailService.EnqueueEmailAsync(message);
+    }
+
+    private async Task SendLineaDeliveredEmailAsync(string lineaId, string pedidoId, string email,string productName)
+    {
+        var message = new EmailMessage
+        {
+            To = email,
+            Subject = "Línea entregada",
+            Body = EmailTemplates.LineaDelivered(lineaId, pedidoId,productName),
+            IsHtml = true
+        };
+        await emailService.EnqueueEmailAsync(message);
+    }
+    
 }

@@ -181,7 +181,7 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(policy: "RequireEncorderRole")]
-    public async Task<IActionResult> ChangePaymentStatusPurchased(string id, [FromQuery] string paymentStatus)
+    public async Task<IActionResult> ChangePaymentStatusPurchased(string id, [FromBody] string paymentStatus)
     {
         logger.LogInformation("Change payment status purchased with id {Id} to payment status {PaymentStatus}", id, paymentStatus);
         if (Ulid.TryParse(id, out var ulid))
@@ -198,29 +198,7 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
         var error = new PurchasedNotFoundError();
         return NotFound(new { error.Error });
     }
-
-    [HttpPost("{pedidoId}/lineas")]
-    [ProducesResponseType(typeof(PedidoLineaResponseDto), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(policy: "RequireEncorderRole")]
-    public async Task<IActionResult> AddLinea(string pedidoId, PedidoLineaRequestDto request)
-    {
-        logger.LogInformation("Add linea to pedido {PedidoId}", pedidoId);
-        if (Ulid.TryParse(pedidoId, out var ulidPedido))
-        {
-            return await service.AddLineaAsync(ulidPedido, request).Match(
-                onSuccess: linea => CreatedAtAction(nameof(GetById), new { id = pedidoId }, linea),
-                onFailure: error => error switch
-                {
-                    PurchasedNotFoundError => NotFound(new { error.Error }),
-                    _ => StatusCode(StatusCodes.Status500InternalServerError, new { error.Error })
-                });
-        }
-        var error = new PurchasedNotFoundError();
-        return NotFound(new { error.Error });
-    }
+    
 
     [HttpPut("lineas/{lineaId}")]
     [ProducesResponseType(typeof(PedidoLineaResponseDto), StatusCodes.Status200OK)]
@@ -279,7 +257,7 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(policy: "RequireEncorderRole")]
-    public async Task<IActionResult> ChangeLineaStatus(string lineaId, [FromQuery] string status)
+    public async Task<IActionResult> ChangeLineaStatus(string lineaId, [FromBody] string status)
     {
         logger.LogInformation("Change linea status with id {LineaId} to {Status}", lineaId, status);
         if (Ulid.TryParse(lineaId, out var ulidLinea))

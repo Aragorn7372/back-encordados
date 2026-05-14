@@ -28,6 +28,8 @@ services.AddAuthentication(configuration);
 services.AddCache(configuration);
 // añado cloudinary
 services.AddCloudinary(configuration);
+// añado configuracion global
+services.AddAppConfig(configuration);
 // añado repositorios
 services.AddRepositories();
 // añado servicios

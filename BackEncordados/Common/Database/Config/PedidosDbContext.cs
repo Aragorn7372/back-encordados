@@ -41,6 +41,10 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
         builder.Property(p => p.PayStatus)
             .IsRequired();
 
+        builder.Property(p => p.Price)
+            .IsRequired()
+            .HasColumnType("decimal(10, 2)");
+
         builder.Property(p => p.CreatedAt)
             .IsRequired()
             .HasDefaultValueSql(Time);
@@ -148,6 +152,7 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
                 AssignedTo = carlos,
                 Machine = "Máquina Alpha-1",
                 Comments = "Cliente preferente, ser cuidadoso con el logotipo",
+                Price = 45.50,
                 PayStatus = PaymentStatus.PENDING_PAYMENT,
                 CreatedAt = now.AddDays(-5),
                 UpdatedAt = now.AddDays(-5)
@@ -160,6 +165,7 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
                 AssignedTo = maria,
                 Machine = "Máquina Beta-2",
                 Comments = "Tensión estándar, sin especificaciones especiales",
+                Price = 38.00,
                 PayStatus = PaymentStatus.PAID,
                 CreatedAt = now.AddDays(-3),
                 UpdatedAt = now.AddDays(-1)
@@ -172,6 +178,7 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
                 AssignedTo = carlos,
                 Machine = "Máquina Alpha-1",
                 Comments = "Revisar empuñadura, cambiar grip si es necesario",
+                Price = 52.75,
                 PayStatus = PaymentStatus.PAID,
                 CreatedAt = now.AddDays(-15),
                 UpdatedAt = now.AddDays(-2)
@@ -184,6 +191,7 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
                 AssignedTo = maria,
                 Machine = "Máquina Gamma-3",
                 Comments = "Segunda raqueta del jugador",
+                Price = 40.00,
                 PayStatus = PaymentStatus.PAID,
                 CreatedAt = now.AddDays(-10),
                 UpdatedAt = now.AddDays(-4)
@@ -196,6 +204,7 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
                 AssignedTo = carlos,
                 Machine = "Máquina Alpha-1",
                 Comments = "CANCELADO: Cliente cambió de planes",
+                Price = 35.50,
                 PayStatus = PaymentStatus.CANCELED,
                 CreatedAt = now.AddDays(-7),
                 UpdatedAt = now.AddDays(-3)
@@ -208,6 +217,7 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
                 AssignedTo = maria,
                 Machine = "Banco de trabajo",
                 Comments = "Microfisura en el marco. Cliente prioritario",
+                Price = 60.00,
                 PayStatus = PaymentStatus.PENDING_PAYMENT,
                 CreatedAt = now.AddDays(-8),
                 UpdatedAt = now.AddDays(-1)

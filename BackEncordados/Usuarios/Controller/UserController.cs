@@ -262,7 +262,7 @@ public class UserController(ILogger<UserController> logger, IUserService service
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(Policy = "RequireAdminRole")]
-    public async Task<IActionResult> GiveRole(Ulid id, [FromQuery] string role)
+    public async Task<IActionResult> GiveRole(Ulid id, [FromBody] string role)
     {
         var result = await service.GiveRoleToUserAsync(id, role);
         if (result.IsSuccess)
