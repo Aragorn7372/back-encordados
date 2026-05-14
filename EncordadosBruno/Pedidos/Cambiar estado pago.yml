@@ -5,14 +5,13 @@ info:
 
 http:
   method: PATCH
-  url: "{{api-url}}/api/Purchased/change-payment-status/01KR42ME5P1Q2BGWW1DY11Z5AA?paymentStatus=PAID"
-  params:
-    - name: paymentStatus
-      value: PAID
-      type: query
+  url: "{{api-url}}/api/Purchased/change-payment-status/01KR424NQJR7CEHQW4STCQ3GGE"
+  body:
+    type: json
+    data: '"PAID"'
   auth:
     type: bearer
-    token: "{{token_encoder}}"
+    token: "{{token_encorder_carlos}}"
 
 settings:
   encodeUrl: true

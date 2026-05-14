@@ -1,6 +1,10 @@
 ﻿using BackEncordados.Common.Dto;
+using BackEncordados.Common.Service.Cache;
+using BackEncordados.Common.Service.Cache.keys;
 using BackEncordados.Common.Service.Cloudinary;
+using BackEncordados.Common.Service.Email;
 using BackEncordados.Common.Utils;
+using BackEncordados.Infraestructure;
 using BackEncordados.Usuarios.Dto;
 using BackEncordados.Usuarios.Errors;
 using BackEncordados.Usuarios.Mapper;
@@ -10,8 +14,14 @@ using CSharpFunctionalExtensions;
 
 namespace BackEncordados.Usuarios.Service.CrudService;
 
-public class UserService(ILogger<UserService> logger, IUserRepository repository,ICloudinaryService cloudinary) : IUserService
-{
+public class UserService(
+    ILogger<UserService> logger, 
+    IUserRepository repository,
+    ICloudinaryService cloudinary,
+    IEmailService emailService,
+    ICacheService cache
+    ) : IUserService {
+    private const string CacheKey = CacheKeys.PasswordChange;
     public async Task<Result<UserResponseDto, AuthError>> FindByIdAsync(Ulid id)
     {
         return await repository.FindByIdAsync(id) is { } user
@@ -92,12 +102,29 @@ public class UserService(ILogger<UserService> logger, IUserRepository repository
     public async Task<Result<UserResponseDto, AuthError>> CreateContacto(ContactoPostRequestDto request) {
         logger.LogInformation("Creando contacto para el usuario con nombre: {Name}",request.Name);
         return await repository.SaveAsync(request.ToModel()) is { } user
-            ? Result.Success<UserResponseDto, AuthError>(user.ToDto(cloudinary))
-                .Tap((() => logger.LogInformation("Contacto creado con ID: {Id}", user.Id)))
+            ? await Result.Success<UserResponseDto, AuthError>(user.ToDto(cloudinary))
+                .TapAsync((async _=> {
+                    logger.LogInformation("Contacto creado con ID: {Id}", user.Id);
+                    if(request.Email is not null) {
+                        var key = CacheKey + Guid.NewGuid();
+                        await cache.SetAsync(key, user.Id,TimeSpan.FromMinutes(60));
+                        await SendPasswordChangeEmail(request.Email, key);
+                    }
+                }))
             : Result.Failure<UserResponseDto, AuthError>(new ConflictError("Error creating contact"))
                 .TapError((() => logger.LogError("Error creating contact for user with name: {Name}", request.Name)));
     }
-
+    
+    private async Task SendPasswordChangeEmail(string email, string guid) {
+        var passwordUrl= $"{AppConfig.Current.FrontendUrl}/changePassword?guid={guid}";
+        var message = new EmailMessage {
+            To = email,
+            Subject = "Cambio de contraseña en nuevo contacto",
+            Body = EmailTemplates.PasswordReset(passwordUrl),
+            IsHtml = true
+        };
+        await emailService.EnqueueEmailAsync(message);
+    }
     public async Task<Result<Unit, AuthError>> CreateEncoderAsync(Ulid userId) {
         logger.LogInformation("Creando encordador para usuario con ID: {UserId}", userId);
         

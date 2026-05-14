@@ -13,5 +13,6 @@ public record PurchasedResponseDto(
     string PayStatus,
     DateTime CreatedAt,
     DateTime UpdatedAt,
+    double Price,
     List<PedidoLineaResponseDto> Lineas
 );

@@ -3,6 +3,19 @@ info:
   type: http
   seq: 10
 
+http:
+  method: DELETE
+  url: "{{api-url}}/api/Purchased/lineas/01KR424NQJDA22KTM967R9RW9N"
+  auth:
+    type: bearer
+    token: "{{token_encoder}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
 docs: |
   # Cancelar Línea de Pedido como Encoder
 
@@ -24,16 +37,3 @@ docs: |
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Encoder
   - **404 Not Found**: Línea no encontrada
-
-http:
-  method: DELETE
-  url: "{{api-url}}/api/Purchased/lineas/01ARZ3NDEKTSV4RRFFQ69G1FAV"
-  auth:
-    type: bearer
-    token: "{{token_encoder}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5
