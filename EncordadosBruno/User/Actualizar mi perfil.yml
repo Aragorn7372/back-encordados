@@ -3,6 +3,39 @@ info:
   type: http
   seq: 5
 
+http:
+  method: PATCH
+  url: "{{api-url}}/api/User/me"
+  body:
+    type: multipart-form
+    data:
+      - name: Name
+        type: text
+        value: Juan Martínez Torres
+        contentType: text
+      - name: Email
+        type: text
+        value: juan.nuevo@tenis.com
+        contentType: text
+      - name: Telefono
+        type: text
+        value: "956789999"
+        contentType: text
+      - name: Avatar
+        type: file
+        value:
+          - C:\Users\Aragorn\RiderProjects\BackEncordados\EncordadosBruno\image\Captura de pantalla 2026-02-21 221125.png
+        contentType: file
+  auth:
+    type: bearer
+    token: "{{token_juan}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
 docs: |
   # Actualizar Mi Perfil
 
@@ -40,24 +73,3 @@ docs: |
 
   ## Nota
   Este endpoint usa la misma ruta que "Actualizar usuario por id" pero toma el ID del token JWT.
-
-http:
-  method: PATCH
-  url: "{{api-url}}/api/User/{{user_id_juan}}"
-  body:
-    type: json
-    data: |-
-      {
-        "Name": "Juan Martínez Torres",
-        "Email": "juan.nuevo@tenis.com",
-        "Telefono": "956789999"
-      }
-  auth:
-    type: bearer
-    token: "{{token_admin}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5

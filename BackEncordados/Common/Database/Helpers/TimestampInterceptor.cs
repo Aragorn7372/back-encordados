@@ -4,14 +4,10 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace BackEncordados.Common.Database.Helpers;
 
-/// <summary>
-/// Interceptor de EF Core que asigna CreatedAt y UpdatedAt automáticamente.
-/// </summary>
+
 public class TimestampInterceptor : SaveChangesInterceptor
 {
-    /// <summary>
-    /// Asigna timestamps antes de guardar cambios (sync).
-    /// </summary>
+
     public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
     {
         if (eventData.Context == null)
@@ -21,9 +17,6 @@ public class TimestampInterceptor : SaveChangesInterceptor
         return base.SavingChanges(eventData, result);
     }
 
-    /// <summary>
-    /// Asigna timestamps antes de guardar cambios (async).
-    /// </summary>
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData,
         InterceptionResult<int> result,
@@ -56,14 +49,9 @@ public class TimestampInterceptor : SaveChangesInterceptor
     }
 }
 
-/// <summary>
-/// Extensiones para configurar timestamps en entidades.
-/// </summary>
 public static class TimestampExtensions
 {
-    /// <summary>
-    /// Configura CreatedAt y UpdatedAt como GeneratedOnAdd/Update.
-    /// </summary>
+
     public static void ConfigureTimestamps(this EntityTypeBuilder entity)
     {
         entity.Property("CreatedAt")

@@ -3,6 +3,16 @@ info:
   type: http
   seq: 1
 
+http:
+  method: GET
+  url: "{{api-url}}/health"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
 docs: |
   # Health Check
 
@@ -22,9 +32,3 @@ docs: |
   - [ ] Verificar respuesta exitosa (200)
   - [ ] Verificar que no requiere autenticación
   - [ ] Usar para monitoring en producción
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5

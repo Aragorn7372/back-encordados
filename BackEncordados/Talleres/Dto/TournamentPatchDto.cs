@@ -9,5 +9,5 @@ public class TournamentPatchDto
     public string? Name { get; set; }
     public DateTime? EndTournament { get; set; }
     public DateTime? StartTournament { get; set; }
-     public string? Logotype { get; set; }
+     public IFormFile? Logotype { get; set; }
 }

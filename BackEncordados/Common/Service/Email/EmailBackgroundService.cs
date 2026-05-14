@@ -2,43 +2,36 @@
 
 namespace BackEncordados.Common.Service.Email;
 
-/// <summary>
-/// Servicio en segundo plano para procesar la cola de emails.
-/// Usa Channel para gestión thread-safe de la cola.
-/// </summary>
+
 public class EmailBackgroundService(
     Channel<EmailMessage> emailChannel,
     IServiceProvider serviceProvider,
     ILogger<EmailBackgroundService> logger
-) : BackgroundService
-{
-    private readonly Channel<EmailMessage> _emailChannel = emailChannel;
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
-    private readonly ILogger<EmailBackgroundService> _logger = logger;
+) : BackgroundService {
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        _logger.LogInformation("Servicio de email en segundo plano iniciado");
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
+        
+        logger.LogInformation("Servicio de email en segundo plano iniciado");
 
-        await foreach (var emailMessage in _emailChannel.Reader.ReadAllAsync(stoppingToken))
+        await foreach (var emailMessage in emailChannel.Reader.ReadAllAsync(stoppingToken))
         {
             try
             {
-                using var scope = _serviceProvider.CreateScope();
+                using var scope = serviceProvider.CreateScope();
                 var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
 
-                _logger.LogInformation("Procesando email de la cola para: {To}", emailMessage.To);
+                logger.LogInformation("Procesando email de la cola para: {To}", emailMessage.To);
 
                 await emailService.SendEmailAsync(emailMessage);
 
-                _logger.LogInformation("Email procesado exitosamente para: {To}", emailMessage.To);
+                logger.LogInformation("Email procesado exitosamente para: {To}", emailMessage.To);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error procesando email para: {To}", emailMessage.To);
+                logger.LogError(ex, "Error procesando email para: {To}", emailMessage.To);
             }
         }
 
-        _logger.LogInformation("Servicio de email en segundo plano detenido");
+        logger.LogInformation("Servicio de email en segundo plano detenido");
     }
 }

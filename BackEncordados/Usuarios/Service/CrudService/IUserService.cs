@@ -9,7 +9,7 @@ namespace BackEncordados.Usuarios.Service.CrudService;
 public interface IUserService
 {
     Task<Result<UserResponseDto, AuthError>> FindByIdAsync(Ulid id);
-    Task DeleteUserAsync(Ulid id);
+    Task<Result<Unit, AuthError>> DeleteUserAsync(Ulid id);
     Task<Result<bool,AuthError>> GiveRoleToUserAsync(Ulid id, string role);
     Task<PageResponseDto<UserWithIdDto>> GetAllUsersAsync(FilterUserDto filter);
     Task<Result<UserResponseDto, AuthError>> PatchUserAsync(Ulid id, UserRequestDto request);

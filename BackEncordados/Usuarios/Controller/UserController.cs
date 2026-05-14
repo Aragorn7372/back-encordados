@@ -11,7 +11,6 @@ namespace BackEncordados.Usuarios.Controller;
 
 [ApiController]
 [Route("api/[controller]")]
-[Produces("application/json")]
 public class UserController(ILogger<UserController> logger, IUserService service) : ControllerBase
 {
     [HttpGet]
@@ -176,7 +175,7 @@ public class UserController(ILogger<UserController> logger, IUserService service
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize]
-    public async Task<IActionResult> PatchMe([FromBody] UserRequestDto request)
+    public async Task<IActionResult> PatchMe([FromForm] UserRequestDto request)
     {
         var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
         if (userIdClaim is null || !Ulid.TryParse(userIdClaim.Value, out var userId))
@@ -242,7 +241,7 @@ public class UserController(ILogger<UserController> logger, IUserService service
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(Policy = "RequireAdminRole")]
-    public async Task<IActionResult> Patch(Ulid id, [FromBody] UserRequestDto request)
+    public async Task<IActionResult> Patch(Ulid id, [FromForm] UserRequestDto request)
     {
         var result = await service.PatchUserAsync(id, request);
         return result.Match(

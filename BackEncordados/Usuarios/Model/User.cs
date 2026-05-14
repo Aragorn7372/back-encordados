@@ -1,4 +1,5 @@
 ﻿using BackEncordados.Common.Database.Helpers;
+using BackEncordados.Common.Service.Cloudinary;
 
 namespace BackEncordados.Usuarios.Model;
 
@@ -8,38 +9,31 @@ namespace BackEncordados.Usuarios.Model;
 /// </summary>
 public class User : ITimestamped
 {
-    public const string DEFAULT_IMAGE="/images/users/default.jpg";
-    /// <summary>ID único del usuario (PK en PostgreSQL).</summary>
     public Ulid Id { get; set; } = Ulid.NewUlid();
 
-    /// <summary>Nombre de usuario público (3-50 caracteres, único).</summary>
     public string Username { get; set; } = string.Empty;
     
     public string Name { get; set; } = string.Empty;
 
-    /// <summary>Email del usuario (obligatorio, único).</summary>
     public string Email { get; set; } = string.Empty;
-    ///
+    
     public string? Phone { get; set; } 
     
-    /// <summary>Hash BCrypt de la contraseña (60 caracteres aprox).</summary>
     public string PasswordHash { get; set; } = string.Empty;
 
-    /// <summary>Rol del usuario (USER o ADMIN).</summary>
     public string Role { get; set; } = UserRoles.USER;
     
     public long? TournamentId { get; set; }
     
 
-    /// <summary>Indica si el usuario está eliminado (soft-delete).</summary>
     public bool IsDeleted { get; set; }
     
-    public string ImageUrl { get; set; } = DEFAULT_IMAGE;
+    public string ImageUrl { get; set; }=CloudinaryConstants.DEFAULT_IMAGE_USUARIOS;
+    
+    public string? CloudinaryPublicId { get; set; }
 
-    /// <summary>Fecha de creación en UTC.</summary>
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 
-    /// <summary>Fecha de última modificación en UTC.</summary>
     public DateTime UpdatedAt { get; init; } = DateTime.UtcNow;
 
 

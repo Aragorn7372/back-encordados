@@ -47,14 +47,20 @@ http:
   method: PUT
   url: "{{api-url}}/api/Tournaments/1"
   body:
-    type: json
-    data: |-
-      {
-        "Name": "Torneo Madrileño 2025 - Actualizado",
-        "EndTournament": "2026-07-20T00:00:00Z",
-        "StartTournament": "2026-06-28T00:00:00Z",
-        "Logotype": "/logos/torneo-madrid-v2.jpg"
-      }
+    type: multipart-form
+    data:
+      - name: Name
+        value: "Torneo Madrileño 2025 - Actualizado"
+        type: text
+      - name: StartTournament
+        value: "2026-06-28T00:00:00Z"
+        type: text
+      - name: EndTournament
+        value: "2026-07-20T00:00:00Z"
+        type: text
+      - name: Logotype
+        value: "path/to/torneo-madrid-v2.jpg"
+        type: file
   auth:
     type: bearer
     token: "{{token_admin}}"

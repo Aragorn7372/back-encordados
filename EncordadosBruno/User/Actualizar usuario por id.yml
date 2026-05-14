@@ -50,14 +50,24 @@ http:
   method: PATCH
   url: "{{api-url}}/api/User/{{user_id_juan}}"
   body:
-    type: json
-    data: |-
-      {
-        "Name": "Juan Martínez Actualizado",
-        "Email": "juan.actualizado@tenis.com",
-        "Telefono": "956789999",
-        "Username": "juan_updated"
-      }
+    type: multipart-form
+    data:
+      - name: Name
+        type: text
+        value: Juan Martínez Actualizado
+      - name: Email
+        type: text
+        value: juan.actualizado@tenis.com
+      - name: Telefono
+        type: text
+        value: "956789999"
+      - name: Username
+        type: text
+        value: juan_updated
+      - name: Avatar
+        type: file
+        value:
+          - C:\Users\Aragorn\RiderProjects\BackEncordados\EncordadosBruno\image\Captura de pantalla 2026-02-21 221125.png
   auth:
     type: bearer
     token: "{{token_admin}}"

@@ -1,8 +1,6 @@
 ﻿namespace BackEncordados.Common.Service.Email;
 
-/// <summary>
-/// Implementación de IEmailService para desarrollo que solo loguea los emails.
-/// </summary>
+
 public class MemoryEmailService : IEmailService
 {
     private readonly ILogger<MemoryEmailService> _logger;
@@ -12,14 +10,12 @@ public class MemoryEmailService : IEmailService
         _logger = logger;
     }
 
-    /// <inheritdoc />
     public Task EnqueueEmailAsync(EmailMessage message)
     {
         LogEmail(message, "ENQUEUED");
         return Task.CompletedTask;
     }
 
-    /// <inheritdoc />
     public Task SendEmailAsync(EmailMessage message)
     {
         LogEmail(message, "SENT");

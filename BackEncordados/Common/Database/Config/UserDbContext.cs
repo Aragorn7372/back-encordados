@@ -1,4 +1,5 @@
 ﻿using BackEncordados.Common.Database.Helpers;
+using BackEncordados.Common.Service.Cloudinary;
 using BackEncordados.Usuarios.Model;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,7 +21,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
             entity.Property(u => u.PasswordHash).IsRequired();
             entity.Property(u => u.Role).IsRequired().HasMaxLength(20);
             entity.Property(u => u.Phone).HasMaxLength(20);
-            entity.Property(u => u.ImageUrl).IsRequired().HasMaxLength(100);
+            entity.Property(u => u.ImageUrl).IsRequired().HasMaxLength(500);
+            entity.Property(u => u.CloudinaryPublicId).HasMaxLength(300);
             entity.Property(u => u.IsDeleted).HasDefaultValue(false);
             entity.ConfigureTimestamps();
             entity.HasIndex(e => e.Email).IsUnique().HasDatabaseName("IX_users_email_unique");
@@ -54,7 +56,7 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
             
 // Usuario ADMIN
             new() {
-                Id = Ulid.Parse("01ARZ3NDEKTSV4RRFFQ69G5FAV"),
+                Id = admin,
                 Username = "admin_encordados",
                 Name = "Administrador",
                 Email = "admin@encordados.com",
@@ -62,7 +64,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 PasswordHash = adminPasswordHash,
                 Role = User.UserRoles.ADMIN,
                 IsDeleted = false,
-                ImageUrl = "/images/users/default.jpg",
+                ImageUrl = CloudinaryConstants.DEFAULT_IMAGE_USUARIOS,
+                CloudinaryPublicId = null,
                 CreatedAt = DateTime.UtcNow.AddMonths(-6),
                 UpdatedAt = DateTime.UtcNow.AddMonths(-6),
                 TournamentId = null
@@ -70,7 +73,7 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
 
             // Usuario OWNER
             new() {
-                Id = Ulid.Parse("01KR42E3NRTHEKKH1VHSNZK74D"),
+                Id = owner,
                 Username = "owner_principal",
                 Name = "Propietario",
                 Email = "owner@encordados.com",
@@ -78,7 +81,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 PasswordHash = ownerPasswordHash,
                 Role = User.UserRoles.OWNER,
                 IsDeleted = false,
-                ImageUrl = "/images/users/default.jpg",
+                ImageUrl = CloudinaryConstants.DEFAULT_IMAGE_USUARIOS,
+                CloudinaryPublicId = null,
                 CreatedAt = DateTime.UtcNow.AddMonths(-5),
                 UpdatedAt = DateTime.UtcNow.AddMonths(-5),
                 TournamentId = null
@@ -95,7 +99,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 PasswordHash = encorderPasswordHash,
                 Role = User.UserRoles.ENCORDER,
                 IsDeleted = false,
-                ImageUrl = "/images/users/default.jpg",
+                ImageUrl = CloudinaryConstants.DEFAULT_IMAGE_USUARIOS,
+                CloudinaryPublicId = null,
                 CreatedAt = DateTime.UtcNow.AddMonths(-4),
                 UpdatedAt = DateTime.UtcNow.AddMonths(-4),
                 TournamentId = null
@@ -111,7 +116,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 PasswordHash = encorderPasswordHash,
                 Role = User.UserRoles.ENCORDER,
                 IsDeleted = false,
-                ImageUrl = "/images/users/default.jpg",
+                ImageUrl = CloudinaryConstants.DEFAULT_IMAGE_USUARIOS,
+                CloudinaryPublicId = null,
                 CreatedAt = DateTime.UtcNow.AddMonths(-3),
                 UpdatedAt = DateTime.UtcNow.AddMonths(-3),
                 TournamentId = null
@@ -127,7 +133,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 PasswordHash = userPasswordHash,
                 Role = User.UserRoles.USER,
                 IsDeleted = false,
-                ImageUrl = "/images/users/default.jpg",
+                ImageUrl = CloudinaryConstants.DEFAULT_IMAGE_USUARIOS,
+                CloudinaryPublicId = null,
                 CreatedAt = DateTime.UtcNow.AddMonths(-2),
                 UpdatedAt = DateTime.UtcNow.AddMonths(-2),
                 TournamentId = 1
@@ -143,7 +150,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 PasswordHash = userPasswordHash,
                 Role = User.UserRoles.USER,
                 IsDeleted = false,
-                ImageUrl = "/images/users/default.jpg",
+                ImageUrl = CloudinaryConstants.DEFAULT_IMAGE_USUARIOS,
+                CloudinaryPublicId = null,
                 CreatedAt = DateTime.UtcNow.AddMonths(-1),
                 UpdatedAt = DateTime.UtcNow.AddMonths(-1),
                 TournamentId = 1
@@ -159,7 +167,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 PasswordHash = userPasswordHash,
                 Role = User.UserRoles.USER,
                 IsDeleted = false,
-                ImageUrl = "/images/users/default.jpg",
+                ImageUrl = CloudinaryConstants.DEFAULT_IMAGE_USUARIOS,
+                CloudinaryPublicId = null,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 TournamentId = 1
@@ -175,7 +184,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 PasswordHash = supervisorPasswordHash,
                 Role = User.UserRoles.SUPERVISOR,
                 IsDeleted = false,
-                ImageUrl = "/images/users/default.jpg",
+                ImageUrl = CloudinaryConstants.DEFAULT_IMAGE_USUARIOS,
+                CloudinaryPublicId = null,
                 CreatedAt = DateTime.UtcNow.AddMonths(-3),
                 UpdatedAt = DateTime.UtcNow.AddMonths(-3),
                 TournamentId = null
@@ -191,7 +201,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 PasswordHash = supervisorPasswordHash,
                 Role = User.UserRoles.SUPERVISOR,
                 IsDeleted = false,
-                ImageUrl = "/images/users/default.jpg",
+                ImageUrl = CloudinaryConstants.DEFAULT_IMAGE_USUARIOS,
+                CloudinaryPublicId = null,
                 CreatedAt = DateTime.UtcNow.AddMonths(-2),
                 UpdatedAt = DateTime.UtcNow.AddMonths(-2),
                 TournamentId = null

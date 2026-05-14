@@ -26,6 +26,8 @@ services.AddAuthorization();
 services.AddAuthentication(configuration);
 // añado la cache
 services.AddCache(configuration);
+// añado cloudinary
+services.AddCloudinary(configuration);
 // añado repositorios
 services.AddRepositories();
 // añado servicios
@@ -69,6 +71,9 @@ Log.Information("Smtp: Host={SmtpHost}, Port={SmtpPort}, Username={SmtpUsername}
 Log.Information("ConnectionStrings: DefaultConnection={DefaultConnection}", configuration["ConnectionStrings:DefaultConnection"]);
 Log.Information("Redis: Host={RedisHost}, Password={RedisPassword}, Port={RedisPort}",
     configuration["Redis:Host"], configuration["Redis:Password"], configuration["Redis:Port"]);
+Log.Information("Cloudinary: CloudName={CloudName}, Transformations={Width}x{Height} ({Crop})",
+    configuration["Cloudinary:CloudName"], configuration["Cloudinary:Transformations:Width"], 
+    configuration["Cloudinary:Transformations:Height"], configuration["Cloudinary:Transformations:Crop"]);
 Log.Information("=== END CONFIGURATION ===");
 
 try
