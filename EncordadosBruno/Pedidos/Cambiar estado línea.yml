@@ -1,7 +1,7 @@
 info:
   name: Cambiar estado de línea
   type: http
-  seq: 11
+  seq: 13
 
 http:
   method: PATCH
@@ -9,9 +9,6 @@ http:
   auth:
     type: bearer
     token: "{{token_carlos}}"
-  body:
-    mode: json
-    json: "COMPLETED"
 
 settings:
   encodeUrl: true

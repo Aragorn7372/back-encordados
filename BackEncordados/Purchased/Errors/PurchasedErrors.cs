@@ -11,3 +11,5 @@ public record PurchasedNotFoundError(string Error="Purchased not found") : Purch
 public record ValidationError(string Error): PurchasedErrors(Error);
 
 public record InvalidStatusError(string Error) : PurchasedErrors(Error);
+
+public record ConcurrencyError(string Error = "El usuario fue modificado por otra operación. Intente de nuevo.") : PurchasedErrors(Error);

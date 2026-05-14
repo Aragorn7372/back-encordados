@@ -24,6 +24,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
             entity.Property(u => u.ImageUrl).IsRequired().HasMaxLength(500);
             entity.Property(u => u.CloudinaryPublicId).HasMaxLength(300);
             entity.Property(u => u.IsDeleted).HasDefaultValue(false);
+            entity.Property(u => u.Bonos).HasDefaultValue(0);
+            entity.Property(u => u.Version).IsRowVersion();
             entity.ConfigureTimestamps();
             entity.HasIndex(e => e.Email).IsUnique().HasDatabaseName("IX_users_email_unique");
             entity.HasIndex(e => e.Username).IsUnique().HasDatabaseName("IX_users_username_unique");
@@ -54,7 +56,7 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
         var users = new List<User>
         {
             
-// Usuario ADMIN
+            // Usuario ADMIN
             new() {
                 Id = admin,
                 Username = "admin_encordados",
@@ -68,7 +70,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 CloudinaryPublicId = null,
                 CreatedAt = DateTime.UtcNow.AddMonths(-6),
                 UpdatedAt = DateTime.UtcNow.AddMonths(-6),
-                TournamentId = null
+                TournamentId = null,
+                Version = 1
             },
 
             // Usuario OWNER
@@ -85,7 +88,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 CloudinaryPublicId = null,
                 CreatedAt = DateTime.UtcNow.AddMonths(-5),
                 UpdatedAt = DateTime.UtcNow.AddMonths(-5),
-                TournamentId = null
+                TournamentId = null,
+                Version = 1
             },
 
               
@@ -103,7 +107,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 CloudinaryPublicId = null,
                 CreatedAt = DateTime.UtcNow.AddMonths(-4),
                 UpdatedAt = DateTime.UtcNow.AddMonths(-4),
-                TournamentId = null
+                TournamentId = null,
+                Version = 1
             },
 
             // Usuario ENCORDER 2
@@ -120,7 +125,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 CloudinaryPublicId = null,
                 CreatedAt = DateTime.UtcNow.AddMonths(-3),
                 UpdatedAt = DateTime.UtcNow.AddMonths(-3),
-                TournamentId = null
+                TournamentId = null,
+                Version = 1
             },
 
             // Usuario JUGADOR 1
@@ -137,7 +143,9 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 CloudinaryPublicId = null,
                 CreatedAt = DateTime.UtcNow.AddMonths(-2),
                 UpdatedAt = DateTime.UtcNow.AddMonths(-2),
-                TournamentId = 1
+                TournamentId = 1,
+                Bonos = 100.0,
+                Version = 1
             },
 
             // Usuario JUGADOR 2
@@ -154,7 +162,9 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 CloudinaryPublicId = null,
                 CreatedAt = DateTime.UtcNow.AddMonths(-1),
                 UpdatedAt = DateTime.UtcNow.AddMonths(-1),
-                TournamentId = 1
+                TournamentId = 1,
+                Bonos = 25.0,
+                Version = 1
             },
 
             // Usuario JUGADOR 3
@@ -171,7 +181,9 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 CloudinaryPublicId = null,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                TournamentId = 1
+                TournamentId = 1,
+                Bonos = 0,
+                Version = 1
             },
 
             // Usuario SUPERVISOR 1
@@ -188,7 +200,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 CloudinaryPublicId = null,
                 CreatedAt = DateTime.UtcNow.AddMonths(-3),
                 UpdatedAt = DateTime.UtcNow.AddMonths(-3),
-                TournamentId = null
+                TournamentId = null,
+                Version = 1
             },
 
             // Usuario SUPERVISOR 2
@@ -205,7 +218,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 CloudinaryPublicId = null,
                 CreatedAt = DateTime.UtcNow.AddMonths(-2),
                 UpdatedAt = DateTime.UtcNow.AddMonths(-2),
-                TournamentId = null
+                TournamentId = null,
+                Version = 1
             }
         };
 

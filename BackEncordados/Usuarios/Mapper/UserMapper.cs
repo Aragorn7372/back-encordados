@@ -11,7 +11,8 @@ public static class UserMapper
         return new UserResponseDto(
             user.Username,
             cloudinary.ResolveImageUrl(user.ImageUrl, CloudinaryConstants.FOLDER_USUARIOS),
-            user.Name
+            user.Name,
+            user.Bonos
             );
     }
     public static UserWithIdDto ToDtoWithId(this User user,ICloudinaryService cloudinary)

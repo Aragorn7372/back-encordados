@@ -32,6 +32,10 @@ public class User : ITimestamped
     
     public string? CloudinaryPublicId { get; set; }
 
+    public double Bonos { get; set; }
+
+    public int Version { get; set; } = 1;
+
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 
     public DateTime UpdatedAt { get; init; } = DateTime.UtcNow;

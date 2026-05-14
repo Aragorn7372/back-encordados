@@ -15,4 +15,5 @@ public interface IUserService
     Task<Result<UserResponseDto, AuthError>> PatchUserAsync(Ulid id, UserRequestDto request);
     Task<Result<UserResponseDto, AuthError>> CreateContacto(ContactoPostRequestDto request);
     Task<Result<Unit, AuthError>> CreateEncoderAsync(Ulid userId);
+    Task<Result<UserResponseDto, AuthError>> AddBonosAsync(Ulid userId, double cantidad);
 }

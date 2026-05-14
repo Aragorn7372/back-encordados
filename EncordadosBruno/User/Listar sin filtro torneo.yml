@@ -1,7 +1,20 @@
 info:
   name: Listar usuarios sin filtro torneo
   type: http
-  seq: 5
+  seq: 9
+
+http:
+  method: GET
+  url: "{{api-url}}/api/User?page=0&size=10"
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
 
 docs: |
   # Listar usuarios sin filtro de torneo
@@ -16,16 +29,3 @@ docs: |
 
   ## Responses
   - **200 OK**: Lista de usuarios sin filtro de torneo
-
-http:
-  method: GET
-  url: "{{api-url}}/api/User?page=0&size=10"
-  auth:
-    type: bearer
-    token: "{{token_admin}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5

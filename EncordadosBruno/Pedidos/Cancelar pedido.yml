@@ -1,7 +1,7 @@
 info:
   name: Cancelar pedido
   type: http
-  seq: 8
+  seq: 9
 
 http:
   method: PATCH

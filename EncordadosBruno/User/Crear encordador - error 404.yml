@@ -1,7 +1,24 @@
 info:
   name: Crear encordador error
   type: http
-  seq: 9
+  seq: 14
+
+http:
+  method: POST
+  url: "{{api-url}}/api/User/create-encoder"
+  body:
+    type: json
+    data: |
+      "01KR424NQJR7CEHQW4STCQ3XXX"
+  auth:
+    type: bearer
+    token: "{{token_owner}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
 
 docs: |
   # Crear encordador - Usuario no encontrado
@@ -13,20 +30,3 @@ docs: |
 
   ## HTTP Method
   `POST /api/User/create-encoder`
-
-http:
-  method: POST
-  url: "{{api-url}}/api/User/create-encoder"
-  auth:
-    type: bearer
-    token: "{{token_owner}}"
-  body:
-    type: json
-    data: |
-      "01KR424NQJR7CEHQW4STCQ3XXX"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5

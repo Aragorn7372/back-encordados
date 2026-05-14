@@ -59,10 +59,10 @@ public class MaterialsService(ILogger<MaterialsService> logger, IMaterialsReposi
         var material= await repository.FindByIdAsync(id);
         if (material == null) return Result.Failure<MaterialResponseDto, MaterialError>(new MaterialNotFoundError())
                 .Tap(() => logger.LogInformation("Material con id {Id} no encontrado para actualizar", id));
-        if (string.IsNullOrEmpty(request.Modelo)) material.Modelo = request.Modelo;
+        if (!string.IsNullOrEmpty(request.Modelo)) material.Modelo = request.Modelo;
         if (request.Precio >= 0) material.Precio = request.Precio;
         if (request.Stock >= 0) material.Stock = request.Stock;
-        if (string.IsNullOrEmpty(request.Type)) material.Type = Enum.Parse<MaterialType>(request.Type, true);
+        if (!string.IsNullOrEmpty(request.Type)) material.Type = Enum.Parse<MaterialType>(request.Type, true);
         var updated = await repository.UpdateAsync(material,id);
         return updated is { } result
             ? Result.Success<MaterialResponseDto, MaterialError>(result.ToDto())

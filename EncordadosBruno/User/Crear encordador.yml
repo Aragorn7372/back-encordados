@@ -1,7 +1,24 @@
 info:
   name: Crear encordador
   type: http
-  seq: 11
+  seq: 17
+
+http:
+  method: POST
+  url: "{{api-url}}/api/User/create-encoder"
+  body:
+    type: json
+    data: |
+      "{{user_id_juan}}"
+  auth:
+    type: bearer
+    token: "{{token_owner}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
 
 docs: |
   # Crear Encordador
@@ -26,20 +43,3 @@ docs: |
   - **403 Forbidden**: No tiene permisos de Owner
   - **404 Not Found**: Usuario no encontrado
   - **409 Conflict**: El usuario ya es encordador
-
-http:
-  method: POST
-  url: "{{api-url}}/api/User/create-encoder"
-  auth:
-    type: bearer
-    token: "{{token_owner}}"
-  body:
-    type: json
-    data: |
-      "{{user_id_juan}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5
