@@ -1,7 +1,48 @@
 info:
   name: Crear nuevo pedido de encordado
   type: http
-  seq: 2
+  seq: 4
+
+http:
+  method: POST
+  url: "{{api-url}}/api/Purchased"
+  body:
+    type: json
+    data: |-
+      {
+        "TournamentId": 1,
+        "PlayerName": "jugador_juan",
+        "AssignedToName": "carlos_encordador",
+        "Machine": "Máquina Alpha-1",
+        "Comments": "Nuevo pedido para el Torneo Madrileño",
+        "PayStatus": "PENDING_PAYMENT",
+        "Lineas": [
+          {
+            "RaquetModel": "Wilson Clash 100",
+            "Nudos": 1,
+            "DateString": "2026-06-15T00:00:00Z",
+            "Logotype": true,
+            "Color": "Rojo",
+            "StringSetup": {
+              "StringV": "Babolat RPM Blast",
+              "TensionV": 26.0,
+              "PreStetchV": 2,
+              "StringH": "Babolat Pro",
+              "TensionH": 25.5,
+              "PreStetchH": 1
+            }
+          }
+        ]
+      }
+  auth:
+    type: bearer
+    token: "{{token_encoder}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
 
 docs: |
   # Crear Nuevo Pedido
@@ -13,6 +54,12 @@ docs: |
 
   ## HTTP Method
   `POST /api/Purchased`
+
+  ## Lógica de Bonos
+  Al crear un pedido, se verifica si el jugador tiene bonos disponibles:
+  - **Si Price <= Bonos**: El pedido se marca como `PAID` automaticamente, se descuenta el importe de los bonos del usuario y se envía email de confirmación de pago
+  - **Si Price > Bonos y Bonos > 0**: Se agrega al campo `Comments` el mensaje "Falta por pagar: $X" (donde X es la diferencia)
+  - **Si Bonos = 0**: El pedido queda con estado `PENDING_PAYMENT` (comportamiento original)
 
   ## Body (JSON)
   ```json
@@ -59,43 +106,7 @@ docs: |
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Encoder
 
-http:
-  method: POST
-  url: "{{api-url}}/api/Purchased"
-  body:
-    type: json
-    data: |-
-      {
-        "TournamentId": 1,
-        "PlayerName": "jugador_juan",
-        "AssignedToName": "carlos_encordador",
-        "Machine": "Máquina Alpha-1",
-        "Comments": "Nuevo pedido para el Torneo Madrileño",
-        "PayStatus": "PENDING_PAYMENT",
-        "Lineas": [
-          {
-            "RaquetModel": "Wilson Clash 100",
-            "Nudos": 1,
-            "DateString": "2026-06-15T00:00:00Z",
-            "Logotype": true,
-            "Color": "Rojo",
-            "StringSetup": {
-              "StringV": "Babolat RPM Blast",
-              "TensionV": 26.0,
-              "PreStetchV": 2,
-              "StringH": "Babolat Pro",
-              "TensionH": 25.5,
-              "PreStetchH": 1
-            }
-          }
-        ]
-      }
-  auth:
-    type: bearer
-    token: "{{token_encoder}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5
+  ## Test Cases Adicionales
+  - [ ] Crear pedido cuando el jugador tiene bonos suficientes (se marca PAID automaticamente)
+  - [ ] Crear pedido cuando el jugador tiene bonos insuficientes (agrega "Falta por pagar" en Comments)
+  - [ ] Verificar que los bonos del jugador se descuenta después de un pedido pagado

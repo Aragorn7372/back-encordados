@@ -16,6 +16,7 @@ using BackEncordados.Usuarios.Mapper;
 using BackEncordados.Usuarios.Model;
 using BackEncordados.Usuarios.Repository;
 using CSharpFunctionalExtensions;
+using Microsoft.EntityFrameworkCore;
 
 namespace BackEncordados.Purchased.Service;
 
@@ -120,11 +121,42 @@ public class PurchasedService(
                 .TapError(() => logger.LogWarning("Jugador o encordador no encontrado. Player: {PlayerName}, Encorder: {AssignedToName}", request.PlayerName, request.AssignedToName));
 
         var entity = request.ToEntity(player.Id, encorder.Id);
+
+        if (player.Bonos >= request.Price)
+        {
+            entity.PayStatus = PaymentStatus.PAID;
+            player.Bonos -= request.Price;
+            
+            // Usar reintentos para actualizar el usuario
+            var updateResult = await UpdateUserWithRetryAsync(player);
+            if (updateResult.IsFailure)
+                return Result.Failure<PurchasedResponseDto, DomainErrors>(updateResult.Error);
+            
+            logger.LogInformation("Pedido pagado con bonos. Nuevo saldo de bonos: {Bonos}", player.Bonos);
+        }
+        else if (player.Bonos > 0)
+        {
+            var falta = request.Price - player.Bonos;
+            entity.Comments = string.IsNullOrEmpty(entity.Comments) 
+                ? $"Falta por pagar: {falta:C2}" 
+                : $"{entity.Comments} | Falta por pagar: {falta:C2}";
+            logger.LogInformation("Bonos insuficientes. Falta: {Falta}", falta);
+        }
+
         await repository.CreatePurchasedAsync(entity);
 
         var response = entity.ToDto(encorder.ToDto(cloudinary), player.ToDto(cloudinary));
 
         await cache.SetAsync(CacheKeys.PurchasedCacheKey + entity.Id, response, TimeSpan.FromMinutes(5));
+
+        if (entity.PayStatus == PaymentStatus.PAID)
+        {
+            var email = await GetValidUserWithEmailAsync(player.Username);
+            if (email.IsSuccess)
+            {
+                await SendPaidEmailAsync(entity.Id.ToString(), request.Price, email.Value);
+            }
+        }
 
         return Result.Success<PurchasedResponseDto, DomainErrors>(response)
             .Tap(() => logger.LogInformation("Pedido creado con ID {Id} y guardado en caché", entity.Id));
@@ -383,6 +415,56 @@ public class PurchasedService(
             IsHtml = true
         };
         await emailService.EnqueueEmailAsync(message);
+    }
+
+    /// <summary>
+    /// Actualiza el usuario con reintentos en caso de conflicto de concurrencia.
+    /// Intenta hasta 3 veces; si falla después, retorna error.
+    /// </summary>
+    private async Task<Result<Unit, DomainErrors>> UpdateUserWithRetryAsync(
+        User player, 
+        int maxRetries = 3)
+    {
+        int attempt = 0;
+        
+        while (attempt < maxRetries)
+        {
+            try
+            {
+                await userRepository.UpdateAsync(player);
+                logger.LogInformation("Usuario actualizado exitosamente en intento {Attempt}", attempt + 1);
+                return Result.Success<Unit, DomainErrors>(Unit.Value);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                attempt++;
+                logger.LogWarning("Conflicto de concurrencia al actualizar usuario. Intento {Attempt} de {MaxRetries}", 
+                    attempt, maxRetries);
+
+                if (attempt >= maxRetries)
+                {
+                    logger.LogError("Fallaron todos los reintentos para actualizar usuario. Error: {Error}", ex.Message);
+                    return Result.Failure<Unit, DomainErrors>(
+                        new ConcurrencyError("El usuario fue modificado por otra operación después de 3 reintentos. Intente de nuevo."));
+                }
+
+                // Recargar el usuario desde la base de datos para el siguiente intento
+                var reloadedPlayer = await userRepository.FindByIdAsync(player.Id);
+                if (reloadedPlayer is null)
+                {
+                    logger.LogError("No se pudo recargar el usuario {PlayerId} para reintento", player.Id);
+                    return Result.Failure<Unit, DomainErrors>(
+                        new UserNotFoundError("Usuario no encontrado después de conflicto de concurrencia"));
+                }
+
+                // Aplicar los cambios de bonos al usuario recargado
+                reloadedPlayer.Bonos = player.Bonos;
+                player = reloadedPlayer;
+            }
+        }
+
+        return Result.Failure<Unit, DomainErrors>(
+            new ConcurrencyError("No se pudo actualizar el usuario después de varios intentos."));
     }
     
 }

@@ -1,7 +1,20 @@
 info:
   name: Asignar rol a usuario
   type: http
-  seq: 10
+  seq: 16
+
+http:
+  method: POST
+  url: "{{api-url}}/api/User/{{user_id_juan}}/roles"
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
 
 docs: |
   # Asignar Rol a Usuario
@@ -39,19 +52,3 @@ docs: |
   - [ ] Asignar rol inexistente (400)
   - [ ] Asignar rol a usuario inexistente (404)
   - [ ] Intentar sin permisos de Admin (403)
-
-http:
-  method: POST
-  url: "{{api-url}}/api/User/{{user_id_juan}}/roles"
-  auth:
-    type: bearer
-    token: "{{token_admin}}"
-  body:
-    mode: json
-    json: "ADMIN"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5

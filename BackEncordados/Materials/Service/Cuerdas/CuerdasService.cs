@@ -62,11 +62,12 @@ public class CuerdasService(ILogger<CuerdasService> logger, ICuerdasRepository r
             return  Result.Failure<CuerdaResponseDto, CuerdaError>(new CuerdaNotFoundError())
                 .Tap(() => logger.LogInformation("Cuerda with id {Id} found", id));
         if(!string.IsNullOrEmpty(request.Marca)) cuerda.Marca = request.Marca;
+        if(!string.IsNullOrEmpty(request.Modelo)) cuerda.Modelo = request.Modelo;
         if (request.Precio >= 0) cuerda.Precio = request.Precio;
         if (request.Stock >= 0) cuerda.Stock = request.Stock;
-        if (string.IsNullOrEmpty(request.StringFormat)) 
+        if(!string.IsNullOrEmpty(request.StringFormat)) 
             cuerda.StringFormat= Enum.Parse<FormatoCuerda>(request.StringFormat, true);
-        if (string.IsNullOrEmpty(request.StringsType)) 
+        if (!string.IsNullOrEmpty(request.StringsType)) 
             cuerda.StringsType = Enum.Parse<StringsType>(request.StringsType, true);
         return await repository.UpdateAsync(cuerda,id) is { } result
             ? Result.Success<CuerdaResponseDto, CuerdaError>(result.ToDto())

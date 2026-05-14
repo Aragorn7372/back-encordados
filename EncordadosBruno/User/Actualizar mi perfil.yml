@@ -1,7 +1,7 @@
 info:
   name: Actualizar mi perfil
   type: http
-  seq: 5
+  seq: 8
 
 http:
   method: PATCH

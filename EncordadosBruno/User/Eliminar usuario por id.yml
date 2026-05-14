@@ -1,7 +1,20 @@
 info:
   name: Eliminar usuario por id
   type: http
-  seq: 9
+  seq: 15
+
+http:
+  method: DELETE
+  url: "{{api-url}}/api/User/{{user_id_juan}}"
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
 
 docs: |
   # Eliminar Usuario por ID
@@ -30,16 +43,3 @@ docs: |
   - [ ] Intentar eliminar usuario inexistente
   - [ ] Intentar sin token (401)
   - [ ] Intentar sin rol Admin (403)
-
-http:
-  method: DELETE
-  url: "{{api-url}}/api/User/{{user_id_juan}}"
-  auth:
-    type: bearer
-    token: "{{token_admin}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5

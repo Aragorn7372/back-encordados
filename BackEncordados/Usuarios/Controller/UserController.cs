@@ -319,4 +319,24 @@ public class UserController(ILogger<UserController> logger, IUserService service
             _ => StatusCode(500, new { message = error.Error })
         };
     }
+
+    [HttpPost("{id:ulid}/bonos")]
+    [ProducesResponseType(typeof(UserResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize(Policy = "RequireOwnerRole")]
+    public async Task<IActionResult> AddBonos(Ulid id, [FromBody] double cantidad)
+    {
+        logger.LogInformation("Adding {Cantidad} bonos to user with ID {UserId}", cantidad, id);
+        var result = await service.AddBonosAsync(id, cantidad);
+        return result.Match(
+            onSuccess: user => Ok(user),
+            onFailure: error => error switch
+            {
+                ValidationError validationError => BadRequest(new { message = validationError.Error }),
+                UserNotFoundError userNotFoundError => NotFound(new { message = userNotFoundError.Error }),
+                _ => StatusCode(500, new { message = error.Error })
+            });
+    }
 }

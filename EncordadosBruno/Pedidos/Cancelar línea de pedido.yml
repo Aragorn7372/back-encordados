@@ -1,7 +1,20 @@
 info:
   name: Cancelar línea de pedido
   type: http
-  seq: 14
+  seq: 16
+
+http:
+  method: PATCH
+  url: "{{api-url}}/api/Purchased/lineas/01KR42ME5P1Q2BGWW1DY11Z4TJ/cancel"
+  auth:
+    type: bearer
+    token: "{{token_juan}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
 
 docs: |
   # Cancelar Línea de Pedido
@@ -39,16 +52,3 @@ docs: |
   - [ ] User intenta cancelar línea DELIVERED_TOpLAYER (400)
   - [ ] Línea inexistente (404)
   - [ ] Sin token (401)
-
-http:
-  method: PATCH
-  url: "{{api-url}}/api/Purchased/lineas/01KR42ME5P1Q2BGWW1DY11Z4TJ/cancel"
-  auth:
-    type: bearer
-    token: "{{token_juan}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5

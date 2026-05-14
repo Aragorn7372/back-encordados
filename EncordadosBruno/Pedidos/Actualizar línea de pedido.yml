@@ -1,7 +1,35 @@
 info:
   name: Actualizar línea de pedido
   type: http
-  seq: 13
+  seq: 15
+
+http:
+  method: PUT
+  url: "{{api-url}}/api/Purchased/lineas/01KR42ME5P1Q2BGWW1DY11Z4TJ"
+  body:
+    type: json
+    data: |-
+      {
+        "RaquetModel": "Babolat Pure Drive",
+        "Nudos": 1,
+        "Logotype": true,
+        "Color": "Verde",
+        "Status": "IN_PROGRESS",
+        "StringSetup": {
+          "StringV": "Head Sonic Pro",
+          "TensionV": 25.0,
+          "PreStetchV": 1
+        }
+      }
+  auth:
+    type: bearer
+    token: "{{token_encoder}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
 
 docs: |
   # Actualizar Línea de Pedido
@@ -51,31 +79,3 @@ docs: |
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Encoder
   - **404 Not Found**: Línea no encontrada
-
-http:
-  method: PUT
-  url: "{{api-url}}/api/Purchased/lineas/01KR42ME5P1Q2BGWW1DY11Z4TJ"
-  body:
-    type: json
-    data: |-
-      {
-        "RaquetModel": "Babolat Pure Drive",
-        "Nudos": 1,
-        "Logotype": true,
-        "Color": "Verde",
-        "Status": "IN_PROGRESS",
-        "StringSetup": {
-          "StringV": "Head Sonic Pro",
-          "TensionV": 25.0,
-          "PreStetchV": 1
-        }
-      }
-  auth:
-    type: bearer
-    token: "{{token_encoder}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5

@@ -1,7 +1,38 @@
 info:
   name: Crear línea de pedido
   type: http
-  seq: 12
+  seq: 14
+
+http:
+  method: POST
+  url: "{{api-url}}/api/Purchased/01KR42ME5P1Q2BGWW1DY11Z4TJ/lineas"
+  body:
+    type: json
+    data: |-
+      {
+        "RaquetModel": "Wilson Pro Staff",
+        "Nudos": 2,
+        "DateString": "2026-07-01T00:00:00Z",
+        "Logotype": false,
+        "Color": "Azul",
+        "StringSetup": {
+          "StringV": "Luxilon ALU Power",
+          "TensionV": 28.0,
+          "PreStetchV": 3,
+          "StringH": "Luxilon Big Hitter",
+          "TensionH": 27.0,
+          "PreStetchH": 2
+        }
+      }
+  auth:
+    type: bearer
+    token: "{{token_encoder}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
 
 docs: |
   # Crear Línea de Pedido
@@ -54,34 +85,3 @@ docs: |
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Encoder
   - **404 Not Found**: Pedido no encontrado
-
-http:
-  method: POST
-  url: "{{api-url}}/api/Purchased/01KR42ME5P1Q2BGWW1DY11Z4TJ/lineas"
-  body:
-    type: json
-    data: |-
-      {
-        "RaquetModel": "Wilson Pro Staff",
-        "Nudos": 2,
-        "DateString": "2026-07-01T00:00:00Z",
-        "Logotype": false,
-        "Color": "Azul",
-        "StringSetup": {
-          "StringV": "Luxilon ALU Power",
-          "TensionV": 28.0,
-          "PreStetchV": 3,
-          "StringH": "Luxilon Big Hitter",
-          "TensionH": 27.0,
-          "PreStetchH": 2
-        }
-      }
-  auth:
-    type: bearer
-    token: "{{token_encoder}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5
