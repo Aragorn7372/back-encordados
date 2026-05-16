@@ -3,6 +3,31 @@ info:
   type: http
   seq: 5
 
+http:
+  method: PUT
+  url: "{{api-url}}/api/Cuerdas/1"
+  body:
+    type: json
+    data: |-
+      {
+        "Marca": "Babolat",
+        "TournamentId": 1,
+        "Modelo": "RPM Blast 2.1",
+        "Stock": 150,
+        "Precio": 19.99,
+        "StringFormat": "set",
+        "StringsType": "Polyester"
+      }
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
 docs: |
   # Actualizar Cuerda
 
@@ -46,28 +71,3 @@ docs: |
   - [ ] Actualizar modelo de cuerda
   - [ ] Intentar actualizar cuerda inexistente (404)
   - [ ] Intentar sin permisos de Admin (403)
-
-http:
-  method: PUT
-  url: "{{api-url}}/api/Cuerdas/1"
-  body:
-    type: json
-    data: |-
-      {
-        "Marca": "Babolat",
-        "TournamentId": 1,
-        "Modelo": "RPM Blast 2.0",
-        "Stock": 150,
-        "Precio": 19.99,
-        "StringFormat": "12m",
-        "StringsType": "Polyester"
-      }
-  auth:
-    type: bearer
-    token: "{{token_admin}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5

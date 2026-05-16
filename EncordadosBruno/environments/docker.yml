@@ -1,0 +1,17 @@
+name: docker
+color: "#346AB2"
+variables:
+  - name: api-url
+    value: https://localhost
+  - name: token
+    value: ""
+  - name: token_owner
+    value: ""
+  - name: token_encoder
+    value: ""
+  - name: token_supervisor
+    value: ""
+  - name: supervisor_id_luis
+    value: 01KR424NQJKTASKDL3M5NP7GHS
+  - name: supervisor_id_pablo
+    value: 01KR424NQJKUBMAEM4N6OQ8JIT

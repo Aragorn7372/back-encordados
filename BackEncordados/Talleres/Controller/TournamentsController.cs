@@ -86,7 +86,7 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
             var idClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             if (Ulid.TryParse(idClaim, out Ulid userId))
                 filter.UserId = userId;
-            return Forbid("usuario no identicado");
+            else return Forbid("usuario no identicado");
         }
             
         logger.LogInformation("Received request to get tournaments: page {page}, pageSize {pageSize}", page, pageSize);

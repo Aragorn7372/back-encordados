@@ -16,6 +16,7 @@ http:
         "Machine": "Máquina Alpha-1",
         "Comments": "Nuevo pedido para el Torneo Madrileño",
         "PayStatus": "PENDING_PAYMENT",
+        "price": 30.00,
         "Lineas": [
           {
             "RaquetModel": "Wilson Clash 100",
@@ -36,7 +37,7 @@ http:
       }
   auth:
     type: bearer
-    token: "{{token_encoder}}"
+    token: "{{token_encorder_carlos}}"
 
 settings:
   encodeUrl: true

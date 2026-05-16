@@ -4,6 +4,7 @@ using BackEncordados.Common.Service.Cache;
 using BackEncordados.Common.Service.Cache.keys;
 using BackEncordados.Common.Service.Cloudinary;
 using BackEncordados.Common.Service.Email;
+using BackEncordados.Common.SignalR;
 using BackEncordados.Common.Utils;
 using BackEncordados.Purchased.Dto;
 using BackEncordados.Purchased.Errors;
@@ -16,6 +17,7 @@ using BackEncordados.Usuarios.Mapper;
 using BackEncordados.Usuarios.Model;
 using BackEncordados.Usuarios.Repository;
 using CSharpFunctionalExtensions;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace BackEncordados.Purchased.Service;
@@ -26,7 +28,8 @@ public class PurchasedService(
     ILogger<PurchasedService> logger, 
     ICacheService cache,
     ICloudinaryService cloudinary,
-    IEmailService emailService
+    IEmailService emailService,
+    IHubContext<SignalHub> signal
     ) : IPurchasedService
 {
     public async Task<PageResponseDto<PurchasedResponseDto>> FindAllAsync(FilterPurchasedDto filter)
@@ -149,17 +152,20 @@ public class PurchasedService(
 
         await cache.SetAsync(CacheKeys.PurchasedCacheKey + entity.Id, response, TimeSpan.FromMinutes(5));
 
-        if (entity.PayStatus == PaymentStatus.PAID)
-        {
-            var email = await GetValidUserWithEmailAsync(player.Username);
-            if (email.IsSuccess)
-            {
-                await SendPaidEmailAsync(entity.Id.ToString(), request.Price, email.Value);
-            }
-        }
-
-        return Result.Success<PurchasedResponseDto, DomainErrors>(response)
-            .Tap(() => logger.LogInformation("Pedido creado con ID {Id} y guardado en caché", entity.Id));
+        return await Result.Success<PurchasedResponseDto, DomainErrors>(response)
+            .TapAsync(async _=> {
+                logger.LogInformation("Pedido creado con ID {Id} y guardado en caché", entity.Id);
+                SendCreatePurchased(response.Id,response.TournamentId,response);
+                if (entity.PayStatus == PaymentStatus.PAID)
+                {
+                    var email = await GetValidUserWithEmailAsync(player.Username);
+                    if (email.IsSuccess)
+                    {
+                        await SendPaidEmailAsync(entity.Id.ToString(), request.Price, email.Value);
+                
+                    }
+                }
+            });
     }
 
     public async Task<Result<PurchasedResponseDto, DomainErrors>> UpdatePurchasedAsync(Ulid id, PurchasedPatchDto request)
@@ -197,8 +203,10 @@ public class PurchasedService(
 
         await cache.SetAsync(CacheKeys.PurchasedCacheKey + id, response, TimeSpan.FromMinutes(5));
 
-        logger.LogInformation("Pedido con ID {Id} actualizado exitosamente", id);
-        return Result.Success<PurchasedResponseDto, DomainErrors>(response);
+        return Result.Success<PurchasedResponseDto, DomainErrors>(response).Tap(() => {
+            logger.LogInformation("Pedido con ID {Id} actualizado exitosamente", id);
+            SendUpdatedPurchased(response.Id, response.TournamentId, response);
+        });
     }
 
     public async Task<Result<PurchasedResponseDto, DomainErrors>> CancelPurchasedAsync(Ulid id, bool isUser, string? idUser)
@@ -230,6 +238,7 @@ public class PurchasedService(
                     response.Id, id);
                 var email= await GetValidUserWithEmailAsync(response.Player.Username);
                 if (email.IsSuccess) await SendCancelEmailAsync(id.ToString(), email.Value);
+                SendCancelPurchased(response.Id, response.TournamentId, response);
             });
     }
     
@@ -291,7 +300,7 @@ public class PurchasedService(
             }
         });
     }
-    Task SendPaidEmailAsync(string orderId,double price, string email) {
+    private Task SendPaidEmailAsync(string orderId,double price, string email) {
         var message = new EmailMessage {
             To = email,
             Subject = "Pago confirmado",
@@ -320,7 +329,10 @@ public class PurchasedService(
         await cache.RemoveAsync(CacheKeys.PurchasedCacheKey + existingLinea.PedidoId);
 
         return Result.Success<PedidoLineaResponseDto, DomainErrors>(savedLinea.ToDto())
-            .Tap(() => logger.LogInformation("Línea con ID {LineaId} actualizada exitosamente", lineaId));
+            .Tap(() => {
+                logger.LogInformation("Línea con ID {LineaId} actualizada exitosamente", lineaId);
+                SendUpdatePurchasedLine(savedLinea.Id, savedLinea.PedidoId, savedLinea.Pedido.TournamentId, savedLinea.ToDto());
+            });
     }
 
     public async Task<Result<PedidoLineaResponseDto, DomainErrors>> CancelLineaAsync(Ulid lineaId, string? userId, string? userRole)
@@ -348,7 +360,10 @@ public class PurchasedService(
         await cache.RemoveAsync(CacheKeys.PurchasedCacheKey + canceledLinea.PedidoId);
 
         return Result.Success<PedidoLineaResponseDto, DomainErrors>(canceledLinea.ToDto())
-            .Tap(() => logger.LogInformation("Línea con ID {LineaId} cancelada exitosamente", lineaId));
+            .Tap(() => {
+                logger.LogInformation("Línea con ID {LineaId} cancelada exitosamente", lineaId);
+                SendChangeStatusPurchasedLine(canceledLinea.Id, canceledLinea.PedidoId, canceledLinea.Pedido.TournamentId, canceledLinea.ToDto());
+            });
     }
 
     public async Task<Result<PedidoLineaResponseDto, DomainErrors>> ChangeLineaStatusAsync(Ulid lineaId, string status)
@@ -390,7 +405,11 @@ public class PurchasedService(
                     }
                 }
             })
-            .Tap(() => logger.LogInformation("Estado de línea con ID {LineaId} cambiado exitosamente a {Status}", lineaId, statusEnum));
+            .Tap(() => {
+                logger.LogInformation("Estado de línea con ID {LineaId} cambiado exitosamente a {Status}", lineaId,
+                    statusEnum);
+                SendChangeStatusPurchasedLine(updatedLinea.Id, updatedLinea.PedidoId, updatedLinea.Pedido.TournamentId, updatedLinea.ToDto());
+            });
     }
 
     private async Task SendLineaCompletedEmailAsync(string lineaId, string pedidoId, string email,string productName)
@@ -466,5 +485,140 @@ public class PurchasedService(
         return Result.Failure<Unit, DomainErrors>(
             new ConcurrencyError("No se pudo actualizar el usuario después de varios intentos."));
     }
-    
+
+    private void SendCreatePurchased(Ulid purchasedId, long tournamentId, PurchasedResponseDto response) {
+        _ = Task.Run(async () => {
+            try {
+                var message = new {
+                    tournamentId,
+                    pedidoId = purchasedId,
+                    tipo = "PEDIDO_CREADO",
+                    total = response.Price,
+                    numberOfLines = response.Lineas.Count,
+                    purchased = response,
+                    timestamp = DateTime.UtcNow
+                };
+                var gruposDestino = new List<string> {
+                    $"Tournament_{tournamentId}",
+                    "Tournament_All_Admin"
+                };
+                await signal.Clients.Groups(gruposDestino).SendAsync("ReceiveTournamentNotification", message);
+                logger.LogInformation(
+                    "Notificación de pedido creado enviada para el pedido con ID {PurchasedId} en el torneo {TournamentId}",
+                    purchasedId, tournamentId);
+            }
+            catch (Exception e) {
+                Console.WriteLine(e);
+                throw;
+            }
+        });
+    }
+    private void SendUpdatedPurchased(Ulid purchasedId, long tournamentId, PurchasedResponseDto response) {
+        _ = Task.Run(async () => {
+            try {
+                var message = new {
+                    tournamentId,
+                    pedidoId = purchasedId,
+                    tipo = "PEDIDO_ACTUALIZADO",
+                    total = response.Price,
+                    numberOfLines = response.Lineas.Count,
+                    purchased = response,
+                    timestamp = DateTime.UtcNow
+                };
+                var gruposDestino = new List<string> {
+                    $"Tournament_{tournamentId}",
+                    "Tournament_All_Admin"
+                };
+                await signal.Clients.Groups(gruposDestino).SendAsync("ReceiveTournamentNotification", message);
+                logger.LogInformation(
+                    "Notificación de pedido actualizado enviada para el pedido con ID {PurchasedId} en el torneo {TournamentId}",
+                    purchasedId, tournamentId);
+            }
+            catch (Exception e) {
+                Console.WriteLine(e);
+                throw;
+            }
+        });
+    }
+    private void SendCancelPurchased(Ulid purchasedId, long tournamentId, PurchasedResponseDto response) {
+        _ = Task.Run(async () => {
+            try {
+                var message = new {
+                    tournamentId,
+                    pedidoId = purchasedId,
+                    tipo = "PEDIDO_CANCELADO",
+                    total = response.Price,
+                    numberOfLines = response.Lineas.Count,
+                    purchased = response,
+                    timestamp = DateTime.UtcNow
+                };
+                var gruposDestino = new List<string> {
+                    $"Tournament_{tournamentId}",
+                    "Tournament_All_Admin"
+                };
+                await signal.Clients.Groups(gruposDestino).SendAsync("ReceiveTournamentNotification", message);
+                logger.LogInformation(
+                    "Notificación de pedido cancelado enviada para el pedido con ID {PurchasedId} en el torneo {TournamentId}",
+                    purchasedId, tournamentId);
+            }
+            catch (Exception e) {
+                Console.WriteLine(e);
+                throw;
+            }
+        });
+    }
+    private void SendChangeStatusPurchasedLine(Ulid lineaId, Ulid pedidoId, long tournamentId, PedidoLineaResponseDto response) {
+        _ = Task.Run(async () => {
+            try {
+                var message = new {
+                    tournamentId,
+                    pedidoId = pedidoId,
+                    lineaId = lineaId,
+                    tipo = "ESTATUS_LINEA_PEDIDO_ACTUALIZADA",
+                    status = response.Status.ToString(),
+                    purchased = response,
+                    timestamp = DateTime.UtcNow
+                };
+                var gruposDestino = new List<string> {
+                    $"Tournament_{tournamentId}",
+                    "Tournament_All_Admin"
+                };
+                await signal.Clients.Groups(gruposDestino).SendAsync("ReceiveTournamentNotification", message);
+                logger.LogInformation(
+                    "Notificación de linea de pedido de cambio de estado enviada para el pedido con ID {PurchasedId} en el torneo {TournamentId}",
+                    pedidoId, tournamentId);
+            }
+            catch (Exception e) {
+                Console.WriteLine(e);
+                throw;
+            }
+        });
+    }
+    private void SendUpdatePurchasedLine(Ulid lineaId, Ulid pedidoId, long tournamentId, PedidoLineaResponseDto response) {
+        _ = Task.Run(async () => {
+            try {
+                var message = new {
+                    tournamentId,
+                    pedidoId = pedidoId,
+                    lineaId = lineaId,
+                    tipo = "LINEA_PEDIDO_ACTUALIZADA",
+                    status = response.Status.ToString(),
+                    purchased = response,
+                    timestamp = DateTime.UtcNow
+                };
+                var gruposDestino = new List<string> {
+                    $"Tournament_{tournamentId}",
+                    "Tournament_All_Admin"
+                };
+                await signal.Clients.Groups(gruposDestino).SendAsync("ReceiveTournamentNotification", message);
+                logger.LogInformation(
+                    "Notificación de linea de pedido de cambio de estado enviada para el pedido con ID {PurchasedId} en el torneo {TournamentId}",
+                    pedidoId, tournamentId);
+            }
+            catch (Exception e) {
+                Console.WriteLine(e);
+                throw;
+            }
+        });
+    }
 }
