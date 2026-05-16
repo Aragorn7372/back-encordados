@@ -11,7 +11,13 @@ public class TalleresDbContext(DbContextOptions<TalleresDbContext> options)
     : DbContext(options)
 {
     public DbSet<Tournaments> Partidos { get; set; } = null!;
-    
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder
+            .Properties<Ulid>()
+            .HaveConversion<UlidToStringConverter>();
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

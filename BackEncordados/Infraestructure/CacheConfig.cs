@@ -2,6 +2,7 @@
 using BackEncordados.Common.Service.Cache.Hybrid;
 using BackEncordados.Common.Service.Cache.Memory;
 
+
 namespace BackEncordados.Infraestructure;
 
 /// <summary>

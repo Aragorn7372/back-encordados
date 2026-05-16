@@ -1,4 +1,5 @@
-﻿using BackEncordados.Common.Database.Helpers;
+﻿using System.ComponentModel.DataAnnotations;
+using BackEncordados.Common.Database.Helpers;
 using BackEncordados.Common.Service.Cloudinary;
 
 namespace BackEncordados.Usuarios.Model;
@@ -34,7 +35,8 @@ public class User : ITimestamped
 
     public double Bonos { get; set; }
 
-    public int Version { get; set; } = 1;
+    [ConcurrencyCheck]
+    public long Version { get; set; }
 
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 
