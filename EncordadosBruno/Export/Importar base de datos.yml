@@ -1,0 +1,62 @@
+info:
+  name: Importar base de datos
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{api-url}}/api/export/import"
+  params:
+    - name: ""
+      value: ""
+      type: query
+  body:
+    type: multipart-form
+    data:
+      - name: file
+        type: file
+        value:
+          - C:\Users\Aragorn\RiderProjects\BackEncordados\EncordadosBruno\image\database_export_2026-05-16.zip
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 120000
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Importar Base de Datos
+
+  Importa un archivo ZIP exportado previamente.
+  **ADVERTENCIA**: Esto borra TODOS los datos existentes y los reemplaza con los datos del ZIP.
+
+  ## Orden de importación
+  1. Tournaments
+  2. Users
+  3. Materials
+  4. Cuerdas
+  5. Orders
+
+  ## Authorization
+  Requiere rol ADMIN
+
+  ## HTTP Method
+  `POST /api/export/import`
+
+  ## Request
+  - Content-Type: multipart/form-data
+  - Body: file (ZIP)
+
+  ## Responses
+  - **200 OK**: `{ "message": "Database imported successfully" }`
+  - **400 Bad Request**: Archivo inválido o no es un ZIP
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos (no es Admin)
+  - **500 Internal Server Error**: Error durante la importación (hace rollback automático)
+
+  ## Notas
+  - Usa transacciones: si falla algo, se revierten todos los cambios
+  - En desarrollo (in-memory): las transacciones se saltan automáticamente

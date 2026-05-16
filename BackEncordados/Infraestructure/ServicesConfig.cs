@@ -1,4 +1,5 @@
-﻿using BackEncordados.Materials.Repository.Strings;
+﻿using BackEncordados.Export.Archive;
+using BackEncordados.Export.Service;
 using BackEncordados.Materials.Service.Cuerdas;
 using BackEncordados.Materials.Service.Materials;
 using BackEncordados.Purchased.Service;
@@ -28,6 +29,8 @@ public static class ServicesConfig
             .AddScoped<ITournamentService, TournamentService>()
             .AddScoped<IPurchasedService, PurchasedService>()
             .AddScoped<ICuerdasService, CuerdasService>()
-            .AddScoped<IMaterialsService, MaterialsService>();
+            .AddScoped<IMaterialsService, MaterialsService>()
+            .AddScoped<IExportArchiveManager, ExportArchiveManager>()
+            .AddScoped<IExportService, ExportService>();
     }
 }
