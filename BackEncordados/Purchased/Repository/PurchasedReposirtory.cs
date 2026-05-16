@@ -154,7 +154,7 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
     public async Task<PedidoLinea?> FindLineaByIdAsync(Ulid lineaId)
     {
         logger.LogInformation("Buscando línea con ID {Id}", lineaId);
-        return await context.PedidoLineas.FirstOrDefaultAsync(l => l.Id == lineaId);
+        return await context.PedidoLineas.Include(l => l.Pedido).FirstOrDefaultAsync(l => l.Id == lineaId);
     }
 
     public async Task<PedidoLinea> CreateLineaAsync(PedidoLinea linea)
@@ -170,7 +170,7 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
     {
         logger.LogInformation("Actualizando línea con ID {Id}", lineaId);
 
-        var existingLinea = await context.PedidoLineas.FirstOrDefaultAsync(l => l.Id == lineaId);
+        var existingLinea = await context.PedidoLineas.Include(l => l.Pedido).FirstOrDefaultAsync(l => l.Id == lineaId);
         if (existingLinea == null)
         {
             logger.LogWarning("Línea no encontrada. ID {Id}", lineaId);
@@ -196,7 +196,7 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
     public async Task<PedidoLinea?> ChangeLineaStatusAsync(Ulid lineaId, Status status)
     {
         logger.LogInformation("Cambiando estado de línea con ID {Id} a {Status}", lineaId, status);
-        var linea = await context.PedidoLineas.FirstOrDefaultAsync(l => l.Id == lineaId);
+        var linea = await context.PedidoLineas.Include(l => l.Pedido).FirstOrDefaultAsync(l => l.Id == lineaId);
         if (linea == null)
             return null;
 

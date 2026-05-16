@@ -36,6 +36,8 @@ services.AddRepositories();
 services.AddServices();
 //añado email service
 services.AddEmail(environment);
+// Registro de servicios de SignalR
+services.AddRealtimeSignalR();
 // declaro app
 var app = builder.Build(); 
 // global exception handler
@@ -51,6 +53,8 @@ app.UseRouting();
 // lo que tiene relacion con usuarios
 app.UseAuthentication();
 app.UseAuthorization();
+// Rutas de los hubs de SignalR 
+app.MapSignalRHubs();
 // mapeador de controllers
 app.MapControllers();
 
