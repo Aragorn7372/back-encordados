@@ -1,6 +1,7 @@
 ﻿using BackEncordados.Common.Database.Config;
 using BackEncordados.Common.Database.Helpers;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 using MongoDB.EntityFrameworkCore.Extensions;
 using Npgsql;
 using Serilog;
@@ -51,12 +52,15 @@ public static class DbConfig
     /// <returns>IServiceCollection.</returns>
     public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
-        //BBDD de Usuarios
-         services.AddDbContext<UserDbContext>(options =>
-         {
-             var isDevelopment = configuration.GetValue<bool?>("Development") ?? true;
-             
-             options.AddInterceptors(new TimestampInterceptor());
+//BBDD de Usuarios
+        Log.Information("MONGODB_URI_TALLERES: {value}", configuration["MONGODB_URI_TALLERES"]);
+        Log.Information("MONGODB_URI_PEDIDOS: {value}", configuration["MONGODB_URI_PEDIDOS"]);
+          services.AddDbContext<UserDbContext>(options =>
+          {
+              var isDevelopment = configuration.GetValue<bool?>("Development") ?? true;
+              
+              options.AddInterceptors(new TimestampInterceptor());
+              options.AddInterceptors(new VersionInterceptor());
              
              if(isDevelopment) options.UseInMemoryDatabase("UserDatabase");
              else
@@ -101,13 +105,13 @@ public static class DbConfig
              }
              else
              {
-                 Log.Information("Modo producción activado - Conectando a MongoDB Atlas (Pedidos)");
-                 var mongoConnectionString = configuration["MONGODB_URI_PEDIDOS"] 
-                                            ?? configuration["MONGODB_URI"]
-                                            ?? throw new InvalidOperationException("No se encontró MONGODB_URI_PEDIDOS o MONGODB_URI");
-                 options.UseMongoDB(mongoConnectionString, "pedidos_db");
-                 options.EnableSensitiveDataLogging(); 
-                 options.EnableDetailedErrors(); 
+                    Log.Information("Modo producción activado - Conectando a MongoDB (Pedidos)");
+                   var mongoConnectionStringPedidos = configuration["MONGODB_URI_PEDIDOS"] 
+                                               ?? configuration["MONGODB_URI"]
+                                               ?? throw new InvalidOperationException("No se encontró MONGODB_URI_PEDIDOS o MONGODB_URI");
+                   options.UseMongoDB(mongoConnectionStringPedidos, "pedidos_db");
+                   options.EnableSensitiveDataLogging(); 
+                   options.EnableDetailedErrors();
              }
          });
          
@@ -124,13 +128,13 @@ public static class DbConfig
              }
              else
              {
-                 Log.Information("Modo producción activado - Conectando a MongoDB Atlas (Talleres)");
-                 var mongoConnectionString = configuration["MONGODB_URI_TALLERES"] 
-                                            ?? configuration["MONGODB_URI"]
-                                            ?? throw new InvalidOperationException("No se encontró MONGODB_URI_TALLERES o MONGODB_URI");
-                 options.UseMongoDB(mongoConnectionString, "talleres_db");
-                 options.EnableSensitiveDataLogging(); 
-                 options.EnableDetailedErrors(); 
+                    Log.Information("Modo producción activado - Conectando a MongoDB (Talleres)");
+                   var mongoConnectionStringTalleres = configuration["MONGODB_URI_TALLERES"] 
+                                               ?? configuration["MONGODB_URI"]
+                                               ?? throw new InvalidOperationException("No se encontró MONGODB_URI_TALLERES o MONGODB_URI");
+                   options.UseMongoDB(mongoConnectionStringTalleres, "talleres_db");
+                   options.EnableSensitiveDataLogging(); 
+                   options.EnableDetailedErrors();
              }
          });
 
