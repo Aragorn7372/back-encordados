@@ -6,6 +6,14 @@ namespace BackEncordados.Common.Database.Config;
 
 public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbContext(options) {
     private const string Time = "CURRENT_TIMESTAMP";
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder
+            .Properties<Ulid>()
+            .HaveConversion<UlidToStringConverter>();
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigurePedidos(modelBuilder);

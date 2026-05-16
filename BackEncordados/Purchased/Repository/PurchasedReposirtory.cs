@@ -9,9 +9,7 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
 {
     public async Task<(IEnumerable<Pedidos> Items, int TotalCount)> FindAllAsync(FilterPurchasedDto filter)
     {
-        var query = context.Pedidos
-            .Include(p => p.Lineas)
-            .AsQueryable();
+        var query = context.Pedidos.AsQueryable();
 
         if (filter.IsEncorder == true && filter.UserId != null && Ulid.TryParse(filter.UserId, out var encorderId))
             query = query.Where(p => p.AssignedTo == encorderId);
@@ -24,9 +22,15 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
 
         if (!string.IsNullOrEmpty(filter.Search))
         {
+            var pedidoIdsWithMatchingLineas = await context.PedidoLineas
+                .Where(l => EF.Functions.Like(l.RaquetModel, $"%{filter.Search}%"))
+                .Select(l => l.PedidoId)
+                .Distinct()
+                .ToListAsync();
+
             query = query.Where(p => EF.Functions.Like(p.Comments, $"%{filter.Search}%")
                           || EF.Functions.Like(p.Machine, $"%{filter.Search}%")
-                          || p.Lineas.Any(l => EF.Functions.Like(l.RaquetModel, $"%{filter.Search}%")));
+                          || pedidoIdsWithMatchingLineas.Contains(p.Id));
         }
 
         var totalCount = await query.CountAsync();
@@ -42,15 +46,29 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
         };
 
         var items = await query.Skip(filter.Page * filter.Size).Take(filter.Size).ToListAsync();
+
+        if (items.Any())
+        {
+            var pedidoIds = items.Select(p => p.Id).ToList();
+            var lineas = await context.PedidoLineas.Where(l => pedidoIds.Contains(l.PedidoId)).ToListAsync();
+            foreach (var item in items)
+            {
+                item.Lineas = lineas.Where(l => l.PedidoId == item.Id).ToList();
+            }
+        }
+
         return (items, totalCount);
     }
 
     public async Task<Pedidos?> FindByIdAsync(Ulid id)
     {
         logger.LogInformation("Buscando pedido con ID {Id}", id);
-        return await context.Pedidos
-            .Include(p => p.Lineas)
-            .FirstOrDefaultAsync(p => p.Id == id);
+        var pedido = await context.Pedidos.FirstOrDefaultAsync(p => p.Id == id);
+        if (pedido != null)
+        {
+            pedido.Lineas = await context.PedidoLineas.Where(l => l.PedidoId == id).ToListAsync();
+        }
+        return pedido;
     }
 
     public async Task<Pedidos> CreatePurchasedAsync(Pedidos pedidos)
@@ -65,9 +83,7 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
     {
         logger.LogInformation("Actualizando pedido con ID {Id}", id);
 
-        var existingPurchased = await context.Pedidos
-            .Include(p => p.Lineas)
-            .FirstOrDefaultAsync(p => p.Id == id);
+        var existingPurchased = await context.Pedidos.FirstOrDefaultAsync(p => p.Id == id);
 
         if (existingPurchased == null)
         {
@@ -96,15 +112,15 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
     public async Task<Pedidos?> CancelPurchasedAsync(Ulid id)
     {
         logger.LogInformation("Cancelando pedido con ID {Id}", id);
-        var existingPurchased = await context.Pedidos
-            .Include(p => p.Lineas)
-            .FirstOrDefaultAsync(p => p.Id == id && p.PayStatus != PaymentStatus.CANCELED);
+        var existingPurchased = await context.Pedidos.FirstOrDefaultAsync(p => p.Id == id && p.PayStatus != PaymentStatus.CANCELED);
 
         if (existingPurchased == null)
             return null;
 
+        var lineas = await context.PedidoLineas.Where(l => l.PedidoId == id).ToListAsync();
+
         existingPurchased.PayStatus = PaymentStatus.CANCELED;
-        foreach (var linea in existingPurchased.Lineas)
+        foreach (var linea in lineas)
         {
             linea.Status = Status.CANCELED;
             linea.UpdatedAt = DateTime.UtcNow;

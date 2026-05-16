@@ -32,5 +32,5 @@ WORKDIR /app
 EXPOSE 80
 EXPOSE 5001
 
-COPY --from=publish /app/publish .
+COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "BackEncordados.dll"]
