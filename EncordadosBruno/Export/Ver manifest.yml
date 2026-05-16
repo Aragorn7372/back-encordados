@@ -1,0 +1,59 @@
+info:
+  name: Ver manifest
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{api-url}}/api/export/manifest"
+  body:
+    type: formData
+    formData:
+      file:
+        type: file
+        enabled: true
+        fileName: ""
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 30000
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Ver Manifest del Export
+
+  Lee el archivo manifest.json de un ZIP exportado para ver sus metadatos.
+
+  ## Estructura del manifest
+  ```json
+  {
+    "version": "1.0",
+    "exportedAt": "2026-05-16T...",
+    "description": "Full database export",
+    "entities": [
+      { "name": "users", "recordCount": 10, "fileName": "users.json" },
+      { "name": "tournaments", "recordCount": 4, "fileName": "tournaments.json" },
+      ...
+    ]
+  }
+  ```
+
+  ## Authorization
+  Requiere rol ADMIN
+
+  ## HTTP Method
+  `POST /api/export/manifest`
+
+  ## Request
+  - Content-Type: multipart/form-data
+  - Body: file (ZIP)
+
+  ## Responses
+  - **200 OK**: ExportManifestDto con la metadata del export
+  - **400 Bad Request**: Archivo inválido o no contiene manifest
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos (no es Admin)
