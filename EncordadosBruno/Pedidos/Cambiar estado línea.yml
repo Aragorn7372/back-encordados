@@ -6,9 +6,12 @@ info:
 http:
   method: PATCH
   url: "{{api-url}}/api/Purchased/lineas/01KR42ME5P1Q2BGWW1DY11Z5AA/status"
+  body:
+    type: json
+    data: '"CANCELED"'
   auth:
     type: bearer
-    token: "{{token_carlos}}"
+    token: "{{token_encorder_carlos}}"
 
 settings:
   encodeUrl: true

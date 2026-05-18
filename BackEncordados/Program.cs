@@ -1,6 +1,8 @@
 using System.Text;
 using BackEncordados.Infraestructure;
 using BackEncordados.Middleware;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Serilog;
 
 Log.Logger= SerilogConfig.Configure().CreateLogger();
@@ -14,6 +16,9 @@ var environment = builder.Environment;
 builder.Host.UseSerilog();
 // añado configuracion de controllers
 services.AddMvcControllers();
+// añado FluentValidation con auto-validacion
+services.AddFluentValidationAutoValidation();
+services.AddValidatorsFromAssemblyContaining<Program>();
 // añado la base de datos
 services.AddDatabase(configuration);
 // politicas de corps
@@ -30,6 +35,8 @@ services.AddCache(configuration);
 services.AddCloudinary(configuration);
 // añado configuracion global
 services.AddAppConfig(configuration);
+// añado WhatsApp HTTP client
+services.AddWhatsAppHttpClient(configuration);
 // añado repositorios
 services.AddRepositories();
 // añado servicios
