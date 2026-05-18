@@ -2,6 +2,8 @@
 using BackEncordados.Materials.Dto.Materials;
 using BackEncordados.Materials.Errors;
 using BackEncordados.Materials.Service.Materials;
+using BackEncordados.Materials.Validator.Materials;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using CSharpFunctionalExtensions;
@@ -10,7 +12,10 @@ namespace BackEncordados.Materials.Controller;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-public class MaterialsController(ILogger<MaterialsController> logger, IMaterialsService service) : ControllerBase{
+public class MaterialsController(
+    ILogger<MaterialsController> logger, 
+    IMaterialsService service,
+    IValidator<MaterialRequestDto> validator) : ControllerBase{
     
     [HttpGet]
     [ProducesResponseType(typeof(PageResponseDto<MaterialResponseDto>),StatusCodes.Status200OK)]
@@ -77,6 +82,11 @@ public class MaterialsController(ILogger<MaterialsController> logger, IMaterials
     [Authorize(policy: "RequireAdminRole")]
     public async Task<IActionResult> Create(MaterialRequestDto request) {
         logger.LogInformation("Create material with name {Name}", request.Modelo);
+        
+        var validationResult = await validator.ValidateAsync(request);
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors.Select(e => new { e.PropertyName, e.ErrorMessage }));
+        
         return await service.CreateAsync(request).Match(
             onSuccess: material => CreatedAtAction(nameof(GetById), new { id = material.Id }, material),
             onFailure: error => error switch {

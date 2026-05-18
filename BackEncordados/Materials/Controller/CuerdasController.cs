@@ -2,7 +2,9 @@
 using BackEncordados.Materials.Dto.Strings;
 using BackEncordados.Materials.Errors;
 using BackEncordados.Materials.Service.Cuerdas;
+using BackEncordados.Materials.Validator.Strings;
 using CSharpFunctionalExtensions;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +13,10 @@ namespace BackEncordados.Materials.Controller;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-public class CuerdasController(ILogger<CuerdasController> logger, ICuerdasService service) : ControllerBase{
+public class CuerdasController(
+    ILogger<CuerdasController> logger, 
+    ICuerdasService service,
+    IValidator<CuerdaRequestDto> validator) : ControllerBase{
     
     [HttpGet]
     [ProducesResponseType(typeof(PageResponseDto<CuerdaResponseDto>),StatusCodes.Status200OK)]
@@ -78,6 +83,11 @@ public class CuerdasController(ILogger<CuerdasController> logger, ICuerdasServic
     [Authorize(policy: "RequireAdminRole")]
     public async Task<IActionResult> Create(CuerdaRequestDto request) {
         logger.LogInformation("Create cuerda with name {Name}", request.Modelo);
+        
+        var validationResult = await validator.ValidateAsync(request);
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors.Select(e => new { e.PropertyName, e.ErrorMessage }));
+        
         return await service.CreateAsync(request).Match(
             onSuccess: cuerda => CreatedAtAction(nameof(GetById), new { id = cuerda.Id }, cuerda),
             onFailure: error => error switch {
