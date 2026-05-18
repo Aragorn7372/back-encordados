@@ -4,6 +4,7 @@ using BackEncordados.Common.Service.Cache;
 using BackEncordados.Common.Service.Cache.keys;
 using BackEncordados.Common.Service.Cloudinary;
 using BackEncordados.Common.Service.Email;
+using BackEncordados.Common.Service.WhatsApp;
 using BackEncordados.Common.SignalR;
 using BackEncordados.Common.Utils;
 using BackEncordados.Purchased.Dto;
@@ -29,6 +30,7 @@ public class PurchasedService(
     ICacheService cache,
     ICloudinaryService cloudinary,
     IEmailService emailService,
+    IWhatsAppService whatsAppService,
     IHubContext<SignalHub> signal
     ) : IPurchasedService
 {
@@ -238,6 +240,18 @@ public class PurchasedService(
                     response.Id, id);
                 var email= await GetValidUserWithEmailAsync(response.Player.Username);
                 if (email.IsSuccess) await SendCancelEmailAsync(id.ToString(), email.Value);
+                
+                var player = await userRepository.FindByIdAsync(purchasedCanceled.PlayerId);
+                if (player != null && !string.IsNullOrWhiteSpace(player.Phone))
+                {
+                    logger.LogInformation("WhatsApp de pedido cancelado enviado al jugador con ID {PlayerId}", player.Id);
+                    await whatsAppService.SendPedidoCanceledMessageAsync(
+                        player.Phone,
+                        player.Name,
+                        id.ToString(),
+                        response.Lineas.Count);
+                }
+                
                 SendCancelPurchased(response.Id, response.TournamentId, response);
             });
     }
@@ -359,10 +373,25 @@ public class PurchasedService(
 
         await cache.RemoveAsync(CacheKeys.PurchasedCacheKey + canceledLinea.PedidoId);
 
-        return Result.Success<PedidoLineaResponseDto, DomainErrors>(canceledLinea.ToDto())
-            .Tap(() => {
+        return await Result.Success<PedidoLineaResponseDto, DomainErrors>(canceledLinea.ToDto())
+            .TapAsync(async _ => {
                 logger.LogInformation("Línea con ID {LineaId} cancelada exitosamente", lineaId);
                 SendChangeStatusPurchasedLine(canceledLinea.Id, canceledLinea.PedidoId, canceledLinea.Pedido.TournamentId, canceledLinea.ToDto());
+                
+                var pedido = await repository.FindByIdAsync(canceledLinea.PedidoId);
+                if (pedido != null)
+                {
+                    var player = await userRepository.FindByIdAsync(pedido.PlayerId);
+                    if (player != null && !string.IsNullOrWhiteSpace(player.Phone))
+                    {
+                        logger.LogInformation("WhatsApp de línea cancelada enviado al jugador para la línea con ID {LineaId}", lineaId);
+                        await whatsAppService.SendLineaCanceledMessageAsync(
+                            player.Phone,
+                            player.Name,
+                            canceledLinea.RaquetModel,
+                            pedido.Id.ToString());
+                    }
+                }
             });
     }
 
@@ -395,12 +424,26 @@ public class PurchasedService(
                         if (statusEnum == Status.COMPLETED)
                         {
                             logger.LogInformation("Correo de línea completada enviado al jugador para la línea con ID {LineaId}", lineaId);
-                            await SendLineaCompletedEmailAsync(lineaId.ToString(), pedido.Id.ToString(), player.Email,existingLinea.RaquetModel);
+                            await SendLineaCompletedEmailAsync(lineaId.ToString(), pedido.Id.ToString(), player.Email,updatedLinea.RaquetModel);
                         }
                         else if (statusEnum == Status.DELIVERED_TOpLAYER)
                         {
                             logger.LogInformation("Correo de línea entregada enviado al jugador para la línea con ID {LineaId}", lineaId);
-                            await SendLineaDeliveredEmailAsync(lineaId.ToString(), pedido.Id.ToString(), player.Email,existingLinea.RaquetModel);
+                            await SendLineaDeliveredEmailAsync(lineaId.ToString(), pedido.Id.ToString(), player.Email,updatedLinea.RaquetModel);
+                        }
+                    }
+                    
+                    if (player != null && !string.IsNullOrWhiteSpace(player.Phone))
+                    {
+                        if (statusEnum == Status.COMPLETED)
+                        {
+                            logger.LogInformation("WhatsApp de línea completada enviado al jugador para la línea con ID {LineaId}", lineaId);
+                            await whatsAppService.SendLineaCompletedMessageAsync(player.Phone, player.Name, updatedLinea.RaquetModel, pedido.Id.ToString());
+                        }
+                        else if (statusEnum == Status.CANCELED)
+                        {
+                            logger.LogInformation("WhatsApp de línea cancelada enviado al jugador para la línea con ID {LineaId}", lineaId);
+                            await whatsAppService.SendLineaCanceledMessageAsync(player.Phone, player.Name, updatedLinea.RaquetModel, pedido.Id.ToString());
                         }
                     }
                 }
