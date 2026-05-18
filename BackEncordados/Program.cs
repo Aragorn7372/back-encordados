@@ -16,8 +16,7 @@ var environment = builder.Environment;
 builder.Host.UseSerilog();
 // añado configuracion de controllers
 services.AddMvcControllers();
-// añado FluentValidation con auto-validacion
-services.AddFluentValidationAutoValidation();
+// añado FluentValidation (sin auto-validacion para permitir validators async)
 services.AddValidatorsFromAssemblyContaining<Program>();
 // añado la base de datos
 services.AddDatabase(configuration);

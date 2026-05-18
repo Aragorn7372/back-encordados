@@ -4,8 +4,10 @@ using BackEncordados.Common.Utils;
 using BackEncordados.Purchased.Dto;
 using BackEncordados.Purchased.Errors;
 using BackEncordados.Purchased.Service;
+using BackEncordados.Purchased.Validator;
 using BackEncordados.Usuarios.Errors;
 using CSharpFunctionalExtensions;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -16,7 +18,10 @@ namespace BackEncordados.Purchased.Controller;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-public class PurchasedController(ILogger<PurchasedController> logger, IPurchasedService service) : ControllerBase
+public class PurchasedController(
+    ILogger<PurchasedController> logger, 
+    IPurchasedService service,
+    IValidator<PurchasedRequestDto> validator) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(PageResponseDto<PurchasedResponseDto>), StatusCodes.Status200OK)]
@@ -110,6 +115,11 @@ public class PurchasedController(ILogger<PurchasedController> logger, IPurchased
     public async Task<IActionResult> Create(PurchasedRequestDto request)
     {
         logger.LogInformation("Create purchased {@Request}", request);
+        
+        var validationResult = await validator.ValidateAsync(request);
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors.Select(e => new { e.PropertyName, e.ErrorMessage }));
+        
         var result = await service.CreatePurchasedAsync(request);
         return result.Match(
             onSuccess: purchased => CreatedAtAction(nameof(GetById), new { id = purchased.Id }, purchased),

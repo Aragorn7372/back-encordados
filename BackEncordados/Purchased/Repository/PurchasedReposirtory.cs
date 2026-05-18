@@ -154,7 +154,12 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
     public async Task<PedidoLinea?> FindLineaByIdAsync(Ulid lineaId)
     {
         logger.LogInformation("Buscando línea con ID {Id}", lineaId);
-        return await context.PedidoLineas.Include(l => l.Pedido).FirstOrDefaultAsync(l => l.Id == lineaId);
+        var linea = await context.PedidoLineas.FirstOrDefaultAsync(l => l.Id == lineaId);
+        if (linea != null)
+        {
+            linea.Pedido = await context.Pedidos.FirstOrDefaultAsync(p => p.Id == linea.PedidoId) ?? null!;
+        }
+        return linea;
     }
 
     public async Task<PedidoLinea> CreateLineaAsync(PedidoLinea linea)
@@ -170,12 +175,14 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
     {
         logger.LogInformation("Actualizando línea con ID {Id}", lineaId);
 
-        var existingLinea = await context.PedidoLineas.Include(l => l.Pedido).FirstOrDefaultAsync(l => l.Id == lineaId);
+        var existingLinea = await context.PedidoLineas.FirstOrDefaultAsync(l => l.Id == lineaId);
         if (existingLinea == null)
         {
             logger.LogWarning("Línea no encontrada. ID {Id}", lineaId);
             return null;
         }
+
+        existingLinea.Pedido = await context.Pedidos.FirstOrDefaultAsync(p => p.Id == existingLinea.PedidoId) ?? null!;
 
         existingLinea.RaquetModel = linea.RaquetModel;
         existingLinea.Nudos = linea.Nudos;
@@ -196,9 +203,11 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
     public async Task<PedidoLinea?> ChangeLineaStatusAsync(Ulid lineaId, Status status)
     {
         logger.LogInformation("Cambiando estado de línea con ID {Id} a {Status}", lineaId, status);
-        var linea = await context.PedidoLineas.Include(l => l.Pedido).FirstOrDefaultAsync(l => l.Id == lineaId);
+        var linea = await context.PedidoLineas.FirstOrDefaultAsync(l => l.Id == lineaId);
         if (linea == null)
             return null;
+
+        linea.Pedido = await context.Pedidos.FirstOrDefaultAsync(p => p.Id == linea.PedidoId) ?? null!;
 
         linea.Status = status;
         linea.UpdatedAt = DateTime.UtcNow;
