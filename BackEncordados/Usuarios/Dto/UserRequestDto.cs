@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace BackEncordados.Usuarios.Dto;
 
-public class UserRequestDto
+public class  UserRequestDto
 {
     [MinLength(1, ErrorMessage = "El nombre debe de tener más de un caracter")]
     public string? Name { get; set; } = default!;
@@ -13,7 +13,7 @@ public class UserRequestDto
 
     private string? _telefono;
 
-    [RegularExpression(@"^(\d{9})?$", ErrorMessage = "El teléfono debe tener 9 dígitos o estar vacío")]
+    [RegularExpression(@"^[1-9]\d{6,14}$", ErrorMessage = "El teléfono debe ser un número válido con prefijo internacional (ej: 34612345678, 15551234567)")]
     public string? Telefono
     {
         get => _telefono;
@@ -25,18 +25,10 @@ public class UserRequestDto
                 return;
             }
 
-            // Eliminar espacios, guiones, paréntesis, etc.
-            string cleaned = Regex.Replace(value, @"[\s\-().]", "");
+            string cleaned = Regex.Replace(value, @"[^\d+]", "");
 
-            // Si empieza con +34, quitarlo
-            if (cleaned.StartsWith("+34"))
-                cleaned = cleaned.Substring(3);
-            // Si empieza con 0034, quitarlo
-            else if (cleaned.StartsWith("0034"))
-                cleaned = cleaned.Substring(4);
-            // Si empieza con 34 y tiene más de 9 dígitos
-            else if (cleaned.StartsWith("34") && cleaned.Length > 9)
-                cleaned = cleaned.Substring(2);
+            if (cleaned.StartsWith('+'))
+                cleaned = cleaned.Substring(1);
 
             _telefono = cleaned;
         }
