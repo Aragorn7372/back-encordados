@@ -11,32 +11,53 @@ public class SignalHub(TalleresDbContext context) : Hub {
     
     public override async Task OnConnectedAsync()
     {
-        if (Context.User?.IsInRole(User.UserRoles.ADMIN) == true)
+        try
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, "Tournament_All_Admin");
-        }
-        else
-        {
-            var userUlidRaw = Context.UserIdentifier;
-
-            if (Ulid.TryParse(userUlidRaw, out Ulid userUlid))
+            if (Context.User?.IsInRole(User.UserRoles.ADMIN) == true)
             {
-                var torneosIds = await context.Partidos
-                    .Where(t => !t.IsDeleted && (
-                        t.Owner == userUlid || 
-                        t.WorkersList.Contains(userUlid) || 
-                        t.SupervisorList.Contains(userUlid)
-                    ))
-                    .Select(t => t.Id)
-                    .ToListAsync();
+                await Groups.AddToGroupAsync(Context.ConnectionId, "Tournament_All_Admin");
+            }
+            else
+            {
+                var userUlidRaw = Context.UserIdentifier;
 
-                foreach (var torneoId in torneosIds)
+                if (Ulid.TryParse(userUlidRaw, out Ulid userUlid))
                 {
-                    await Groups.AddToGroupAsync(Context.ConnectionId, $"Tournament_{torneoId}");
+                    // Query 1: Traer Partidos donde el usuario es Owner 
+                    var ownedIds = await context.Partidos
+                        .Where(t => !t.IsDeleted && t.Owner == userUlid)
+                        .Select(t => t.Id)
+                        .ToListAsync();
+
+                    // Query 2: Traer el resto de Partidos a memoria para filtrar por WorkersList y SupervisorList
+                    var otherPartidos = await context.Partidos
+                        .Where(t => !t.IsDeleted && t.Owner != userUlid)
+                        .AsNoTracking()
+                        .ToListAsync();
+
+                    // Filtrar en memoria 
+                    var otherIds = otherPartidos
+                        .Where(t => t.WorkersList?.Contains(userUlid) == true || 
+                                    t.SupervisorList?.Contains(userUlid) == true)
+                        .Select(t => t.Id)
+                        .ToList();
+
+                    // Combinar los resultados
+                    var torneosIds = ownedIds.Union(otherIds).ToList();
+
+                    foreach (var torneoId in torneosIds)
+                    {
+                        await Groups.AddToGroupAsync(Context.ConnectionId, $"Tournament_{torneoId}");
+                    }
                 }
             }
-        }
 
-        await base.OnConnectedAsync();
+            await base.OnConnectedAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error en SignalHub.OnConnectedAsync: {ex.Message}");
+            await base.OnConnectedAsync();
+        }
     }
 }
