@@ -8,7 +8,7 @@ http:
   url: "{{api-url}}/api/Tournaments?page=0&size=10&sortBy=createdAt&direction=desc"
   auth:
     type: bearer
-    token: "{{token_encorder_carlos}}"
+    token: "{{token_admin}}"
 
 settings:
   encodeUrl: true

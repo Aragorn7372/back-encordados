@@ -6,9 +6,17 @@ info:
 http:
   method: POST
   url: "{{api-url}}/api/User/{{user_id_juan}}/roles"
+  body:
+    type: json
+    data: '"encordador"'
   auth:
     type: bearer
     token: "{{token_admin}}"
+
+runtime:
+  variables:
+    - name: user_id_juan
+      value: 01KRZAJVCA133EKNDN01TCBMJS
 
 settings:
   encodeUrl: true

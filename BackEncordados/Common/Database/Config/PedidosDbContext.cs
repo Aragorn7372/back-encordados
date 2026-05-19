@@ -11,7 +11,7 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
     {
         configurationBuilder
             .Properties<Ulid>()
-            .HaveConversion<UlidToStringConverter>();
+            .HaveConversion<UlidToStringConverterNonNullable>();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -131,11 +131,13 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
     {
         var now = DateTime.UtcNow;
 
-        var juan = Ulid.Parse("01KR424NQJR7CEHQW4STCQ3GGE");
-        var ana = Ulid.Parse("01KR424NQJ683QVB6F0P1B4XGM");
-        var pedro = Ulid.Parse("01KR424NQJD66APFZ2SM3RNPHZ");
-        var carlos = Ulid.Parse("01KR424NQJKSBKBMH15K4V835W");
-        var maria = Ulid.Parse("01KR424NQJKMNYS1FEC7NXBBH2");
+        var juan = Ulid.Parse("01KS0Q28TD6SAPN0GN0XKRPK5D");
+        var ana = Ulid.Parse("01KS0Q28TE3RJTW6W35NJRMTZ4");
+        var pedro = Ulid.Parse("01KS0Q28TED4PWJPT7DMJ46WBN");
+        var carlos = Ulid.Parse("01KS0Q28TE7CMWS2D8RVDFA7YJ");
+        var maria = Ulid.Parse("01KS0Q28TE6CVB0NYYANTWEK7B");
+        var admin= Ulid.Parse("01KS0Q28TESE956013XYJKP6ST");
+
 
         var pedido1Id = Ulid.Parse("01KR42ME5P1Q2BGWW1DY11Z4TJ");
         var pedido2Id = Ulid.Parse("01KR424NQJVJRJR4GKWNTP2HK2");
@@ -151,11 +153,22 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
         var linea5Id = Ulid.Parse("01KR424NQJDA22KTM967R9RWAN");
         var linea6Id = Ulid.Parse("01KR42766T458MYAE94CSAYWB8");
 
+        var t1 = Ulid.Parse("01KS0Q28TEJ0SYA6JJ5H4W4CMP");
+        var t2 = Ulid.Parse("01KS0Q28TE9N7TG55K98TCB4X0");
+        var t3= Ulid.Parse("01KS0Q28TEVEYS4303TXP202N4");
+
+
+
+        var pedidoExcel1Id = Ulid.Parse("01KS0Q28TENZNBNAK70DSCD8KM");
+        var pedidoExcel2Id = Ulid.Parse("01KS0Q28TEW6AVWP9S8WVJ9Z5G");
+        var lineaExcel1Id = Ulid.Parse("01KS0Q28TEJK7VANZ51KZPVX70");
+        var lineaExcel2Id = Ulid.Parse("01KS0Q1Y13HYP6FEB8GQ2AM563");
+
         modelBuilder.Entity<Pedidos>().HasData(
             new Pedidos
             {
                 Id = pedido1Id,
-                TournamentId = 1,
+                TournamentId = t1,
                 PlayerId = juan,
                 AssignedTo = carlos,
                 Machine = "Máquina Alpha-1",
@@ -168,7 +181,7 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
             new Pedidos
             {
                 Id = pedido2Id,
-                TournamentId = 1,
+                TournamentId = t1,
                 PlayerId = ana,
                 AssignedTo = maria,
                 Machine = "Máquina Beta-2",
@@ -181,7 +194,7 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
             new Pedidos
             {
                 Id = pedido3Id,
-                TournamentId = 2,
+                TournamentId = t2,
                 PlayerId = pedro,
                 AssignedTo = carlos,
                 Machine = "Máquina Alpha-1",
@@ -194,7 +207,7 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
             new Pedidos
             {
                 Id = pedido4Id,
-                TournamentId = 1,
+                TournamentId = t1,
                 PlayerId = juan,
                 AssignedTo = maria,
                 Machine = "Máquina Gamma-3",
@@ -207,7 +220,7 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
             new Pedidos
             {
                 Id = pedido5Id,
-                TournamentId = 2,
+                TournamentId = t2,
                 PlayerId = ana,
                 AssignedTo = carlos,
                 Machine = "Máquina Alpha-1",
@@ -220,7 +233,7 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
             new Pedidos
             {
                 Id = pedido6Id,
-                TournamentId = 1,
+                TournamentId = t1,
                 PlayerId = juan,
                 AssignedTo = maria,
                 Machine = "Banco de trabajo",
@@ -229,6 +242,32 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
                 PayStatus = PaymentStatus.PENDING_PAYMENT,
                 CreatedAt = now.AddDays(-8),
                 UpdatedAt = now.AddDays(-1)
+            },
+            new Pedidos
+            {
+                Id = pedidoExcel1Id,
+                TournamentId = t3,
+                PlayerId = pedro,
+                AssignedTo = carlos,
+                Machine = "Máquina Alpha-1",
+                Comments = "Pedido de prueba para Excel",
+                Price = 42.50,
+                PayStatus = PaymentStatus.PAID,
+                CreatedAt = now.AddDays(-3),
+                UpdatedAt = now.AddDays(-1)
+            },
+            new Pedidos
+            {
+                Id = pedidoExcel2Id,
+                TournamentId = t3,
+                PlayerId = ana,
+                AssignedTo = maria,
+                Machine = "Máquina Beta-2",
+                Comments = "Segundo pedido de prueba para Excel",
+                Price = 35.00,
+                PayStatus = PaymentStatus.PENDING_PAYMENT,
+                CreatedAt = now.AddDays(-2),
+                UpdatedAt = now.AddDays(-2)
             }
         );
 
@@ -238,7 +277,9 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
             new { Id = linea3Id, PedidoId = pedido3Id, RaquetModel = "Tecnifibre TF-X", Nudos = (byte)0, DateString = now.AddDays(10), Logotype = false, Color = "Azul", Status = Status.COMPLETED, CreatedAt = now.AddDays(-15), UpdatedAt = now.AddDays(-2) },
             new { Id = linea4Id, PedidoId = pedido4Id, RaquetModel = "Yonex Vcore Pro", Nudos = (byte)1, DateString = now.AddDays(2), Logotype = true, Color = "Blanco", Status = Status.DELIVERED_TOpLAYER, CreatedAt = now.AddDays(-10), UpdatedAt = now.AddDays(-4) },
             new { Id = linea5Id, PedidoId = pedido5Id, RaquetModel = "Dunlop Biomimetic", Nudos = (byte)1, DateString = now.AddDays(20), Logotype = false, Color = "Amarillo", Status = Status.CANCELED, CreatedAt = now.AddDays(-7), UpdatedAt = now.AddDays(-3) },
-            new { Id = linea6Id, PedidoId = pedido6Id, RaquetModel = "Wilson Pro Staff", Nudos = (byte)0, DateString = now.AddDays(5), Logotype = true, Color = "Negro", Status = Status.IN_PROGRESS, CreatedAt = now.AddDays(-8), UpdatedAt = now.AddDays(-1) }
+            new { Id = linea6Id, PedidoId = pedido6Id, RaquetModel = "Wilson Pro Staff", Nudos = (byte)0, DateString = now.AddDays(5), Logotype = true, Color = "Negro", Status = Status.IN_PROGRESS, CreatedAt = now.AddDays(-8), UpdatedAt = now.AddDays(-1) },
+            new { Id = lineaExcel1Id, PedidoId = pedidoExcel1Id, RaquetModel = "Babolat Pure Drive", Nudos = (byte)1, DateString = now.AddDays(1), Logotype = true, Color = "Negro", Status = Status.COMPLETED, CreatedAt = now.AddDays(-3), UpdatedAt = now.AddDays(-1) },
+            new { Id = lineaExcel2Id, PedidoId = pedidoExcel2Id, RaquetModel = "Head Speed Pro", Nudos = (byte)2, DateString = now.AddDays(2), Logotype = false, Color = "Azul", Status = Status.IN_PROGRESS, CreatedAt = now.AddDays(-2), UpdatedAt = now.AddDays(-2) }
         );
 
         modelBuilder.Entity<PedidoLinea>().OwnsOne(l => l.StringSetup).HasData(
@@ -247,7 +288,9 @@ public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbCon
             new { PedidoLineaId = linea3Id, StringV = "Mantenimiento", TensionV = 0.0, PreStetchV = (short)0, StringH = "Mantenimiento", TensionH = 0.0, PreStetchH = (short)0 },
             new { PedidoLineaId = linea4Id, StringV = "Prince Synthetic Gut", TensionV = 24.0, PreStetchV = (short)1, StringH = "Prince Synthetic Gut", TensionH = 23.5, PreStetchH = (short)1 },
             new { PedidoLineaId = linea5Id, StringV = "Wilson NPS Tour", TensionV = 23.5, PreStetchV = (short)1, StringH = "Wilson NPS Tour", TensionH = 23.0, PreStetchH = (short)1 },
-            new { PedidoLineaId = linea6Id, StringV = "Reparación", TensionV = 0.0, PreStetchV = (short)0, StringH = "Reparación", TensionH = 0.0, PreStetchH = (short)0 }
+            new { PedidoLineaId = linea6Id, StringV = "Reparación", TensionV = 0.0, PreStetchV = (short)0, StringH = "Reparación", TensionH = 0.0, PreStetchH = (short)0 },
+            new { PedidoLineaId = lineaExcel1Id, StringV = "Babolat VS Team", TensionV = 24.0, PreStetchV = (short)1, StringH = "Babolat VS Team", TensionH = 23.5, PreStetchH = (short)1 },
+            new { PedidoLineaId = lineaExcel2Id, StringV = "Technifibre XR2", TensionV = 25.5, PreStetchV = (short)2, StringH = "Technifibre XR2", TensionH = 24.5, PreStetchH = (short)2 }
         );
     }
 }

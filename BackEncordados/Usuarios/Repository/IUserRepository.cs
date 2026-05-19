@@ -46,4 +46,9 @@ public interface IUserRepository
     /// <summary>Obtiene solo usuarios activos.</summary>
     /// <returns>Colección de usuarios activos.</returns>
     Task<IEnumerable<User>> GetActiveUsersAsync();
+
+    /// <summary>Busca múltiples usuarios por sus IDs.</summary>
+    /// <param name="ids">Colección de IDs.</param>
+    /// <returns>Colección de usuarios encontrados.</returns>
+    Task<IEnumerable<User>> FindByIdsAsync(IEnumerable<Ulid> ids);
 }

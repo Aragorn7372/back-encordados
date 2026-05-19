@@ -5,7 +5,7 @@ namespace BackEncordados.Materials.Model;
 public class Cuerdas: ITimestamped
 {
         public long Id { get; set; }
-        public long TournamentId { get; set; }
+        public Ulid TournamentId { get; set; }
         public string Marca { get; set; } = string.Empty;
         public string Modelo { get; set; } = string.Empty;
         public int Stock { get; set; } = -1;

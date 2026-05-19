@@ -9,8 +9,7 @@ public class MaterialRequestDto
     [MaxLength(100)]
     public string Marca { get; set; } = string.Empty;
     [Required]
-    [Range(0, long.MaxValue)]
-    public long TournamentId { get; set; }
+    public Ulid TournamentId { get; set; }
     [Required]
     [MinLength(1)]
     [MaxLength(100)]

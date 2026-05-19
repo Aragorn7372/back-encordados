@@ -16,7 +16,7 @@ public class TalleresDbContext(DbContextOptions<TalleresDbContext> options)
     {
         configurationBuilder
             .Properties<Ulid>()
-            .HaveConversion<UlidToStringConverter>();
+            .HaveConversion<UlidToStringConverterNonNullable>();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -44,6 +44,9 @@ public class TalleresDbContext(DbContextOptions<TalleresDbContext> options)
             entity.ToTable("Tournaments");
 
             entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.Id)
+                .HasValueGenerator<UlidValueGenerator>();
 
             entity.Property(x => x.Title)
                 .IsRequired()
@@ -114,17 +117,21 @@ private void SeedData(ModelBuilder modelBuilder)
     {
         var now = DateTime.UtcNow;
 
-
-        var carlos = Ulid.Parse("01KR424NQJKSBKBMH15K4V835W");
-        var maria = Ulid.Parse("01KR424NQJKMNYS1FEC7NXBBH2");
-        var owner = Ulid.Parse("01KR42E3NRTHEKKH1VHSNZK74D");
-        var supervisor1 = Ulid.Parse("01KR424NQJKTASKDL3M5NP7GHS");
-        var supervisor2 = Ulid.Parse("01KR424NQJKUBMAEM4N6OQ8JIT");
+        var carlos = Ulid.Parse("01KS0Q28TE7CMWS2D8RVDFA7YJ");
+        var maria = Ulid.Parse("01KS0Q28TE6CVB0NYYANTWEK7B");
+        var owner= Ulid.Parse("01KS0Q28TE2EFVQTCW8EN0W0MF");
+        var supervisor1 = Ulid.Parse("01KS0Q28TEHA2KF5YM3J6QS5Z9");
+        var supervisor2 = Ulid.Parse("01KS0Q28TEXTDY9TQNRAXKAJ81");
+        var t1 = Ulid.Parse("01KS0Q28TEJ0SYA6JJ5H4W4CMP");
+        var t2 = Ulid.Parse("01KS0Q28TE9N7TG55K98TCB4X0");
+        var t3= Ulid.Parse("01KS0Q28TEVEYS4303TXP202N4");
+        var t4 = Ulid.Parse("01KS0Q28TET0JHJV4T5YFDJWBW");
+        var t5 = Ulid.Parse("01KS0Q28TE5BA449NS2EVCBTDQ");
 
         modelBuilder.Entity<Tournaments>().HasData(
             new Tournaments
             {
-                Id = 1,
+                Id = t1,
                 Title = "Torneo Madrileño 2025",
                 Logotype = CloudinaryConstants.DEFAULT_IMAGE_TALLERES,
                 LogotypePublicId = null,
@@ -140,7 +147,7 @@ private void SeedData(ModelBuilder modelBuilder)
             
             new Tournaments
             {
-                Id = 2,
+                Id = t2,
                 Title = "Open Circuit Barcelona",
                 Logotype = CloudinaryConstants.DEFAULT_IMAGE_TALLERES,
                 LogotypePublicId = null,
@@ -155,7 +162,7 @@ private void SeedData(ModelBuilder modelBuilder)
             },
             new Tournaments
             {
-                Id = 3,
+                Id = t3,
                 Title = "Campeonato Regional Valencia",
                 Logotype = CloudinaryConstants.DEFAULT_IMAGE_TALLERES,
                 LogotypePublicId = null,
@@ -169,7 +176,7 @@ private void SeedData(ModelBuilder modelBuilder)
             },
             new Tournaments
             {
-                Id = 4,
+                Id = t4,
                 Title = "Cup Toledo - Elite",
                 Logotype = CloudinaryConstants.DEFAULT_IMAGE_TALLERES,
                 LogotypePublicId = null,
@@ -181,19 +188,35 @@ private void SeedData(ModelBuilder modelBuilder)
                 IsDeleted = false,
                 CreatedAt = now.AddDays(-30),
                 UpdatedAt = now.AddDays(-30)
+            },
+
+            new Tournaments
+            {
+                Id = t5,
+                Title = "Torneo Prueba Excel",
+                Logotype = CloudinaryConstants.DEFAULT_IMAGE_TALLERES,
+                LogotypePublicId = null,
+                StartTournament = now.AddDays(-10),
+                EndTournament = now.AddDays(20),
+                WorkersList = new List<Ulid> { carlos, maria },
+                SupervisorList = new List<Ulid> { supervisor1 },
+                Owner = owner,
+                IsDeleted = false,
+                CreatedAt = now.AddMonths(-1),
+                UpdatedAt = now.AddMonths(-1)
             }
         );
 
         modelBuilder.Entity<Tournaments>()
             .OwnsMany(t => t.WorkerMachineAssignments)
             .HasData(
-                new { Id = 1L, TournamentId = 1L, WorkerId = carlos, MachineName = "Máquina Alpha-1" },
-                new { Id = 2L, TournamentId = 1L, WorkerId = maria, MachineName = "Máquina Beta-2" },
-                new { Id = 3L, TournamentId = 2L, WorkerId = carlos, MachineName = "Máquina Alpha-1" },
-                new { Id = 4L, TournamentId = 3L, WorkerId = maria, MachineName = "Máquina Beta-2" },
-                new { Id = 5L, TournamentId = 4L, WorkerId = carlos, MachineName = "Máquina Alpha-1" },
-                new { Id = 6L, TournamentId = 4L, WorkerId = maria, MachineName = "Máquina Beta-2" },
-                new { Id = 7L, TournamentId = 4L, WorkerId = maria, MachineName = "Máquina Gamma-3" }
+                new { Id = 1L, TournamentId = t1, WorkerId = carlos, MachineName = "Máquina Alpha-1" },
+                new { Id = 2L, TournamentId = t1, WorkerId = maria, MachineName = "Máquina Beta-2" },
+                new { Id = 3L, TournamentId = t2, WorkerId = carlos, MachineName = "Máquina Alpha-1" },
+                new { Id = 4L, TournamentId = t3, WorkerId = maria, MachineName = "Máquina Beta-2" },
+                new { Id = 5L, TournamentId = t4, WorkerId = carlos, MachineName = "Máquina Alpha-1" },
+                new { Id = 6L, TournamentId = t4, WorkerId = maria, MachineName = "Máquina Beta-2" },
+                new { Id = 7L, TournamentId = t4, WorkerId = maria, MachineName = "Máquina Gamma-3" }
             );
     }
 }

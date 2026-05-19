@@ -18,7 +18,7 @@ public class UserController(ILogger<UserController> logger, IUserService service
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(Policy = "RequireOwnerRole")]
     public async Task<IActionResult> GetAll(
-        [FromQuery] long? tournamentId,
+        [FromQuery] Ulid? tournamentId,
         [FromQuery] bool? findUsers = null,
         [FromQuery] bool? findEncorders = null,
         [FromQuery] bool? findSupervisors = null,
@@ -94,12 +94,12 @@ public class UserController(ILogger<UserController> logger, IUserService service
         return Ok(result);
     }
 
-    [HttpGet("users/{tournament:long}")]
+    [HttpGet("users/{tournament:ulid}")]
     [ProducesResponseType(typeof(PageResponseDto<UserWithIdDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(Policy = "RequireEncorderRole")]
     public async Task<IActionResult> GetAllUsers(
-        long tournament,
+        Ulid tournament,
         [FromQuery] string sortBy = "id",
         [FromQuery] int page = 0,
         [FromQuery] int size = 10,

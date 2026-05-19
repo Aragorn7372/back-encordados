@@ -29,7 +29,7 @@ public class PurchasedController(
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize]
     public async Task<IActionResult> GetAll(
-        [FromQuery] long? tournamentId,
+        [FromQuery] Ulid? tournamentId,
         [FromQuery] string sortBy = "createdAt",
         [FromQuery] int page = 0,
         [FromQuery] int size = 10,

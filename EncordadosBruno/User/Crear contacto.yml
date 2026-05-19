@@ -17,7 +17,7 @@ http:
       }
   auth:
     type: bearer
-    token: "{{token_encorder_carlos}}"
+    token: "{{token_admin}}"
 
 settings:
   encodeUrl: true

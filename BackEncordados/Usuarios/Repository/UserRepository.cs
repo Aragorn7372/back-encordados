@@ -126,5 +126,15 @@ public class UserRepository(
             .OrderBy(u => u.Email)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<User>> FindByIdsAsync(IEnumerable<Ulid> ids)
+    {
+        var idList = ids.ToList();
+        if (idList.Count == 0)
+            return [];
+        return await context.Users
+            .Where(u => idList.Contains(u.Id))
+            .ToListAsync();
+    }
     
 }
