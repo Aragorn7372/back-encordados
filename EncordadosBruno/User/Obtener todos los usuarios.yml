@@ -5,7 +5,23 @@ info:
 
 http:
   method: GET
-  url: "{{api-url}}/api/User?tournamentId=1&findUsers=true&page=0&size=10&sortBy=createdAt&direction=desc"
+  url: "{{api-url}}/api/User?findUsers=true&page=0&size=10&sortBy=createdAt&direction=desc"
+  params:
+    - name: findUsers
+      value: "true"
+      type: query
+    - name: page
+      value: "0"
+      type: query
+    - name: size
+      value: "10"
+      type: query
+    - name: sortBy
+      value: createdAt
+      type: query
+    - name: direction
+      value: desc
+      type: query
   auth:
     type: bearer
     token: "{{token_admin}}"

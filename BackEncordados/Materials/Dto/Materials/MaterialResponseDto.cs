@@ -4,7 +4,7 @@ namespace BackEncordados.Materials.Dto.Materials;
 
 public record MaterialResponseDto(
     long Id,
-    long TournamentId,
+    Ulid TournamentId,
     string Marca,
     string Modelo,
     int Stock,

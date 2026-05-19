@@ -23,7 +23,7 @@ public class TournamentService(
     ICloudinaryService cloudinary
     ): ITournamentService
 {
-    public async Task<Result<TournamentResponseDetailsDto, DomainErrors>> GetTournament(long id)
+    public async Task<Result<TournamentResponseDetailsDto, DomainErrors>> GetTournament(Ulid id)
     {
         logger.LogInformation("Getting tournament {Id}", id);
         var tournament = await repository.FindByIdAsync(id);
@@ -32,18 +32,14 @@ public class TournamentService(
             logger.LogWarning("Tournament with id {Id} not found", id);
             return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new TournamentNotFoundError());
         }
-        var userTasks = tournament.WorkersList.Select(w => userRepository.FindByIdAsync(w));
-        var fetchedUsers = await Task.WhenAll(userTasks);
+        var fetchedUsers = await userRepository.FindByIdsAsync(tournament.WorkersList);
         
         var validUsers = fetchedUsers
-                .Where(u => u != null)
-                .Select(u => u!.ToDto(cloudinary)) 
+                .Select(u => u.ToDto(cloudinary)) 
             .ToList();
-        var supervisorTasks = tournament.SupervisorList.Select(w => userRepository.FindByIdAsync(w));
-        var fetchedSupervisors = await Task.WhenAll(supervisorTasks);
+        var fetchedSupervisors = await userRepository.FindByIdsAsync(tournament.SupervisorList);
         var validSupervisors = fetchedSupervisors
-            .Where(s => s != null)
-            .Select(s => s!.ToDto(cloudinary))
+            .Select(s => s.ToDto(cloudinary))
             .ToList();
         var owner = await userRepository.FindByIdAsync(tournament.Owner);
         if (owner is null) 
@@ -84,24 +80,20 @@ public class TournamentService(
             publicId = upload.PublicId;
         }
         var saved = await repository.SaveAsync(adminRequest.ToTournaments(imageUrl,publicId));
-        var userTasks = saved.WorkersList.Select(w => userRepository.FindByIdAsync(w));
-        var fetchedUsers = await Task.WhenAll(userTasks);
+        var fetchedUsers = await userRepository.FindByIdsAsync(saved.WorkersList);
 
         var validUsers = fetchedUsers
-            .Where(u => u != null)
-            .Select(u => u!.ToDto(cloudinary))
+            .Select(u => u.ToDto(cloudinary))
             .ToList();
-        var supervisorTasks = saved.SupervisorList.Select(w => userRepository.FindByIdAsync(w));
-        var fetchedSupervisors = await Task.WhenAll(supervisorTasks);
+        var fetchedSupervisors = await userRepository.FindByIdsAsync(saved.SupervisorList);
         var validSupervisors = fetchedSupervisors
-            .Where(s => s != null)
-            .Select(s => s!.ToDto(cloudinary))
+            .Select(s => s.ToDto(cloudinary))
             .ToList();
         var responseDto = saved.ToTournamentResponseDetailsDto(validUsers,user.ToDto(cloudinary),validSupervisors,cloudinary);
         return Result.Success<TournamentResponseDetailsDto, DomainErrors>(responseDto);
     }
 
-    public async Task<Result<TournamentResponseDto, TournamentsErrors>> UpdateTournament(long id, TournamentPatchDto request)
+    public async Task<Result<TournamentResponseDto, TournamentsErrors>> UpdateTournament(Ulid id, TournamentPatchDto request)
     {
         logger.LogInformation("Updating tournament {Id}", id);
         var oldTournament =await repository.FindByIdAsync(id);
@@ -132,7 +124,7 @@ public class TournamentService(
             : Result.Failure<TournamentResponseDto, TournamentsErrors>(new ConflictError("Error updating tournament"));
     }
 
-    public async Task<Result<Unit, TournamentsErrors>> DeleteTournament(long id)
+    public async Task<Result<Unit, TournamentsErrors>> DeleteTournament(Ulid id)
     {
         logger.LogInformation("Deleting tournament {Id}", id);
         return await repository.DeleteAsync(id) 
@@ -140,7 +132,7 @@ public class TournamentService(
             : Result.Failure<Unit, TournamentsErrors>(new TournamentNotFoundError());
     }
 
-    public async Task<Result<TournamentResponseDetailsDto, DomainErrors>> AssignWorkerMachine(long tournamentId, WorkerMachineAssignmentRequestDto request)
+    public async Task<Result<TournamentResponseDetailsDto, DomainErrors>> AssignWorkerMachine(Ulid tournamentId, WorkerMachineAssignmentRequestDto request)
     {
         logger.LogInformation("Assigning worker machine {Id}", tournamentId);
         var workerUlid= Ulid.TryParse(request.UserId, out var ulid) ? ulid : Ulid.Empty;
@@ -154,18 +146,14 @@ public class TournamentService(
             logger.LogWarning("Tournament with id {Id} not found", tournamentId);
             return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new TournamentNotFoundError());
         }
-        var userTasks = tournamentUpdated.WorkersList.Select(w => userRepository.FindByIdAsync(w));
-        var fetchedUsers = await Task.WhenAll(userTasks);
+        var fetchedUsers = await userRepository.FindByIdsAsync(tournamentUpdated.WorkersList);
 
         var validUsers = fetchedUsers
-            .Where(u => u != null)
-            .Select(u => u!.ToDto(cloudinary)) 
+            .Select(u => u.ToDto(cloudinary)) 
             .ToList();
-        var supervisorTasks = tournamentUpdated.SupervisorList.Select(w => userRepository.FindByIdAsync(w));
-        var fetchedSupervisors = await Task.WhenAll(supervisorTasks);
+        var fetchedSupervisors = await userRepository.FindByIdsAsync(tournamentUpdated.SupervisorList);
         var validSupervisors = fetchedSupervisors
-            .Where(s => s != null)
-            .Select(s => s!.ToDto(cloudinary))
+            .Select(s => s.ToDto(cloudinary))
             .ToList();
         var owner = await userRepository.FindByIdAsync(tournamentUpdated.Owner);
         if (owner is null) 
@@ -174,7 +162,7 @@ public class TournamentService(
         return Result.Success<TournamentResponseDetailsDto, DomainErrors>(responseDto);
     }
 
-    public async Task<Result<TournamentResponseDetailsDto, DomainErrors>> UnassignWorkerMachine(long tournamentId, string request)
+    public async Task<Result<TournamentResponseDetailsDto, DomainErrors>> UnassignWorkerMachine(Ulid tournamentId, string request)
     {
         logger.LogInformation("Unassigning worker machine {Id}", tournamentId);
         var workerUlid= Ulid.TryParse(request, out var ulid) ? ulid : Ulid.Empty;
@@ -188,18 +176,14 @@ public class TournamentService(
             logger.LogWarning("Tournament with id {Id} not found", tournamentId);
             return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new TournamentNotFoundError());
         }
-        var userTasks = tournamentUpdated.WorkersList.Select(w => userRepository.FindByIdAsync(w));
-        var fetchedUsers = await Task.WhenAll(userTasks);
+        var fetchedUsers = await userRepository.FindByIdsAsync(tournamentUpdated.WorkersList);
 
         var validUsers = fetchedUsers
-            .Where(u => u != null)
-            .Select(u => u!.ToDto(cloudinary)) 
+            .Select(u => u.ToDto(cloudinary)) 
             .ToList();
-        var supervisorTasks = tournamentUpdated.SupervisorList.Select(w => userRepository.FindByIdAsync(w));
-        var fetchedSupervisors = await Task.WhenAll(supervisorTasks);
+        var fetchedSupervisors = await userRepository.FindByIdsAsync(tournamentUpdated.SupervisorList);
         var validSupervisors = fetchedSupervisors
-            .Where(s => s != null)
-            .Select(s => s!.ToDto(cloudinary))
+            .Select(s => s.ToDto(cloudinary))
             .ToList();
         var owner = await userRepository.FindByIdAsync(tournamentUpdated.Owner);
         if (owner is null) 
@@ -208,7 +192,7 @@ public class TournamentService(
         return Result.Success<TournamentResponseDetailsDto, DomainErrors>(responseDto);
     }
 
-    public async Task<Result<IEnumerable<WorkerMachineAssignmentResponseDto>, TournamentsErrors>> GetAssignedWorkerMachines(long tournamentId)
+    public async Task<Result<IEnumerable<WorkerMachineAssignmentResponseDto>, TournamentsErrors>> GetAssignedWorkerMachines(Ulid tournamentId)
     {
         logger.LogInformation("Getting assigned worker machines for tournament {Id}", tournamentId);
         var assignments = await repository.GetAssignedWorkerMachinesAsync(tournamentId);
@@ -219,17 +203,13 @@ public class TournamentService(
             return Result.Failure<IEnumerable<WorkerMachineAssignmentResponseDto>, TournamentsErrors>(
                 new TournamentNotFoundError());
         }
-        var tasks = assignments.Select(async a =>
-        {
-            var user = await userRepository.FindByIdAsync(a.WorkerId);
-            return new { Assignment = a, User = user };
-        });
+        var workerIds = assignments.Select(a => a.WorkerId);
+        var users = await userRepository.FindByIdsAsync(workerIds);
+        var userDict = users.ToDictionary(u => u.Id);
 
-        var results = await Task.WhenAll(tasks);
-
-        var responseDtos = results
-            .Where(r => r.User != null) // Si el repositorio no encontró al usuario, se ignora
-            .Select(r => r.Assignment.ToWorkerMachineAssignmentResponseDto(r.User!.ToDto(cloudinary)))
+        var responseDtos = assignments
+            .Where(a => userDict.ContainsKey(a.WorkerId))
+            .Select(a => a.ToWorkerMachineAssignmentResponseDto(userDict[a.WorkerId].ToDto(cloudinary)))
             .ToList();
 
         return Result.Success<IEnumerable<WorkerMachineAssignmentResponseDto>, TournamentsErrors>(responseDtos);
@@ -244,18 +224,14 @@ public class TournamentService(
             logger.LogWarning("Tournament with id {Id} not found", name);
             return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new TournamentNotFoundError());
         }
-        var userTasks = tournament.WorkersList.Select(w => userRepository.FindByIdAsync(w));
-        var fetchedUsers = await Task.WhenAll(userTasks);
+        var fetchedUsers = await userRepository.FindByIdsAsync(tournament.WorkersList);
 
         var validUsers = fetchedUsers
-            .Where(u => u != null)
-            .Select(u => u!.ToDto(cloudinary)) 
+            .Select(u => u.ToDto(cloudinary)) 
             .ToList();
-        var supervisorTasks = tournament.SupervisorList.Select(w => userRepository.FindByIdAsync(w));
-        var fetchedSupervisors = await Task.WhenAll(supervisorTasks);
+        var fetchedSupervisors = await userRepository.FindByIdsAsync(tournament.SupervisorList);
         var validSupervisors = fetchedSupervisors
-            .Where(s => s != null)
-            .Select(s => s!.ToDto(cloudinary))
+            .Select(s => s.ToDto(cloudinary))
             .ToList();
         var owner = await userRepository.FindByIdAsync(tournament.Owner);
         if (owner is null) 
@@ -277,18 +253,14 @@ public class TournamentService(
             publicId = upload.PublicId;
         }
         var saved = await repository.SaveAsync(request.ToTournaments(ownerId,imageUrl,publicId));
-        var userTasks = saved.WorkersList.Select(w => userRepository.FindByIdAsync(w));
-        var fetchedUsers = await Task.WhenAll(userTasks);
+        var fetchedUsers = await userRepository.FindByIdsAsync(saved.WorkersList);
 
         var validUsers = fetchedUsers
-            .Where(u => u != null)
-            .Select(u => u!.ToDto(cloudinary))
+            .Select(u => u.ToDto(cloudinary))
             .ToList();
-        var supervisorTasks = saved.SupervisorList.Select(w => userRepository.FindByIdAsync(w));
-        var fetchedSupervisors = await Task.WhenAll(supervisorTasks);
+        var fetchedSupervisors = await userRepository.FindByIdsAsync(saved.SupervisorList);
         var validSupervisors = fetchedSupervisors
-            .Where(s => s != null)
-            .Select(s => s!.ToDto(cloudinary))
+            .Select(s => s.ToDto(cloudinary))
             .ToList();
         var responseDto = saved.ToTournamentResponseDetailsDto(validUsers,user.ToDto(cloudinary),validSupervisors,cloudinary);
         return Result.Success<TournamentResponseDetailsDto, DomainErrors>(responseDto);
@@ -308,18 +280,14 @@ public class TournamentService(
             logger.LogWarning("Tournament with id {Id} not found", request.SupervisorId);
             return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new TournamentNotFoundError());
         }
-        var userTasks = tournamentUpdated.WorkersList.Select(w => userRepository.FindByIdAsync(w));
-        var fetchedUsers = await Task.WhenAll(userTasks);
+        var fetchedUsers = await userRepository.FindByIdsAsync(tournamentUpdated.WorkersList);
 
         var validUsers = fetchedUsers
-            .Where(u => u != null)
-            .Select(u => u!.ToDto(cloudinary)) 
+            .Select(u => u.ToDto(cloudinary)) 
             .ToList();
-        var supervisorTasks = tournamentUpdated.SupervisorList.Select(w => userRepository.FindByIdAsync(w));
-        var fetchedSupervisors = await Task.WhenAll(supervisorTasks);
+        var fetchedSupervisors = await userRepository.FindByIdsAsync(tournamentUpdated.SupervisorList);
         var validSupervisors = fetchedSupervisors
-            .Where(s => s != null)
-            .Select(s => s!.ToDto(cloudinary))
+            .Select(s => s.ToDto(cloudinary))
             .ToList();
         var owner = await userRepository.FindByIdAsync(tournamentUpdated.Owner);
         if (owner is null) 
@@ -341,18 +309,14 @@ public class TournamentService(
             logger.LogWarning("Tournament with id {Id} not found", request.TournamentId);
             return Result.Failure<TournamentResponseDetailsDto, DomainErrors>(new TournamentNotFoundError());
         }
-        var userTasks = tournamentUpdated.WorkersList.Select(w => userRepository.FindByIdAsync(w));
-        var fetchedUsers = await Task.WhenAll(userTasks);
+        var fetchedUsers = await userRepository.FindByIdsAsync(tournamentUpdated.WorkersList);
 
         var validUsers = fetchedUsers
-            .Where(u => u != null)
-            .Select(u => u!.ToDto(cloudinary)) 
+            .Select(u => u.ToDto(cloudinary)) 
             .ToList();
-        var supervisorTasks = tournamentUpdated.SupervisorList.Select(w => userRepository.FindByIdAsync(w));
-        var fetchedSupervisors = await Task.WhenAll(supervisorTasks);
+        var fetchedSupervisors = await userRepository.FindByIdsAsync(tournamentUpdated.SupervisorList);
         var validSupervisors = fetchedSupervisors
-            .Where(s => s != null)
-            .Select(s => s!.ToDto(cloudinary))
+            .Select(s => s.ToDto(cloudinary))
             .ToList();
         var owner = await userRepository.FindByIdAsync(tournamentUpdated.Owner);
         if (owner is null) 

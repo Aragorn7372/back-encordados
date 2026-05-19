@@ -1,4 +1,5 @@
-﻿using BackEncordados.Export.Repository;
+﻿using BackEncordados.Excel.Repository;
+using BackEncordados.Export.Repository;
 using BackEncordados.Materials.Repository.Materials;
 using BackEncordados.Materials.Repository.Strings;
 using BackEncordados.Purchased.Repository;
@@ -34,8 +35,8 @@ public static class RepositoriesConfig
         services.AddScoped<ITournamentRepository, TournamentRepository>();
         services.AddScoped<IMaterialsRepository, MaterialsRepository>();
         services.AddScoped<ICuerdasRepository, CuerdasRepository>();
-        services.AddScoped<IExportRepository, ExportRepository>();
-       
+services.AddScoped<IExportRepository, ExportRepository>();
+        services.AddScoped<IExcelRepository, ExcelRepository>();
 
         return services;
     }

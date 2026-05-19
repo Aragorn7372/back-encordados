@@ -4,7 +4,7 @@ public record FilterPurchasedDto(
     bool? IsEncorder,
     bool? IsUser,
     string? UserId,
-    long? TournamentId,
+    Ulid? TournamentId,
     string Search,
     int Page = 0,
     int Size = 10,
@@ -13,5 +13,5 @@ public record FilterPurchasedDto(
     public string? UserId { get; set; } = UserId;
     public bool? IsEncorder { get; set; } = IsEncorder;
     public bool? IsUser { get; set; } = IsUser;
-    public long? TournamentId { get; set; } = TournamentId;
+    public Ulid? TournamentId { get; set; } = TournamentId;
 };

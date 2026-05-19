@@ -2,7 +2,7 @@
 
 public record CuerdaResponseDto(
   long Id,
-  long TournamentId,
+  Ulid TournamentId,
   string Marca,
   string Modelo,
   int Stock,

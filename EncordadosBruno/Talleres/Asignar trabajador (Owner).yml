@@ -3,6 +3,31 @@ info:
   type: http
   seq: 7
 
+http:
+  method: PATCH
+  url: "{{api-url}}/api/Tournaments/add-worker/01KR42E3NRTHEKKH1VHSNZK74E"
+  body:
+    type: json
+    data: |-
+      {
+        "UserId": "{{user_id_carlos}}",
+        "MachineName": "Máquina Alpha-1"
+      }
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+runtime:
+  variables:
+    - name: user_id_carlos
+      value: 01KRZAJVCA133EKNDN01TCBMJS
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
 docs: |
   # Asignar Trabajador a Torneo como Owner
 
@@ -17,7 +42,7 @@ docs: |
   ## Parameters (Path)
   | Parámetro | Tipo | Descripción |
   |-----------|------|-------------|
-  | `id` | long | ID numérico del torneo |
+  | `id` | ULID | ID del torneo (formato ULID) |
 
   ## Body (JSON)
   ```json
@@ -39,23 +64,3 @@ docs: |
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Owner
   - **404 Not Found**: Torneo o usuario no encontrado
-
-http:
-  method: PATCH
-  url: "{{api-url}}/api/Tournaments/add-worker/1"
-  body:
-    type: json
-    data: |-
-      {
-        "UserId": "{{user_id_carlos}}",
-        "MachineName": "Máquina Alpha-1"
-      }
-  auth:
-    type: bearer
-    token: "{{token_owner}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5

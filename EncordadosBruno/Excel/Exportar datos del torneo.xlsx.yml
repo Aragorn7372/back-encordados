@@ -1,0 +1,42 @@
+info:
+  name: Exportar datos del torneo (Excel)
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{api-url}}/api/excel/export/{{tournamentId}}"
+  auth:
+    type: bearer
+    token: "{{token_luis_supervisor}}"
+
+runtime:
+  variables:
+    - name: tournamentId
+      value: 01KR42E3NRTHEKKH1VHSNZK74E
+
+settings:
+  encodeUrl: true
+  timeout: 60000
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Exportar Datos del Torneo (Excel)
+
+  Exporta los datos de un torneo específico en formato Excel.
+  Incluye por cada jugador:
+  - Username
+  - Name
+  - Número de raquetas encordadas
+  - Precio total
+
+  ## Authorization
+  Requiere rol SUPERVISOR
+
+  ## Path Parameters
+  - **tournamentId** (required): ID del torneo a exportar
+
+  ## Responses
+  - **200 OK**: Archivo Excel (.xlsx)
+  - **403 Forbidden**: No es supervisor del torneo

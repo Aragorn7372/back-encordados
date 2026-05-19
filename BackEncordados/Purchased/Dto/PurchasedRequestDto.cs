@@ -5,8 +5,7 @@ namespace BackEncordados.Purchased.Dto;
 public class PurchasedRequestDto
 {
     [Required(ErrorMessage = "El ID del torneo es obligatorio")]
-    [Range(1, long.MaxValue, ErrorMessage = "El ID del torneo debe ser un número positivo")]
-    public long TournamentId { get; init; }
+    public Ulid TournamentId { get; init; }
 
     [Required(ErrorMessage = "El jugador que encarga es obligatorio")]
     public string? PlayerName { get; init; }

@@ -17,7 +17,7 @@ docs: |
   ## Parameters (Path)
   | Parámetro | Tipo | Descripción |
   |-----------|------|-------------|
-  | `id` | long | ID numérico del torneo |
+  | `id` | ULID | ID del torneo (formato ULID) |
 
   ## Responses
   - **204 No Content**: Torneo eliminado exitosamente
@@ -32,7 +32,7 @@ docs: |
 
 http:
   method: DELETE
-  url: "{{api-url}}/api/Tournaments/1"
+  url: "{{api-url}}/api/Tournaments/01KR42E3NRTHEKKH1VHSNZK74E"
   auth:
     type: bearer
     token: "{{token_admin}}"

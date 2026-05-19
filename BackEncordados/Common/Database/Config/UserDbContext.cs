@@ -9,9 +9,6 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
 {
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
-        configurationBuilder
-            .Properties<Ulid>()
-            .HaveConversion<UlidToStringConverter>();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -22,7 +19,7 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
         {
             entity.ToTable("users");
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).HasValueGenerator<UlidValueGenerator>();
+            entity.Property(e => e.Id).HasConversion<UlidToStringConverterNonNullable>().HasValueGenerator<UlidValueGenerator>();
             entity.Property(e => e.Username).IsRequired().HasMaxLength(50).IsUnicode(false);
             entity.Property(e => e.Email).IsRequired().HasMaxLength(100).IsUnicode(false);
             entity.Property(u => u.PasswordHash).IsRequired();
@@ -37,7 +34,7 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
             entity.HasIndex(e => e.Email).IsUnique().HasDatabaseName("IX_users_email_unique");
             entity.HasIndex(e => e.Username).IsUnique().HasDatabaseName("IX_users_username_unique");
             entity.HasQueryFilter(u => !u.IsDeleted);
-            entity.Property(u => u.TournamentId).IsRequired(false);
+            entity.Property(u => u.TournamentId).HasConversion<UlidToStringConverter>().IsRequired(false);
         });
     }
 
@@ -51,15 +48,18 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
         var encorderPasswordHash = BCrypt.Net.BCrypt.HashPassword("encorder123", workFactor: 11);
         var ownerPasswordHash = BCrypt.Net.BCrypt.HashPassword("owner123", workFactor: 11);
         var supervisorPasswordHash = BCrypt.Net.BCrypt.HashPassword("supervisor123", workFactor: 11);
-        var juan = Ulid.Parse("01KR424NQJR7CEHQW4STCQ3GGE");
-        var ana = Ulid.Parse("01KR424NQJ683QVB6F0P1B4XGM");
-        var pedro = Ulid.Parse("01KR424NQJD66APFZ2SM3RNPHZ");
-        var carlos = Ulid.Parse("01KR424NQJKSBKBMH15K4V835W");
-        var maria = Ulid.Parse("01KR424NQJKMNYS1FEC7NXBBH2");
-        var admin= Ulid.Parse("01KR42E3NRSSH7MRQ6KX38DA6B");
-        var owner= Ulid.Parse("01KR42E3NRTHEKKH1VHSNZK74D");
-        var supervisor1 = Ulid.Parse("01KR424NQJKTASKDL3M5NP7GHS");
-        var supervisor2 = Ulid.Parse("01KR424NQJKUBMAEM4N6OQ8JIT");
+        var juan = Ulid.Parse("01KS0Q28TD6SAPN0GN0XKRPK5D");
+        var ana = Ulid.Parse("01KS0Q28TE3RJTW6W35NJRMTZ4");
+        var pedro = Ulid.Parse("01KS0Q28TED4PWJPT7DMJ46WBN");
+        var carlos = Ulid.Parse("01KS0Q28TE7CMWS2D8RVDFA7YJ");
+        var maria = Ulid.Parse("01KS0Q28TE6CVB0NYYANTWEK7B");
+        var admin= Ulid.Parse("01KS0Q28TESE956013XYJKP6ST");
+        var owner= Ulid.Parse("01KS0Q28TE2EFVQTCW8EN0W0MF");
+        var supervisor1 = Ulid.Parse("01KS0Q28TEHA2KF5YM3J6QS5Z9");
+        var supervisor2 = Ulid.Parse("01KS0Q28TEXTDY9TQNRAXKAJ81");
+        var t1 = Ulid.Parse("01KS0Q28TEJ0SYA6JJ5H4W4CMP");
+        var t2 = Ulid.Parse("01KS0Q28TE9N7TG55K98TCB4X0");
+        var t5 = Ulid.Parse("01KS0Q28TE5BA449NS2EVCBTDQ");
         var users = new List<User>
         {
             
@@ -150,7 +150,7 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 CloudinaryPublicId = null,
                 CreatedAt = DateTime.UtcNow.AddMonths(-2),
                 UpdatedAt = DateTime.UtcNow.AddMonths(-2),
-                TournamentId = 1,
+                TournamentId = t1,
                 Bonos = 100.0,
                 
             },
@@ -169,7 +169,7 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 CloudinaryPublicId = null,
                 CreatedAt = DateTime.UtcNow.AddMonths(-1),
                 UpdatedAt = DateTime.UtcNow.AddMonths(-1),
-                TournamentId = 1,
+                TournamentId = t1,
                 Bonos = 25.0,
                 
             },
@@ -188,7 +188,7 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 CloudinaryPublicId = null,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                TournamentId = 1,
+                TournamentId = t2,
                 Bonos = 0,
                 
             },
@@ -196,7 +196,7 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
             // Usuario SUPERVISOR 1
             new() {
                 Id = supervisor1,
-                Username = "supervisor_luis",
+                    Username = "supervisor_luis",
                 Name = "Luis Fernández",
                 Email = "luis@encordados.com",
                 Phone = "989012345",
@@ -227,7 +227,7 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 UpdatedAt = DateTime.UtcNow.AddMonths(-2),
                 TournamentId = null,
                 
-            }
+            },
         };
 
         modelBuilder.Entity<User>().HasData(users);

@@ -4,13 +4,18 @@ info:
   seq: 9
 
 websocket:
-  url: ws://localhost:5032/hub/Torneos?id=&transport=webSockets
+  url: "{{websocket}}/hub/Torneos?id=&transport=webSockets"
   message:
     type: json
     data: "{\"protocol\":\"json\",\"version\":1}\x1e\n"
   auth:
     type: bearer
     token: "{{token_encorder_carlos}}"
+
+runtime:
+  variables:
+    - name: websocket
+      value: https://localhost
 
 settings:
   timeout: 0

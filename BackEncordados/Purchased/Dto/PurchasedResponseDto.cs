@@ -5,7 +5,7 @@ namespace BackEncordados.Purchased.Dto;
 
 public record PurchasedResponseDto(
     Ulid Id,
-    long TournamentId,
+    Ulid TournamentId,
     UserResponseDto Player,
     UserResponseDto Encorder,
     string Machine,

@@ -18,9 +18,8 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
             || x.SupervisorList.Contains(filter.UserId.Value));
         }
         if (!string.IsNullOrWhiteSpace(filter.Search)) {
-            var isId = long.TryParse(filter.Search, out var id) ? id : -1;
-            if (isId > 0) {
-                query = query.Where(x => x.Id == isId);
+            if (Ulid.TryParse(filter.Search, out var ulid)) {
+                query = query.Where(x => x.Id == ulid);
             }
 
             if (filter.Search.Length > 0) {
@@ -41,7 +40,7 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
         return (items, totalCount);
     }
 
-    public async Task<Tournaments?> FindByIdAsync(long id)
+    public async Task<Tournaments?> FindByIdAsync(Ulid id)
     {
         logger.LogInformation("Buscando torneo con ID {Id}", id);
         return await context.Partidos.Include(x=>x.WorkerMachineAssignments).FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
@@ -61,7 +60,7 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
         return saved.Entity;
     }
 
-    public async Task<Tournaments?> UpdateAsync(long id, Tournaments tournament)
+    public async Task<Tournaments?> UpdateAsync(Ulid id, Tournaments tournament)
     {
         logger.LogInformation("Actualizando torneo con ID {Id}", id);
 
@@ -92,7 +91,7 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
         return saved.Entity;
     }
 
-    public async Task<bool> DeleteAsync(long id)
+    public async Task<bool> DeleteAsync(Ulid id)
     {
         logger.LogInformation("Deletando torneo  con ID {Id}", id);
         var existingTournament =await FindByIdAsync(id);
@@ -104,7 +103,7 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
         return true;
     }
 
-    public async Task<Tournaments?> AsignWorker(long id, Ulid workerId, string machineName)
+    public async Task<Tournaments?> AsignWorker(Ulid id, Ulid workerId, string machineName)
     {
         logger.LogInformation(
             "Asignando trabajador con guid {WorkerId} al torneo con ID {Id}",
@@ -123,9 +122,13 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
             .Any(x => x.WorkerId == workerId);
         if (!alreadyAssigned)
         {
+            var maxId = existingTournament.WorkerMachineAssignments.Any()
+                ? existingTournament.WorkerMachineAssignments.Max(x => x.Id)
+                : 0;
             existingTournament.WorkerMachineAssignments.Add(
                 new WorkerMachineAssignment
                 {
+                    Id = maxId + 1,
                     WorkerId = workerId,
                     MachineName = machineName
                 });
@@ -136,7 +139,7 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
         return saved.Entity;
     }
 
-    public async Task<Tournaments?> RemoveWorker(long id, Ulid workerId)
+    public async Task<Tournaments?> RemoveWorker(Ulid id, Ulid workerId)
     {
         logger.LogInformation(
             "Eliminando trabajador con guid {WorkerId} del torneo con ID {Id}",
@@ -158,14 +161,14 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
         return saved.Entity;
     }
 
-    public async Task<IEnumerable<WorkerMachineAssignment>?> GetAssignedWorkerMachinesAsync(long tournamentId)
+    public async Task<IEnumerable<WorkerMachineAssignment>?> GetAssignedWorkerMachinesAsync(Ulid tournamentId)
     {
         logger.LogInformation("Obteniendo máquinas asignadas para el torneo con ID {Id}", tournamentId);
         return await context.Partidos
             .FirstOrDefaultAsync(x => x.Id == tournamentId && !x.IsDeleted) is { } tournament ? tournament.WorkerMachineAssignments : null;
     }
 
-    public async Task<Tournaments?> AsignSupervisor(long id, Ulid supervisorId) {
+    public async Task<Tournaments?> AsignSupervisor(Ulid id, Ulid supervisorId) {
         logger.LogInformation(
             "Asignando supervisor con ulid {WorkerId} al torneo con ID {Id}",
             supervisorId, id);
@@ -185,7 +188,7 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
         return saved.Entity;
     }
 
-    public async Task<Tournaments?> RemoveSupervisor(long id, Ulid supervisorId) {
+    public async Task<Tournaments?> RemoveSupervisor(Ulid id, Ulid supervisorId) {
         logger.LogInformation(
             "Eliminando supervisor con ulid {SupervisorId} del torneo con ID {Id}",
             supervisorId, id);
