@@ -218,4 +218,9 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
         logger.LogInformation("Estado de línea cambiado exitosamente. ID {Id}, Status {Status}", lineaId, status);
         return saved.Entity;
     }
+
+    public async Task SaveChangesAsync()
+    {
+        await context.SaveChangesAsync();
+    }
 }

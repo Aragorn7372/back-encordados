@@ -209,7 +209,31 @@ public class PurchasedController(
         var error = new PurchasedNotFoundError();
         return NotFound(new { error.Error });
     }
-    
+
+    [HttpPatch("change-status/{id}")]
+    [ProducesResponseType(typeof(PurchasedResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Transactional(typeof(PedidosDbContext))]
+    [Authorize(policy: "RequireEncorderRole")]
+    public async Task<IActionResult> ChangeAllLineasStatus(string id, [FromBody] string status)
+    {
+        logger.LogInformation("Change all lineas status for purchased with id {Id} to {Status}", id, status);
+        if (Ulid.TryParse(id, out var ulid))
+        {
+            return await service.ChangeAllLineasStatusAsync(ulid, status).Match(
+                onSuccess: purchased => Ok(purchased),
+                onFailure: error => error switch
+                {
+                    PurchasedNotFoundError => NotFound(new { error.Error }),
+                    InvalidStatusError => BadRequest(new { error.Error }),
+                    _ => StatusCode(StatusCodes.Status500InternalServerError, new { error.Error })
+                });
+        }
+        var error = new PurchasedNotFoundError();
+        return NotFound(new { error.Error });
+    }
 
     [HttpPut("lineas/{lineaId}")]
     [ProducesResponseType(typeof(PedidoLineaResponseDto), StatusCodes.Status200OK)]
