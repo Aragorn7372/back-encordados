@@ -16,4 +16,5 @@ public interface IPuchasedRepository
     Task<PedidoLinea> CreateLineaAsync(PedidoLinea linea);
     Task<PedidoLinea?> UpdateLineaAsync(PedidoLinea linea, Ulid lineaId);
     Task<PedidoLinea?> ChangeLineaStatusAsync(Ulid lineaId, Status status);
+    Task SaveChangesAsync();
 }

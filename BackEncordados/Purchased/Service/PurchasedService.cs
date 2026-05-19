@@ -455,6 +455,60 @@ public class PurchasedService(
             });
     }
 
+    public async Task<Result<PurchasedResponseDto, DomainErrors>> ChangeAllLineasStatusAsync(Ulid purchasedId, string status)
+    {
+        logger.LogInformation("Cambiando estado de todas las líneas del pedido {PurchasedId} a {Status}", purchasedId, status);
+        
+        if (!Enum.TryParse<Status>(status, true, out var statusEnum))
+            return Result.Failure<PurchasedResponseDto, DomainErrors>(new InvalidStatusError("Invalid status value"));
+
+        var purchased = await repository.FindByIdAsync(purchasedId);
+        if (purchased is null)
+            return Result.Failure<PurchasedResponseDto, DomainErrors>(new PurchasedNotFoundError())
+                .TapError(() => logger.LogWarning("Pedido con ID {PurchasedId} no encontrado", purchasedId));
+
+        if (purchased.Lineas == null || !purchased.Lineas.Any())
+            return Result.Failure<PurchasedResponseDto, DomainErrors>(new PurchasedNotFoundError())
+                .TapError(() => logger.LogWarning("El pedido {PurchasedId} no tiene líneas", purchasedId));
+
+        var linesToUpdate = purchased.Lineas.Where(l => 
+        {
+            if (statusEnum == Status.CANCELED)
+                return l.Status != Status.COMPLETED && l.Status != Status.DELIVERED_TOpLAYER;
+            else
+                return l.Status != Status.CANCELED;
+        }).ToList();
+
+        if (!linesToUpdate.Any())
+        {
+            logger.LogInformation("No hay líneas para actualizar en el pedido {PurchasedId}", purchasedId);
+            var playerResult = await GetUserDtoCachedAsync(purchased.PlayerId);
+            if (playerResult.IsFailure) return playerResult.Error;
+            var encorderResult = await GetUserDtoCachedAsync(purchased.AssignedTo);
+            if (encorderResult.IsFailure) return encorderResult.Error;
+            return purchased.ToDto(encorderResult.Value, playerResult.Value);
+        }
+
+        foreach (var linea in linesToUpdate)
+        {
+            linea.Status = statusEnum;
+            linea.UpdatedAt = DateTime.UtcNow;
+        }
+
+        await repository.SaveChangesAsync();
+        await cache.RemoveAsync(CacheKeys.PurchasedCacheKey + purchasedId);
+
+        var playerResultFinal = await GetUserDtoCachedAsync(purchased.PlayerId);
+        if (playerResultFinal.IsFailure) return playerResultFinal.Error;
+        var encorderResultFinal = await GetUserDtoCachedAsync(purchased.AssignedTo);
+        if (encorderResultFinal.IsFailure) return encorderResultFinal.Error;
+
+        logger.LogInformation("Se actualizaron {Count} líneas del pedido {PurchasedId} a estado {Status}", 
+            linesToUpdate.Count, purchasedId, statusEnum);
+        
+        return purchased.ToDto(encorderResultFinal.Value, playerResultFinal.Value);
+    }
+
     private async Task SendLineaCompletedEmailAsync(string lineaId, string pedidoId, string email,string productName)
     {
         var message = new EmailMessage

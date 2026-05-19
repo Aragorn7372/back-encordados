@@ -19,4 +19,5 @@ public interface IPurchasedService
     Task<Result<PedidoLineaResponseDto, DomainErrors>> UpdateLineaAsync(Ulid lineaId, PedidoLineaPatchDto request);
     Task<Result<PedidoLineaResponseDto, DomainErrors>> CancelLineaAsync(Ulid lineaId, string? userId, string? userRole);
     Task<Result<PedidoLineaResponseDto, DomainErrors>> ChangeLineaStatusAsync(Ulid lineaId, string status);
+    Task<Result<PurchasedResponseDto, DomainErrors>> ChangeAllLineasStatusAsync(Ulid purchasedId, string status);
 }
