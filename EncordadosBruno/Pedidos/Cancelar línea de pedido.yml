@@ -5,7 +5,7 @@ info:
 
 http:
   method: PATCH
-  url: "{{api-url}}/api/Purchased/lineas/01KR42ME5P1Q2BGWW1DY11Z4TJ/cancel"
+  url: "{{api-url}}/api/Purchased/lineas/01KS0Q28TEW6AVWP9S8WVJ9Z5G/cancel"
   auth:
     type: bearer
     token: "{{token_juan}}"

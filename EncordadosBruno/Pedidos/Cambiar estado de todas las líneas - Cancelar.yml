@@ -1,0 +1,49 @@
+info:
+  name: Cambiar estado de todas las líneas - Cancelar
+  type: http
+  seq: 21
+
+http:
+  method: PATCH
+  url: "{{api-url}}/api/Purchased/change-status/01KS0Q28TEW6AVWP9S8WVJ9Z5G"
+  body:
+    type: json
+    data: '"CANCELED"'
+  auth:
+    type: bearer
+    token: "{{token_encorder_carlos}}"
+
+settings:
+  encodeUrl: true
+  timeout: 60000
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Cambiar Estado de Todas las Líneas - Cancelar
+
+  Cancela todas las líneas del pedido excepto las que ya están COMPLETED o DELIVERED_TOpLAYER.
+
+  ## Lógica
+  - Si el nuevo estado es CANCELED: excluye líneas COMPLETED y DELIVERED_TOpLAYER
+
+  ## Authorization
+  RequireEncorderRole (Admin, Owner, Encorder)
+
+  ## HTTP Method
+  `PATCH /api/Purchased/change-status/{id}`
+
+  ## Body (JSON)
+  ```json
+  "CANCELED"
+  ```
+
+  ## Responses
+  - **200 OK**: `PurchasedResponseDto` con líneas canceladas (excepto las completadas)
+  - **400 Bad Request**: Estado inválido
+  - **404 Not Found**: Pedido no encontrado
+
+  ## Test Cases
+  - [ ] Cancelar pedido con líneas en diferentes estados
+  - [ ] Cancelar pedido donde algunas líneas ya están completadas (no se tocan)
+  - [ ] Cancelar pedido donde todas las líneas ya están completadas
