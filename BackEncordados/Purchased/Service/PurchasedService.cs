@@ -529,7 +529,7 @@ public class PurchasedService(
             new ConcurrencyError("No se pudo actualizar el usuario después de varios intentos."));
     }
 
-    private void SendCreatePurchased(Ulid purchasedId, long tournamentId, PurchasedResponseDto response) {
+    private void SendCreatePurchased(Ulid purchasedId, Ulid tournamentId, PurchasedResponseDto response) {
         _ = Task.Run(async () => {
             try {
                 var message = new {
@@ -556,7 +556,7 @@ public class PurchasedService(
             }
         });
     }
-    private void SendUpdatedPurchased(Ulid purchasedId, long tournamentId, PurchasedResponseDto response) {
+    private void SendUpdatedPurchased(Ulid purchasedId, Ulid tournamentId, PurchasedResponseDto response) {
         _ = Task.Run(async () => {
             try {
                 var message = new {
@@ -583,7 +583,7 @@ public class PurchasedService(
             }
         });
     }
-    private void SendCancelPurchased(Ulid purchasedId, long tournamentId, PurchasedResponseDto response) {
+    private void SendCancelPurchased(Ulid purchasedId, Ulid tournamentId, PurchasedResponseDto response) {
         _ = Task.Run(async () => {
             try {
                 var message = new {
@@ -610,7 +610,7 @@ public class PurchasedService(
             }
         });
     }
-    private void SendChangeStatusPurchasedLine(Ulid lineaId, Ulid pedidoId, long tournamentId, PedidoLineaResponseDto response) {
+    private void SendChangeStatusPurchasedLine(Ulid lineaId, Ulid pedidoId, Ulid tournamentId, PedidoLineaResponseDto response) {
         _ = Task.Run(async () => {
             try {
                 var message = new {
@@ -637,7 +637,7 @@ public class PurchasedService(
             }
         });
     }
-    private void SendUpdatePurchasedLine(Ulid lineaId, Ulid pedidoId, long tournamentId, PedidoLineaResponseDto response) {
+    private void SendUpdatePurchasedLine(Ulid lineaId, Ulid pedidoId, Ulid tournamentId, PedidoLineaResponseDto response) {
         _ = Task.Run(async () => {
             try {
                 var message = new {

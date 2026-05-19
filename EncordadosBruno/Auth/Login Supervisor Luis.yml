@@ -3,6 +3,31 @@ info:
   type: http
   seq: 1
 
+http:
+  method: POST
+  url: "{{api-url}}/api/Auth/signin"
+  body:
+    type: json
+    data: |-
+      {
+        "Username": "supervisor_luis",
+        "Password": "supervisor123"
+      }
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const data = res.getBody();
+        bru.setEnvVar("token_luis_supervisor", data.token);
+        bru.setEnvVar("user_id_luis", data.user.id || "01KR424NQJR7CEHQW4STCQ3GGE");
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
 docs: |
   # Login Supervisor Luis
 
@@ -22,28 +47,3 @@ docs: |
   ## Responses
   - **200 OK**: Retorna token JWT
   - **401 Unauthorized**: Credenciales inválidas
-
-http:
-  method: POST
-  url: "{{api-url}}/api/Auth/iniciar-sesion"
-  body:
-    type: json
-    data: |-
-      {
-        "Email": "luis@encordados.com",
-        "Password": "supervisor123"
-      }
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5
-
-tests:
-  - name: Save token
-    assert:
-      - type: json-res-val
-        expression: "$.token"
-        run: |
-          bru.setVar("token_supervisor", JSON.parse(bru.getResponse()).token);

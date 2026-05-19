@@ -17,7 +17,7 @@ docs: |
   ## Parameters (Path)
   | Parámetro | Tipo | Descripción |
   |-----------|------|-------------|
-  | `id` | long | ID numérico del torneo |
+  | `id` | ULID | ID del torneo (formato ULID) |
 
   ## Body (JSON)
   ```json
@@ -45,7 +45,7 @@ docs: |
 
 http:
   method: PUT
-  url: "{{api-url}}/api/Tournaments/1"
+  url: "{{api-url}}/api/Tournaments/01KR42E3NRTHEKKH1VHSNZK74E"
   body:
     type: multipart-form
     data:

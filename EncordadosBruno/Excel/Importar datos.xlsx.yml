@@ -1,0 +1,59 @@
+info:
+  name: Importar datos (Excel)
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{api-url}}/api/excel/advanced/import?tournamentId={{tournamentId}}"
+  params:
+    - name: tournamentId
+      value: "{{tournamentId}}"
+      type: query
+  body:
+    type: file
+    data:
+      - filePath: C:\Users\Aragorn\Desktop\docker-enviroment\back-encordados\EncordadosBruno\image\torneo_advanced_01KRZE8PBX2M9XKA61ECWZXASY_2026-05-19.xlsx
+        contentType: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+        selected: true
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+runtime:
+  variables:
+    - name: tournamentId
+      value: 01KR42E3NRTHEKKH1VHSNZK74E
+
+settings:
+  encodeUrl: true
+  timeout: 60000
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Importar Datos (Excel)
+
+  Importa datos de un archivo Excel a un torneo específico.
+
+  ## Tipos disponibles (separados por coma):
+  - users
+  - materials
+  - cuerdas
+  - tournament
+  - pedidos
+
+  ## Authorization
+  Requiere rol ADMIN o OWNER
+
+  ## Query Parameters
+  - **tournamentId** (required): ID del torneo
+  - **types** (optional): Tipos a importar separados por coma. Si no se especifica, importa todos.
+
+  ## Request Body
+  Archivo Excel (.xlsx) con el mismo formato que el export.
+
+  ## Responses
+  - **200 OK**: Retorna ExcelImportResultDto con el resumen de importación
+  - **400 Bad Request**: Archivo inválido o formato incorrecto
+  - **403 Forbidden**: No tiene permisos (no es Admin/Owner del torneo)

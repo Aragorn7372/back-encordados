@@ -10,6 +10,5 @@ public class ContactoPostRequestDto {
     public string? Email { get; set; } 
     public string? Phone { get; set; } 
     [Required]
-    [Range(1, long.MaxValue, ErrorMessage = "TournamentId must be a positive number.")]
-    public long TournamentId { get; set; }
+    public Ulid TournamentId { get; set; }
 }

@@ -1,7 +1,7 @@
 ﻿namespace BackEncordados.Materials.Dto.Materials;
 
 public record MaterialFilterDto(
-    long? TournamentId,
+    Ulid? TournamentId,
     string Search,
     int Page = 0,
     int Size = 10,

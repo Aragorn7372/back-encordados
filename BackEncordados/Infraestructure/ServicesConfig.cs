@@ -1,4 +1,6 @@
 ﻿using BackEncordados.Common.Service.WhatsApp;
+using BackEncordados.Excel.Archive;
+using BackEncordados.Excel.Service;
 using BackEncordados.Export.Archive;
 using BackEncordados.Export.Service;
 using BackEncordados.Materials.Service.Cuerdas;
@@ -33,6 +35,8 @@ public static class ServicesConfig
             .AddScoped<IMaterialsService, MaterialsService>()
             .AddScoped<IExportArchiveManager, ExportArchiveManager>()
             .AddScoped<IExportService, ExportService>()
+            .AddScoped<IExcelArchiveManager, ExcelArchiveManager>()
+            .AddScoped<IExcelService, ExcelService>()
             .AddScoped<IWhatsAppService, WhatsAppService>();
     }
 }

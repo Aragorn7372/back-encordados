@@ -9,6 +9,13 @@ public class MaterialsDbContext(DbContextOptions<MaterialsDbContext> options): D
     public DbSet<Cuerdas> Cuerdas { get; set; }
     public DbSet<Material> Materiales { get; set; }
 
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder
+            .Properties<Ulid>()
+            .HaveConversion<UlidToStringConverterNonNullable>();
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -59,12 +66,16 @@ public class MaterialsDbContext(DbContextOptions<MaterialsDbContext> options): D
     private void SeedData(ModelBuilder modelBuilder)
     {
         var now = DateTime.UtcNow;
-
+        var t1 = Ulid.Parse("01KS0Q28TEJ0SYA6JJ5H4W4CMP");
+        var t2 = Ulid.Parse("01KS0Q28TE9N7TG55K98TCB4X0");
+        var t3= Ulid.Parse("01KS0Q28TEVEYS4303TXP202N4");
+        var t4 = Ulid.Parse("01KS0Q28TET0JHJV4T5YFDJWBW");
+        var t5 = Ulid.Parse("01KS0Q28TE5BA449NS2EVCBTDQ");
         modelBuilder.Entity<Cuerdas>().HasData(
             new Cuerdas
             {
                 Id = 1,
-                TournamentId = 1,
+                TournamentId = t1,
                 Marca = "Babolat",
                 Modelo = "RPM Blast",
                 Stock = 50,
@@ -78,7 +89,7 @@ public class MaterialsDbContext(DbContextOptions<MaterialsDbContext> options): D
             new Cuerdas
             {
                 Id = 2,
-                TournamentId = 1,
+                TournamentId = t1,
                 Marca = "Wilson",
                 Modelo = "Champion's Choice",
                 Stock = 20,
@@ -92,7 +103,7 @@ public class MaterialsDbContext(DbContextOptions<MaterialsDbContext> options): D
             new Cuerdas
             {
                 Id = 3,
-                TournamentId = 2,
+                TournamentId = t2,
                 Marca = "Luxilon",
                 Modelo = "ALU Power",
                 Stock = 45,
@@ -106,7 +117,7 @@ public class MaterialsDbContext(DbContextOptions<MaterialsDbContext> options): D
             new Cuerdas
             {
                 Id = 4,
-                TournamentId = 2,
+                TournamentId = t2,
                 Marca = "Head",
                 Modelo = "Intellitour",
                 Stock = 30,
@@ -120,7 +131,7 @@ public class MaterialsDbContext(DbContextOptions<MaterialsDbContext> options): D
             new Cuerdas
             {
                 Id = 5,
-                TournamentId = 3,
+                TournamentId = t3,
                 Marca = "Signum Pro",
                 Modelo = "Plasma",
                 Stock = 25,
@@ -134,7 +145,7 @@ public class MaterialsDbContext(DbContextOptions<MaterialsDbContext> options): D
             new Cuerdas
             {
                 Id = 6,
-                TournamentId = 4,
+                TournamentId = t4,
                 Marca = "Kirschbaum",
                 Modelo = "Pro Line",
                 Stock = 35,
@@ -144,6 +155,34 @@ public class MaterialsDbContext(DbContextOptions<MaterialsDbContext> options): D
                 IsDeleted = false,
                 CreatedAt = now.AddDays(-30),
                 UpdatedAt = now.AddDays(-30)
+            },
+            new Cuerdas
+            {
+                Id = 7,
+                TournamentId = t5,
+                Marca = "Babolat",
+                Modelo = "VS Team",
+                Stock = 40,
+                Precio = 22.00,
+                StringFormat = FormatoCuerda.Reel,
+                StringsType = StringsType.NaturalGut,
+                IsDeleted = false,
+                CreatedAt = now.AddDays(-5),
+                UpdatedAt = now.AddDays(-5)
+            },
+            new Cuerdas
+            {
+                Id = 8,
+                TournamentId = t5,
+                Marca = "Technifibre",
+                Modelo = "XR2",
+                Stock = 60,
+                Precio = 18.50,
+                StringFormat = FormatoCuerda.Set,
+                StringsType = StringsType.Polyester,
+                IsDeleted = false,
+                CreatedAt = now.AddDays(-5),
+                UpdatedAt = now.AddDays(-5)
             }
         );
 
@@ -151,7 +190,7 @@ public class MaterialsDbContext(DbContextOptions<MaterialsDbContext> options): D
             new Material
             {
                 Id = 1,
-                TournamentId = 1,
+                TournamentId = t1,
                 Marca = "Head",
                 Modelo = "Hydrosorb Comfort",
                 Stock = 100,
@@ -164,7 +203,7 @@ public class MaterialsDbContext(DbContextOptions<MaterialsDbContext> options): D
             new Material
             {
                 Id = 2,
-                TournamentId = 1,
+                TournamentId = t1,
                 Marca = "Babolat",
                 Modelo = "Pro Overgrip",
                 Stock = 200,
@@ -177,7 +216,7 @@ public class MaterialsDbContext(DbContextOptions<MaterialsDbContext> options): D
             new Material
             {
                 Id = 3,
-                TournamentId = 2,
+                TournamentId = t2,
                 Marca = "Tourna",
                 Modelo = "Lead Tape 1/2\"",
                 Stock = 80,
@@ -190,7 +229,7 @@ public class MaterialsDbContext(DbContextOptions<MaterialsDbContext> options): D
             new Material
             {
                 Id = 4,
-                TournamentId = 2,
+                TournamentId = t2,
                 Marca = "Wilson",
                 Modelo = "ShockShield",
                 Stock = 50,
@@ -203,7 +242,7 @@ public class MaterialsDbContext(DbContextOptions<MaterialsDbContext> options): D
             new Material
             {
                 Id = 5,
-                TournamentId = 3,
+                TournamentId = t3,
                 Marca = "Head",
                 Modelo = "Graphene 360+",
                 Stock = 10,
@@ -216,7 +255,7 @@ public class MaterialsDbContext(DbContextOptions<MaterialsDbContext> options): D
             new Material
             {
                 Id = 6,
-                TournamentId = 4,
+                TournamentId = t4,
                 Marca = "Babolat",
                 Modelo = "Syn Pro",
                 Stock = 75,
@@ -225,6 +264,32 @@ public class MaterialsDbContext(DbContextOptions<MaterialsDbContext> options): D
                 IsDeleted = false,
                 CreatedAt = now.AddDays(-30),
                 UpdatedAt = now.AddDays(-30)
+            },
+            new Material
+            {
+                Id = 7,
+                TournamentId = t5,
+                Marca = "Head",
+                Modelo = "Super Soft",
+                Stock = 150,
+                Precio = 7.50,
+                Type = MaterialType.Grip,
+                IsDeleted = false,
+                CreatedAt = now.AddDays(-5),
+                UpdatedAt = now.AddDays(-5)
+            },
+            new Material
+            {
+                Id = 8,
+                TournamentId = t5,
+                Marca = "Tourna",
+                Modelo = "Grip Boost",
+                Stock = 100,
+                Precio = 4.99,
+                Type = MaterialType.Overgrip,
+                IsDeleted = false,
+                CreatedAt = now.AddDays(-5),
+                UpdatedAt = now.AddDays(-5)
             }
         );
     }

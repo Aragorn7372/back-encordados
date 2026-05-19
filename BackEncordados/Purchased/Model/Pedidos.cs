@@ -5,7 +5,7 @@ namespace BackEncordados.Purchased.Model;
 public class Pedidos: ITimestamped
 {
     public Ulid Id { get; set; }
-    public long TournamentId { get; set; }
+    public Ulid TournamentId { get; set; }
     public Ulid PlayerId { get; set; }
     public Ulid AssignedTo { get; set; }
     public string Machine { get; set; } = string.Empty;

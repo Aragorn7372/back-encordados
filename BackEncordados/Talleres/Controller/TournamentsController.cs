@@ -27,7 +27,7 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
     public async Task<IActionResult> CreateTournament([FromForm] TournamentAdminRequestDto adminRequest) {
         logger.LogInformation("Received adminRequest to create tournament: {@Request}", adminRequest);
         return await tournamentsService.CreateTournament(adminRequest).Match(
-            onSuccess: tournament => CreatedAtAction(nameof(GetTournament), new { id = tournament.Id }, tournament),
+            onSuccess: tournament => Created(Url.Action("GetTournament", "Tournaments", new { id = tournament.Id }, Request.Scheme)!, tournament),
             onFailure: error => error switch {
                 UserNotFoundError => NotFound(error.Error),
                 ConflictError => Conflict(error.Error),
@@ -36,12 +36,12 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
             });
     }
 
-    [HttpGet("{id:long}")]
+    [HttpGet("{id:ulid}", Name = "GetTournament")]
     [ProducesResponseType(typeof(TournamentResponseDetailsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(Policy = "RequireEncorderRole")]
-    public async Task<IActionResult> GetTournament(long id) {
+    public async Task<IActionResult> GetTournament(Ulid id) {
         logger.LogInformation("Received request to get tournament: {id}", id);
      return await tournamentsService.GetTournament(id).Match(
             success => Ok(success),
@@ -93,12 +93,12 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
         return Ok(await tournamentsService.GetAllTournamentsAsync(filter));
      }
 
-    [HttpDelete("{id:long}")]
+    [HttpDelete("{id:ulid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(Policy = "RequireAdminRole")]
-    public async Task<IActionResult> DeleteTournament(long id) {
+    public async Task<IActionResult> DeleteTournament(Ulid id) {
         logger.LogInformation("Received request to delete tournament: {id}", id);
         return await tournamentsService.DeleteTournament(id).Match(
             success =>   StatusCode(204, success),
@@ -107,13 +107,13 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
                 _ => StatusCode(500, "An unexpected error occurred.")
             });
     }
-    [HttpPut("{id:long}")]
+    [HttpPut("{id:ulid}")]
     [ProducesResponseType(typeof(TournamentResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(Policy = "RequireOwnerRole")]
-    public async Task<IActionResult> UpdateTournament(long id, [FromBody] TournamentPatchDto request) {
+    public async Task<IActionResult> UpdateTournament(Ulid id, [FromBody] TournamentPatchDto request) {
         logger.LogInformation("Received request to update tournament: {id} with data: {@Request}", id, request);
         return await tournamentsService.UpdateTournament(id, request).Match(
             success => Ok(success),
@@ -124,14 +124,14 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
             });
      }
 
-    [HttpPatch("add-worker/{id:long}")]
+    [HttpPatch("add-worker/{id:ulid}")]
     [ProducesResponseType(typeof(TournamentResponseDetailsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(Policy = "RequireOwnerRole")]
     public async Task<IActionResult> PatchTournament(
-        long id,
+        Ulid id,
         [FromBody] WorkerMachineAssignmentRequestDto worker) {
         logger.LogInformation("Received request to patch tournament with worker assignment: {@Worker}", worker);
         return await tournamentsService.AssignWorkerMachine(id,worker).Match(
@@ -151,7 +151,7 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(Policy = "RequireOwnerRole")]
     public async Task<IActionResult> RemoveWorkerFromTournament(
-        long id,
+        Ulid id,
         [FromBody] string worker) {
         logger.LogInformation("Received request to patch tournament with worker removal: {@Worker}", worker);
         return await tournamentsService.UnassignWorkerMachine(id,worker).Match(
@@ -169,7 +169,7 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(Policy = "RequireOwnerRole")]
-    public async Task<IActionResult> GetAssignedWorkers(long id) {
+    public async Task<IActionResult> GetAssignedWorkers(Ulid id) {
         logger.LogInformation("Received request to get assigned workers for tournament: {id}", id);
         return await tournamentsService.GetAssignedWorkerMachines(id).Match(
             success => Ok(success),
@@ -191,7 +191,7 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
         if (userIdClaim is null || !Ulid.TryParse(userIdClaim.Value, out var userId))
             return NotFound(new { message = "User ID claim not found or invalid" });
         return await tournamentsService.OwnerCreateTournament(adminRequest,userId).Match(
-            onSuccess: tournament => CreatedAtAction(nameof(GetTournament), new { id = tournament.Id }, tournament),
+            onSuccess: tournament => Created(Url.Action("GetTournament", "Tournaments", new { id = tournament.Id }, Request.Scheme)!, tournament),
             onFailure: error => error switch {
                 UserNotFoundError => NotFound(error.Error),
                 ConflictError => Conflict(error.Error),

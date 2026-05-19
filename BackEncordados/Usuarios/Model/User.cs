@@ -24,7 +24,7 @@ public class User : ITimestamped
 
     public string Role { get; set; } = UserRoles.USER;
     
-    public long? TournamentId { get; set; }
+    public Ulid? TournamentId { get; set; }
     
 
     public bool IsDeleted { get; set; }

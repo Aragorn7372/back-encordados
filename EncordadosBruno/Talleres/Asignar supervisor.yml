@@ -25,7 +25,7 @@ docs: |
   ## Campos
   | Campo | Tipo | Descripción |
   |-------|------|-------------|
-  | `TournamentId` | long | ID numérico del torneo |
+  | `TournamentId` | ULID | ID del torneo (formato ULID) |
   | `SupervisorId` | ULID | ID del usuario supervisor |
 
   ## Responses
@@ -42,7 +42,7 @@ http:
     type: json
     data: |-
       {
-        "TournamentId": 1,
+        "TournamentId": "01KR42E3NRTHEKKH1VHSNZK74E",
         "SupervisorId": "{{supervisor_id_luis}}"
       }
   auth:

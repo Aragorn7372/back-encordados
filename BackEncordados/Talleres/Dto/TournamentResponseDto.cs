@@ -1,7 +1,7 @@
 ﻿namespace BackEncordados.Talleres.Dto;
 
 public record TournamentResponseDto(
-    long Id,
+    Ulid Id,
     string Name,
     DateTime EndTournament,
     DateTime StartTournament,

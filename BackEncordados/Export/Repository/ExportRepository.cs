@@ -1,10 +1,10 @@
 using BackEncordados.Common.Database.Config;
 using BackEncordados.Export.Dto;
 using BackEncordados.Materials.Model;
+using Microsoft.EntityFrameworkCore;
 using BackEncordados.Purchased.Model;
 using BackEncordados.Talleres.Model;
 using BackEncordados.Usuarios.Model;
-using Microsoft.EntityFrameworkCore;
 
 namespace BackEncordados.Export.Repository;
 
@@ -34,9 +34,14 @@ public class ExportRepository(
         data.Cuerdas = await materialsDbContext.Cuerdas.ToListAsync();
         logger.LogInformation("Fetched {Count} cuerdas", data.Cuerdas.Count);
 
-        data.Pedidos = await pedidosDbContext.Pedidos
-            .Include(p => p.Lineas)
-            .ToListAsync();
+        var pedidos = await pedidosDbContext.Pedidos.ToListAsync();
+        var lineas = await pedidosDbContext.PedidoLineas.ToListAsync();
+
+        foreach (var pedido in pedidos)
+        {
+            pedido.Lineas = lineas.Where(l => l.PedidoId == pedido.Id).ToList();
+        }
+        data.Pedidos = pedidos;
         logger.LogInformation("Fetched {Count} pedidos", data.Pedidos.Count);
 
         return data;
@@ -89,10 +94,15 @@ public class ExportRepository(
 
     private async Task ClearAllDataProductionAsync()
     {
-        logger.LogInformation("Using production delete strategy (ExecuteDeleteAsync)");
+        logger.LogInformation("Using production delete strategy (ExecuteDeleteAsync for PostgreSQL, RemoveRange for MongoDB)");
 
-        await pedidosDbContext.PedidoLineas.ExecuteDeleteAsync();
-        await pedidosDbContext.Pedidos.ExecuteDeleteAsync();
+        var pedidoLineas = await pedidosDbContext.PedidoLineas.ToListAsync();
+        pedidosDbContext.PedidoLineas.RemoveRange(pedidoLineas);
+
+        var pedidos = await pedidosDbContext.Pedidos.ToListAsync();
+        pedidosDbContext.Pedidos.RemoveRange(pedidos);
+
+        await pedidosDbContext.SaveChangesAsync();
         logger.LogInformation("Cleared pedidos");
 
         await materialsDbContext.Cuerdas.ExecuteDeleteAsync();
@@ -102,7 +112,9 @@ public class ExportRepository(
         await userDbContext.Users.ExecuteDeleteAsync();
         logger.LogInformation("Cleared users");
 
-        await talleresDbContext.Partidos.ExecuteDeleteAsync();
+        var tournaments = await talleresDbContext.Partidos.ToListAsync();
+        talleresDbContext.Partidos.RemoveRange(tournaments);
+        await talleresDbContext.SaveChangesAsync();
         logger.LogInformation("Cleared tournaments");
     }
 
@@ -112,13 +124,36 @@ public class ExportRepository(
 
         if (data.Tournaments.Any())
         {
+            var tournamentAssignments = new List<(Ulid TournamentId, List<WorkerMachineAssignment> Assignments)>();
+
             foreach (var tournament in data.Tournaments)
             {
-                tournament.WorkerMachineAssignments ??= new List<WorkerMachineAssignment>();
+                tournamentAssignments.Add((tournament.Id, tournament.WorkerMachineAssignments.ToList()));
+                tournament.WorkerMachineAssignments = new List<WorkerMachineAssignment>();
+                await talleresDbContext.Partidos.AddAsync(tournament);
             }
-            await talleresDbContext.Partidos.AddRangeAsync(data.Tournaments);
             await talleresDbContext.SaveChangesAsync();
             logger.LogInformation("Imported {Count} tournaments", data.Tournaments.Count);
+
+            long nextAssignmentId = 1;
+            foreach (var (tournamentId, assignments) in tournamentAssignments)
+            {
+                var existingTournament = await talleresDbContext.Partidos.FirstOrDefaultAsync(t => t.Id == tournamentId);
+                if (existingTournament != null)
+                {
+                    foreach (var assignment in assignments)
+                    {
+                        existingTournament.WorkerMachineAssignments.Add(new WorkerMachineAssignment
+                        {
+                            Id = nextAssignmentId++,
+                            WorkerId = assignment.WorkerId,
+                            MachineName = assignment.MachineName
+                        });
+                    }
+                }
+            }
+            await talleresDbContext.SaveChangesAsync();
+            logger.LogInformation("Imported worker machine assignments for {Count} tournaments", tournamentAssignments.Count);
         }
 
         if (data.Users.Any())

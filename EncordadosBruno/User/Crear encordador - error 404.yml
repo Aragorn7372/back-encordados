@@ -9,7 +9,7 @@ http:
   body:
     type: json
     data: |
-      "01KR424NQJR7CEHQW4STCQ3XXX"
+      "01KRZAJVCA133EKNDN01TCBMJS"
   auth:
     type: bearer
     token: "{{token_owner}}"
