@@ -17,7 +17,7 @@ http:
 runtime:
   variables:
     - name: tournamentId
-      value: 01KR42E3NRTHEKKH1VHSNZK74E
+      value: 01KS0Q28TE9N7TG55K98TCB4X0
 
 settings:
   encodeUrl: true

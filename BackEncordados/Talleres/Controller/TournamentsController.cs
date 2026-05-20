@@ -144,7 +144,7 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
             });
         
     }
-    [HttpPatch("remove-worker/{id:long}")]
+    [HttpPatch("remove-worker/{id:ulid}")]
     [ProducesResponseType(typeof(TournamentResponseDetailsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -164,7 +164,7 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
             });
     }  
     
-    [HttpGet("{id:long}/workers")]
+    [HttpGet("{id:ulid}/workers")]
     [ProducesResponseType(typeof(List<WorkerMachineAssignmentResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
