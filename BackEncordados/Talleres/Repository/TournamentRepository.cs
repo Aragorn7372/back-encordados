@@ -11,32 +11,47 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
     public async Task<(IEnumerable<Tournaments> Items, int TotalCount)> FindAllAsync(FilterTournamentDto filter) {
         logger.LogInformation("Buscando torneos");
         var query = context.Partidos.AsQueryable();
-        query = query.Where(x => !x.IsDeleted );
-        if(filter.UserId != null) {
-            query = query.Where(x => x.WorkersList.Contains(filter.UserId.Value)
-            || x.Owner==filter.UserId.Value
-            || x.SupervisorList.Contains(filter.UserId.Value));
+        query = query.Where(x => !x.IsDeleted);
+        
+        IEnumerable<Tournaments> items;
+        int totalCount;
+        
+        if (filter.UserId != null) {
+            var ownerQuery = context.Partidos.Where(x => !x.IsDeleted && x.Owner == filter.UserId.Value);
+            var workerQuery = context.Partidos.Where(x => !x.IsDeleted);
+            var allItems = await workerQuery.ToListAsync();
+            var filteredItems = allItems.Where(x => 
+                x.WorkersList.Contains(filter.UserId.Value) || 
+                x.SupervisorList.Contains(filter.UserId.Value)).ToList();
+            var ownerItems = await ownerQuery.ToListAsync();
+            var combined = filteredItems.Union(ownerItems).ToList();
+            items = combined.AsEnumerable();
+            totalCount = combined.Count;
+        } else {
+            items = await query.ToListAsync();
+            totalCount = items.Count();
         }
+
         if (!string.IsNullOrWhiteSpace(filter.Search)) {
             if (Ulid.TryParse(filter.Search, out var ulid)) {
-                query = query.Where(x => x.Id == ulid);
+                items = items.Where(x => x.Id == ulid).ToList();
             }
 
             if (filter.Search.Length > 0) {
-                query = query.Where(x => EF.Functions.Like(x.Title, $"%{filter.Search}%"));
+                items = items.Where(x => x.Title.Contains(filter.Search, StringComparison.OrdinalIgnoreCase)).ToList();
             }
         }
 
-        var totalCount = await query.CountAsync();
+        totalCount = items.Count();
         bool isDesc = filter.Direction.ToLower().Equals("desc");
-        query = filter.SortBy.ToLower() switch {
-            "title" => isDesc ? query.OrderByDescending(x => x.Title) : query.OrderBy(x => x.Title),
-            "start" => isDesc ? query.OrderByDescending(x => x.StartTournament) : query.OrderBy(x => x.StartTournament),
-            "end" => isDesc ? query.OrderByDescending(x => x.EndTournament) : query.OrderBy(x => x.EndTournament),
-            "createdat" => isDesc ? query.OrderByDescending(x => x.CreatedAt) : query.OrderBy(x => x.CreatedAt),
-            _ => isDesc ? query.OrderByDescending(x => x.Id) : query.OrderBy(x => x.Id)
+        items = filter.SortBy.ToLower() switch {
+            "title" => isDesc ? items.OrderByDescending(x => x.Title) : items.OrderBy(x => x.Title),
+            "start" => isDesc ? items.OrderByDescending(x => x.StartTournament) : items.OrderBy(x => x.StartTournament),
+            "end" => isDesc ? items.OrderByDescending(x => x.EndTournament) : items.OrderBy(x => x.EndTournament),
+            "createdat" => isDesc ? items.OrderByDescending(x => x.CreatedAt) : items.OrderBy(x => x.CreatedAt),
+            _ => isDesc ? items.OrderByDescending(x => x.Id) : items.OrderBy(x => x.Id)
          };
-        var items = await query.Skip(filter.Page * filter.Size).Take(filter.Size).ToListAsync();
+        items = items.Skip(filter.Page * filter.Size).Take(filter.Size).ToList();
         return (items, totalCount);
     }
 

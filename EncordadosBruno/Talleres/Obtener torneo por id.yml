@@ -5,10 +5,10 @@ info:
 
 http:
   method: GET
-  url: "{{api-url}}/api/Tournaments/01KRZE8PBX2M9XKA61ECWZXASY"
+  url: "{{api-url}}/api/Tournaments/01KS0Q28TE9N7TG55K98TCB4X0"
   auth:
     type: bearer
-    token: "{{token_admin}}"
+    token: "{{token_encorder_carlos}}"
 
 settings:
   encodeUrl: true
