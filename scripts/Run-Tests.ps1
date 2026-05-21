@@ -1,39 +1,83 @@
-$ErrorActionPreference = "Stop"
-$ProjectRoot = Split-Path -Parent $PSScriptRoot
+# run-tests-with-html-coverage.ps1
+# Ejecuta tests de C# con cobertura y genera reporte HTML
+# El reporte se crea en la carpeta desde donde ejecutas el script
 
-$TestDir = Join-Path $ProjectRoot "TestEncordados"
-$OutputDir = Join-Path $ProjectRoot "coverage-report"
+param(
+    [string]$Project = ""
+)
 
-if (-not (Test-Path $OutputDir)) {
-    New-Item -ItemType Directory -Path $OutputDir | Out-Null
+$RootDir = Get-Location
+$CoverageDir = Join-Path $RootDir "coverage"
+
+Write-Host "========================================"
+Write-Host " Ejecutando tests y generando coverage "
+Write-Host "========================================"
+
+# Crear carpeta coverage
+if (Test-Path $CoverageDir) {
+    Remove-Item $CoverageDir -Recurse -Force
 }
 
-$Filter = "FullyQualifiedName~Unit"
+New-Item -ItemType Directory -Path $CoverageDir | Out-Null
 
-Write-Host "Running unit tests with coverage..." -ForegroundColor Cyan
+# Verificar reportgenerator
+$reportGeneratorInstalled = dotnet tool list -g | Select-String "dotnet-reportgenerator-globaltool"
 
-dotnet test "$TestDir" `
-    --filter $Filter `
-    --collect:"XPlat Code Coverage" `
-    -- RunConfiguration.DisableAutoOutputBuffers=true `
-    2>&1
+if (-not $reportGeneratorInstalled) {
+    Write-Host "Instalando ReportGenerator..."
+    dotnet tool install -g dotnet-reportgenerator-globaltool
+}
+
+# Construir comando
+$cmd = "dotnet test"
+
+if ($Project -ne "") {
+    $cmd += " `"$Project`""
+}
+
+# IMPORTANTE:
+# CoverletOutput apunta a la carpeta raíz desde donde ejecutas el script
+$cmd += " /p:CollectCoverage=true"
+$cmd += " /p:CoverletOutput=`"$CoverageDir/coverage.`""
+$cmd += " /p:CoverletOutputFormat=cobertura"
+
+Write-Host ""
+Write-Host "Ejecutando tests..."
+Write-Host $cmd
+Write-Host ""
+
+Invoke-Expression $cmd
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "Tests failed!" -ForegroundColor Red
+    Write-Error "Los tests fallaron."
     exit $LASTEXITCODE
 }
 
-Write-Host "Finding coverage files..." -ForegroundColor Cyan
-$latestCoverage = Get-ChildItem -Path "$TestDir\TestResults" -Filter "coverage.cobertura.xml" -Recurse |
-    Sort-Object LastWriteTime -Descending |
-    Select-Object -First 1
+# Buscar archivo cobertura generado
+$coverageFile = Get-ChildItem $CoverageDir -Filter "*.cobertura.xml" -Recurse | Select-Object -First 1
 
-if ($null -eq $latestCoverage) {
-    Write-Host "No coverage file found!" -ForegroundColor Red
+if (-not $coverageFile) {
+    Write-Error "No se encontró el archivo de coverage."
     exit 1
 }
 
-Write-Host "Generating HTML report..." -ForegroundColor Cyan
-reportgenerator "-reports:$($latestCoverage.FullName)" "-targetdir:$OutputDir" "-reporttypes:Html;Badges" 2>&1
+Write-Host ""
+Write-Host "Generando reporte HTML..."
 
-Write-Host "Coverage report generated at: $OutputDir\index.html" -ForegroundColor Green
+reportgenerator `
+    "-reports:$($coverageFile.FullName)" `
+    "-targetdir:$CoverageDir/html" `
+    "-reporttypes:Html"
+
+$indexFile = Join-Path $CoverageDir "html/index.html"
+
+Write-Host ""
+Write-Host "========================================"
+Write-Host " Coverage generado correctamente"
+Write-Host "========================================"
+Write-Host "HTML Report:"
+Write-Host $indexFile
+Write-Host ""
+
+# Abrir automáticamente el reporte
+Start-Process $indexFile

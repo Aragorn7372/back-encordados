@@ -46,7 +46,7 @@ public class MailKitEmailService(
             mimeMessage.Body = bodyBuilder.ToMessageBody();
 
             using var client = new SmtpClient();
-            await client.ConnectAsync(smtpHost, smtpPort, MailKit.Security.SecureSocketOptions.StartTls);
+            await client.ConnectAsync(smtpHost, smtpPort, MailKit.Security.SecureSocketOptions.StartTlsWhenAvailable);
             if (smtpPassword != null) await client.AuthenticateAsync(smtpUser, smtpPassword);
             await client.SendAsync(mimeMessage);
             await client.DisconnectAsync(true);
