@@ -57,7 +57,7 @@ public class PurchasedService(
                 continue;
             }
 
-            items.Add(item.ToDto(encorderResult.Value, playerResult.Value));
+            items.Add(item.ToDto(playerResult.Value, encorderResult.Value));
         }
 
         logger.LogInformation("Se obtuvieron {ItemCount} pedidos de un total de {TotalCount}", items.Count, totalCount);
@@ -89,7 +89,7 @@ public class PurchasedService(
         var encorderResult = await GetUserDtoCachedAsync(purchased.AssignedTo);
         if (encorderResult.IsFailure) return encorderResult.Error;
 
-        var response = purchased.ToDto(encorderResult.Value, playerResult.Value);
+        var response = purchased.ToDto(playerResult.Value, encorderResult.Value);
 
         await cache.SetAsync(CacheKeys.PurchasedCacheKey + id, response, TimeSpan.FromMinutes(5));
 
@@ -150,7 +150,7 @@ public class PurchasedService(
 
         await repository.CreatePurchasedAsync(entity);
 
-        var response = entity.ToDto(encorder.ToDto(cloudinary), player.ToDto(cloudinary));
+        var response = entity.ToDto(player.ToDto(cloudinary), encorder.ToDto(cloudinary));
 
         await cache.SetAsync(CacheKeys.PurchasedCacheKey + entity.Id, response, TimeSpan.FromMinutes(5));
 
@@ -201,7 +201,7 @@ public class PurchasedService(
         if (encorderResult.IsFailure)
             return encorderResult.Error;
 
-        var response = updated.ToDto(encorderResult.Value, playerResult.Value);
+        var response = updated.ToDto(playerResult.Value, encorderResult.Value);
 
         await cache.SetAsync(CacheKeys.PurchasedCacheKey + id, response, TimeSpan.FromMinutes(5));
 
@@ -230,7 +230,7 @@ public class PurchasedService(
         var encorderResult = await GetUserDtoCachedAsync(purchasedCanceled.AssignedTo);
         if (encorderResult.IsFailure) return encorderResult.Error;
 
-        var response = purchasedCanceled.ToDto(encorderResult.Value, playerResult.Value);
+        var response = purchasedCanceled.ToDto(playerResult.Value, encorderResult.Value);
         await cache.SetAsync(CacheKeys.PurchasedCacheKey + id, response, TimeSpan.FromMinutes(5));
         logger.LogInformation("Pedido con ID {Id} cancelado exitosamente", id);
         return await Result.Success<PurchasedResponseDto, DomainErrors>(response)
@@ -300,7 +300,7 @@ public class PurchasedService(
         var encorderResult = await GetUserDtoCachedAsync(purchased.AssignedTo);
         if (encorderResult.IsFailure) return encorderResult.Error;
 
-        var response = purchased.ToDto(encorderResult.Value, playerResult.Value);
+        var response = purchased.ToDto(playerResult.Value, encorderResult.Value);
         await cache.SetAsync(CacheKeys.PurchasedCacheKey + id, response, TimeSpan.FromMinutes(5));
         logger.LogInformation("Estatus de pago del pedido con ID {Id} cambiado exitosamente a {PayStatusEnum}", id, payStatusEnum);
         return await Result.Success<PurchasedResponseDto, DomainErrors>(response).TapAsync(async response => {
@@ -486,7 +486,7 @@ public class PurchasedService(
             if (playerResult.IsFailure) return playerResult.Error;
             var encorderResult = await GetUserDtoCachedAsync(purchased.AssignedTo);
             if (encorderResult.IsFailure) return encorderResult.Error;
-            return purchased.ToDto(encorderResult.Value, playerResult.Value);
+            return purchased.ToDto(playerResult.Value, encorderResult.Value);
         }
 
         foreach (var linea in linesToUpdate)
@@ -506,7 +506,7 @@ public class PurchasedService(
         logger.LogInformation("Se actualizaron {Count} líneas del pedido {PurchasedId} a estado {Status}", 
             linesToUpdate.Count, purchasedId, statusEnum);
         
-        return purchased.ToDto(encorderResultFinal.Value, playerResultFinal.Value);
+        return purchased.ToDto(playerResultFinal.Value, encorderResultFinal.Value);
     }
 
     private async Task SendLineaCompletedEmailAsync(string lineaId, string pedidoId, string email,string productName)

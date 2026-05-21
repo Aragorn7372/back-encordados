@@ -56,16 +56,16 @@ public class UserRepository(
             || EF.Functions.Like(u.Phone, $"{filter.Search}%"));
         }
         
-        var totalCount = await query.CountAsync();
-        bool isDesc = filter.Direction.ToLower().Equals("desc");
-        query = filter.SortBy.ToLower() switch
-        {
-            "name" => isDesc ? query.OrderByDescending(u => u.Name) : query.OrderBy(u => u.Name),
-            "username" => isDesc ? query.OrderByDescending(u => u.Username) : query.OrderBy(u => u.Username),
-            "email" => isDesc ? query.OrderByDescending(u => u.Email) : query.OrderBy(u => u.Email),
-            "createdAt" => isDesc ? query.OrderByDescending(u => u.CreatedAt) : query.OrderBy(u => u.CreatedAt),
-            _ => isDesc ? query.OrderByDescending(u => u.Id) : query.OrderBy(u => u.Id)
-        };
+         var totalCount = await query.CountAsync();
+         bool isDesc = filter.Direction.ToLower().Equals("desc");
+         query = filter.SortBy.ToLower() switch
+         {
+             "name" => isDesc ? query.OrderByDescending(u => u.Name).ThenBy(u => u.Id) : query.OrderBy(u => u.Name).ThenBy(u => u.Id),
+             "username" => isDesc ? query.OrderByDescending(u => u.Username).ThenBy(u => u.Id) : query.OrderBy(u => u.Username).ThenBy(u => u.Id),
+             "email" => isDesc ? query.OrderByDescending(u => u.Email).ThenBy(u => u.Id) : query.OrderBy(u => u.Email).ThenBy(u => u.Id),
+             "createdAt" => isDesc ? query.OrderByDescending(u => u.CreatedAt).ThenBy(u => u.Id) : query.OrderBy(u => u.CreatedAt).ThenBy(u => u.Id),
+             _ => isDesc ? query.OrderByDescending(u => u.Id) : query.OrderBy(u => u.Id)
+         };
         var items = await query.Skip(filter.Page * filter.Size).Take(filter.Size).ToListAsync();
         return (items, totalCount);
     }

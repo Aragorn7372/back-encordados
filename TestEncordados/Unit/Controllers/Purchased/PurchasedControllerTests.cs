@@ -259,6 +259,54 @@ public class PurchasedControllerTests
             f.UserId == userId && f.IsUser == true)), Times.Once);
     }
 
+    private PurchasedController CreateControllerWithRoleButNoUserId(string role)
+    {
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Role, role)
+        };
+        var identity = new ClaimsIdentity(claims, "TestAuth");
+        var principal = new ClaimsPrincipal(identity);
+
+        var httpContext = new DefaultHttpContext
+        {
+            User = principal,
+            Request = { Scheme = "https" }
+        };
+        
+        var controller = new PurchasedController(
+            NullLogger<PurchasedController>.Instance,
+            _mockService.Object,
+            _mockValidator.Object
+        );
+        controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+        
+        return controller;
+    }
+
+    [Test]
+    public async Task GetAll_EncorderRoleWithoutUserId_ReturnsForbid()
+    {
+        var controller = CreateControllerWithRoleButNoUserId(Role.ENCORDER.ToString());
+
+        var result = await controller.GetAll(null, "createdAt", 0, 10, "desc", "");
+
+        result.Should().BeOfType<ForbidResult>();
+    }
+
+    [Test]
+    public async Task GetAll_UserRoleWithoutUserId_ReturnsForbid()
+    {
+        var controller = CreateControllerWithRoleButNoUserId(Role.USER.ToString());
+
+        var result = await controller.GetAll(null, "createdAt", 0, 10, "desc", "");
+
+        result.Should().BeOfType<ForbidResult>();
+    }
+
     [Test]
     public async Task GetAll_NoUserClaims_ReturnsForbid()
     {
@@ -390,7 +438,14 @@ public class PurchasedControllerTests
 
         var result = await _controller.Create(request);
 
-        result.Should().BeOfType<BadRequestObjectResult>();
+        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+        var errors = ((System.Collections.IEnumerable)badRequestResult.Value).Cast<object>().ToList();
+        errors.Should().NotBeEmpty();
+
+        var firstError = errors[0];
+        var errorType = firstError.GetType();
+        errorType.GetProperty("PropertyName").Should().NotBeNull();
+        errorType.GetProperty("ErrorMessage").Should().NotBeNull();
     }
 
     [Test]
