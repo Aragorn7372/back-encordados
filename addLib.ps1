@@ -23,6 +23,8 @@ Write-Host "Sincronizando paquetes para: $($csproj.Name) (Target: net10.0)" -For
 $packages = @(
     @{ Name="AspNetCoreRateLimit"; Version="5.0.0" },
     @{ Name="BCrypt.Net-Next"; Version="4.0.3" },
+    @{ Name="ClosedXML"; Version="0.104.1" },
+    @{ Name="CloudinaryDotNet"; Version="1.29.0" },
     @{
         Name="coverlet.msbuild";
         Version="6.0.4";
@@ -39,22 +41,27 @@ $packages = @(
     @{ Name="HotChocolate.Data.EntityFramework"; Version="15.1.14" },
     @{ Name="HotChocolate.Subscriptions.InMemory"; Version="15.1.14" },
     @{ Name="MailKit"; Version="4.16.0" },
-    @{ Name="MimeKit"; Version="4.16.0" },
     @{ Name="Microsoft.AspNetCore.Authentication.JwtBearer"; Version="10.0.2" },
     @{ Name="Microsoft.AspNetCore.OpenApi"; Version="10.0.2" },
     @{ Name="Microsoft.EntityFrameworkCore"; Version="10.0.2" },
     @{ Name="Microsoft.EntityFrameworkCore.InMemory"; Version="10.0.2" },
     @{ Name="Microsoft.EntityFrameworkCore.Relational"; Version="10.0.2" },
+    @{ Name="Microsoft.EntityFrameworkCore.Sqlite"; Version="10.0.2" },
     @{ Name="Microsoft.Extensions.Caching.StackExchangeRedis"; Version="10.0.2" },
     @{ Name="Microsoft.IdentityModel.Tokens"; Version="8.15.0" },
-    @{ Name="System.IdentityModel.Tokens.Jwt"; Version="8.15.0" },
+    @{ Name="MimeKit"; Version="4.16.0" },
+    @{ Name="MongoDB.EntityFrameworkCore"; Version="10.0.1" },
     @{ Name="Npgsql.EntityFrameworkCore.PostgreSQL"; Version="10.0.0" },
-    @{ Name="QuestPDF"; Version="2025.4.0" },
+    @{ Name="QuestPDF"; Version="2026.5.0" },
     @{ Name="Serilog"; Version="4.3.1-dev-02395" },
     @{ Name="Serilog.AspNetCore"; Version="10.0.0" },
     @{ Name="Serilog.Settings.Configuration"; Version="10.0.0" },
     @{ Name="Serilog.Sinks.Console"; Version="6.1.1" },
-    @{ Name="Stripe.net"; Version="43.14.0" }
+    @{ Name="SharpCompress"; Version="0.48.0" },
+    @{ Name="Snappier"; Version="1.3.1" },
+    @{ Name="System.IdentityModel.Tokens.Jwt"; Version="8.15.0" },
+    @{ Name="System.IO.Packaging"; Version="8.0.1" },
+    @{ Name="Ulid"; Version="1.4.1" }
 )
 
 # Instala los paquetes

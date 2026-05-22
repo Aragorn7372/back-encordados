@@ -6,12 +6,28 @@ namespace BackEncordados.Common.Database.Config;
 
 public class PedidosDbContext(DbContextOptions<PedidosDbContext> options): DbContext(options) {
     private const string Time = "CURRENT_TIMESTAMP";
+    
+    // For testing: disable transaction behavior when not using proper replica sets
+    public static bool DisableTransactions { get; set; } = false;
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder
             .Properties<Ulid>()
             .HaveConversion<UlidToStringConverterNonNullable>();
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+        
+        // Only applied when DisableTransactions is true (test mode)
+        if (DisableTransactions)
+        {
+            optionsBuilder.ConfigureWarnings(w =>
+                w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.CoreEventId.SaveChangesStarting)
+            );
+        }
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

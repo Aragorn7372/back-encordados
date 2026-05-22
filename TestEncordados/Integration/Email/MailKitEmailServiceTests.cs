@@ -18,7 +18,8 @@ public class MailKitEmailServiceTests
     private int _smtpPort;
     private int _apiPort;
     private HttpClient _httpClient = null!;
-
+    private string _apiBaseUrl = null!;
+    
     private Mock<IConfiguration> _mockConfig = null!;
     private Mock<ILogger<MailKitEmailService>> _mockLogger = null!;
     private Channel<EmailMessage> _channel = null!;
@@ -38,6 +39,7 @@ public class MailKitEmailServiceTests
         _smtpPort = _mailHogContainer.GetMappedPublicPort(1025);
         _apiPort = _mailHogContainer.GetMappedPublicPort(8025);
         _httpClient = new HttpClient();
+        _apiBaseUrl = $"http://{_mailHogContainer.Hostname}:{_apiPort}";
     }
 
     [OneTimeTearDown]
@@ -64,7 +66,7 @@ public class MailKitEmailServiceTests
     {
         try
         {
-            await _httpClient.DeleteAsync($"http://localhost:{_apiPort}/api/v1/messages");
+            await _httpClient.DeleteAsync($"{_apiBaseUrl}/api/v1/messages");
         }
         catch
         {
@@ -114,7 +116,7 @@ public class MailKitEmailServiceTests
 
         await Task.Delay(500);
 
-        var response = await _httpClient.GetAsync($"http://localhost:{_apiPort}/api/v2/messages");
+        var response = await _httpClient.GetAsync($"{_apiBaseUrl}/api/v2/messages");
         response.IsSuccessStatusCode.Should().BeTrue();
 
         var json = await response.Content.ReadAsStringAsync();

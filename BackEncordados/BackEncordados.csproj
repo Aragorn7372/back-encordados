@@ -59,4 +59,8 @@
     <ItemGroup>
       <Folder Include="Common\Service\WhatsApp\" />
     </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="TestEncordados" />
+    </ItemGroup>
 </Project>
