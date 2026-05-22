@@ -1,0 +1,23 @@
+﻿name: Trigger Parent Build
+
+on:
+  push:
+    branches:
+      - main
+      - dev   
+
+jobs:
+  notify-parent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch Event to docker-enviroment
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.PARENT_REPO_PAT }}
+          repository: Aragorn7372/docker-enviroment
+          event-type: submodule_updated
+          client-payload: |
+            {
+              "submodule": "${{ github.event.repository.name }}",
+              "branch": "${{ github.ref_name }}"
+            }

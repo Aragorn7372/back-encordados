@@ -202,4 +202,78 @@ private readonly Mock<ICuerdasRepositoryType> _mockRepo;
         result.IsFailure.Should().BeTrue();
         result.Error.Should().BeOfType<CuerdaNotFoundError>();
     }
+
+    [Test]
+    public async Task FindAllAsync_WithSizeZero_DoesNotThrowDivideByZero()
+    {
+        var filter = CreateFilter(size: 0); 
+        var cuerdas = new List<Cuerdas>(); // Lista vacía
+        var pagedResult = (Items: cuerdas.AsEnumerable(), TotalCount: 0);
+
+        _mockRepo.Setup(r => r.FindAllAsync(It.IsAny<CuerdaFilterdto>()))
+            .ReturnsAsync(pagedResult);
+
+        var result = await _service.FindAllAsync(filter);
+
+        result.TotalPages.Should().Be(0);
+        result.Content.Should().BeEmpty();
+    }
+
+
+    [Test]
+    public async Task UpdateAsync_WithNegativePricesAndStock_DoesNotUpdateThoseFields()
+    {
+        var id = 1L;
+        var existing = CuerdasBuilder.Create(id: id); 
+        existing.Precio = 50.0;
+        existing.Stock = 20;
+
+        var patch = new CuerdaPatchDto { Precio = -5.0, Stock = -10 }; 
+        
+        _mockRepo.Setup(r => r.FindByIdAsync(id)).ReturnsAsync(existing);
+        _mockRepo.Setup(r => r.UpdateAsync(It.IsAny<Cuerdas>(), id)).ReturnsAsync(existing);
+
+        var result = await _service.UpdateAsync(id, patch);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Precio.Should().Be(50.0); // Debería mantener el precio original
+        result.Value.Stock.Should().Be(20);    // Debería mantener el stock original
+    }
+
+    [Test]
+    public async Task UpdateAsync_WithEnums_UpdatesFormatAndTypeSuccessfully()
+    {
+        var id = 1L;
+        var existing = CuerdasBuilder.Create(id: id);
+        
+        var patch = new CuerdaPatchDto { StringFormat = "Set", StringsType = "Multifilament" }; 
+        var updated = CuerdasBuilder.Create(id: id);
+        updated.StringFormat = Enum.Parse<FormatoCuerda>("Set");
+        updated.StringsType = Enum.Parse<StringsType>("Multifilament");
+
+        _mockRepo.Setup(r => r.FindByIdAsync(id)).ReturnsAsync(existing);
+        _mockRepo.Setup(r => r.UpdateAsync(It.IsAny<Cuerdas>(), id)).ReturnsAsync(updated);
+
+        var result = await _service.UpdateAsync(id, patch);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.StringFormat.Should().Be("Set");
+        result.Value.StringsType.Should().Be("Multifilament");
+    }
+
+    [Test]
+    public async Task UpdateAsync_RepositoryFailsOnUpdate_ReturnsNotFoundError()
+    {
+        var id = 1L;
+        var existing = CuerdasBuilder.Create(id: id);
+        var patch = new CuerdaPatchDto { Marca = "New" };
+
+        _mockRepo.Setup(r => r.FindByIdAsync(id)).ReturnsAsync(existing); // La encuentra
+        _mockRepo.Setup(r => r.UpdateAsync(It.IsAny<Cuerdas>(), id)).ReturnsAsync((Cuerdas?)null); // Falla al guardar
+
+        var result = await _service.UpdateAsync(id, patch);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<CuerdaNotFoundError>();
+    }
 }
