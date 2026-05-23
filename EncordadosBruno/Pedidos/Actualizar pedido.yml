@@ -61,4 +61,12 @@ docs: |
   - **400 Bad Request**: Datos inválidos
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Encoder
-  - **404 Not Found**: Pedido no encontrado
+   - **404 Not Found**: Pedido no encontrado
+
+   ## Test Cases
+   - [ ] Actualizar todos los campos opcionales (200)
+   - [ ] Actualizar solo un campo (200)
+   - [ ] Actualizar con campos inválidos (400)
+   - [ ] Actualizar pedido inexistente (404)
+   - [ ] Actualizar sin token (401)
+   - [ ] Actualizar con token de Admin (403)

@@ -47,3 +47,8 @@ docs: |
   ## Responses
   - **200 OK**: Retorna token JWT
   - **401 Unauthorized**: Credenciales inválidas
+
+  ## Test Cases
+  - [ ] Login exitoso con credenciales de supervisor
+  - [ ] Token supervisor se guarda en variable {{token_luis_supervisor}}
+  - [ ] Fallo con credenciales incorrectas

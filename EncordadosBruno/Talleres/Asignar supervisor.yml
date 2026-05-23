@@ -35,6 +35,12 @@ docs: |
   - **403 Forbidden**: No tiene permisos de Owner
   - **404 Not Found**: Torneo o supervisor no encontrado
 
+  ## Test Cases
+  - [ ] Asignar supervisor existente a torneo
+  - [ ] Asignar supervisor que ya está asignado (409)
+  - [ ] Asignar a torneo inexistente (404)
+  - [ ] Asignar usuario inexistente como supervisor (404)
+
 http:
   method: PATCH
   url: "{{api-url}}/api/Tournaments/assign-supervisor"
@@ -42,7 +48,7 @@ http:
     type: json
     data: |-
       {
-        "TournamentId": "01KR42E3NRTHEKKH1VHSNZK74E",
+        "TournamentId": "01KS0Q28TEJ0SYA6JJ5H4W4CMP",
         "SupervisorId": "{{supervisor_id_luis}}"
       }
   auth:

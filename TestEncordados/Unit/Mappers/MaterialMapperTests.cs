@@ -29,7 +29,7 @@ public class MaterialMapperTests
             precio: 25.99,
             type: MaterialType.Grip);
 
-        var result = material.ToDto();
+        var result = material.ToDto(MockCloudinary.Object);
 
         result.Id.Should().Be(1L);
         result.TournamentId.Should().Be(material.TournamentId);
@@ -38,6 +38,7 @@ public class MaterialMapperTests
         result.Stock.Should().Be(10);
         result.Precio.Should().Be(25.99);
         result.MaterialType.Should().Be("Grip");
+        result.ImageUrl.Should().Be("https://res.cloudinary.com/test/image/upload/v1/test.jpg");
     }
 
     [Test]
@@ -48,7 +49,7 @@ public class MaterialMapperTests
         foreach (var type in types)
         {
             var material = MaterialBuilder.Create(type: type);
-            var result = material.ToDto();
+            var result = material.ToDto(MockCloudinary.Object);
             result.MaterialType.Should().Be(type.ToString());
         }
     }

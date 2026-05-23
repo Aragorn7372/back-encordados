@@ -38,3 +38,9 @@ docs: |
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos (no es Admin)
   - **500 Internal Server Error**: Error al generar el export
+
+  ## Test Cases
+  - [ ] Exportar base de datos completa exitosamente
+  - [ ] Verificar que el ZIP contiene todos los JSON esperados
+  - [ ] Intentar exportar sin token (401)
+  - [ ] Intentar exportar sin rol Admin (403)

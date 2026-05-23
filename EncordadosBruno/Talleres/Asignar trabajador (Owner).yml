@@ -5,7 +5,7 @@ info:
 
 http:
   method: PATCH
-  url: "{{api-url}}/api/Tournaments/add-worker/01KR42E3NRTHEKKH1VHSNZK74E"
+  url: "{{api-url}}/api/Tournaments/add-worker/01KS0Q28TEJ0SYA6JJ5H4W4CMP"
   body:
     type: json
     data: |-
@@ -64,3 +64,9 @@ docs: |
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Owner
   - **404 Not Found**: Torneo o usuario no encontrado
+
+  ## Test Cases
+  - [ ] Asignar trabajador existente a torneo como Owner
+  - [ ] Asignar trabajador que ya está asignado (409)
+  - [ ] Asignar a torneo inexistente (404)
+  - [ ] Asignar usuario inexistente como trabajador (404)

@@ -45,9 +45,16 @@ public class UserService(
 
     public async Task<Result<bool, AuthError>> GiveRoleToUserAsync(Ulid id, string role)
     {
+        var user = await repository.FindByIdAsync(id);
+        if (user is null)
+            return Result.Failure<bool, AuthError>(new UserNotFoundError("User not found"));
+
+        if (user.Role == role)
+            return Result.Failure<bool, AuthError>(new ConflictError("User already has that role"));
+
         return await repository.UserChageRoleAsync(id, role)
             ? Result.Success<bool, AuthError>(true)
-            : Result.Failure<bool, AuthError>(new AuthError("User not found or user with that role"));
+            : Result.Failure<bool, AuthError>(new AuthError("Failed to update role"));
     }
 
     public async Task<PageResponseDto<UserWithIdDto>> GetAllUsersAsync(FilterUserDto filter)

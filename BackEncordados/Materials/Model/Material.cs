@@ -1,4 +1,5 @@
 ﻿using BackEncordados.Common.Database.Helpers;
+using BackEncordados.Common.Service.Cloudinary;
 
 namespace BackEncordados.Materials.Model;
 
@@ -17,6 +18,8 @@ public class Material : ITimestamped
 
     /// <summary>Fecha de última modificación en UTC.</summary>
     public DateTime UpdatedAt { get; init; } = DateTime.UtcNow;
+    public string ImageUrl { get; set; }=CloudinaryConstants.DEFAULT_IMAGE_MATERIALES;
     
+    public string? CloudinaryPublicId { get; set; }
     public bool IsDeleted { get; set; }=false;
 }

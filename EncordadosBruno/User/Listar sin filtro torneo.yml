@@ -29,3 +29,7 @@ docs: |
 
   ## Responses
   - **200 OK**: Lista de usuarios sin filtro de torneo
+
+  ## Test Cases
+  - [ ] Listar usuarios sin tournamentId (solo admins, owners, encorders)
+  - [ ] Verificar que no se incluyen usuarios con tournamentId específico

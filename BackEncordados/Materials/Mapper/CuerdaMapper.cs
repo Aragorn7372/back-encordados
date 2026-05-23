@@ -1,11 +1,12 @@
-﻿using BackEncordados.Materials.Dto.Strings;
+﻿using BackEncordados.Common.Service.Cloudinary;
+using BackEncordados.Materials.Dto.Strings;
 using BackEncordados.Materials.Model;
 
 namespace BackEncordados.Materials.Mapper;
 
 public static class CuerdaMapper {
     
-    public static CuerdaResponseDto ToDto(this Cuerdas cuerda) {
+    public static CuerdaResponseDto ToDto(this Cuerdas cuerda, ICloudinaryService cloudinary) {
         return new CuerdaResponseDto(
             Id: cuerda.Id,
             TournamentId: cuerda.TournamentId,
@@ -14,7 +15,8 @@ public static class CuerdaMapper {
             Stock: cuerda.Stock,
             Precio: cuerda.Precio,
             StringFormat: cuerda.StringFormat.ToString(),
-            StringsType: cuerda.StringsType.ToString()
+            StringsType: cuerda.StringsType.ToString(),
+            ImageUrl: cloudinary.ResolveImageUrl(cuerda.ImageUrl, CloudinaryConstants.FOLDER_MATERIES)
         );
     }
 

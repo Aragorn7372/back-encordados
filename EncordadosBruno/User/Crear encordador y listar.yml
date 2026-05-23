@@ -9,7 +9,7 @@ http:
   body:
     type: json
     data: |
-      "01KRZAJVCA133EKNDN01TCBMJS"
+      "01KS0Q28TE5BA449NS2EVCBTDQ"
   auth:
     type: bearer
     token: "{{token_owner}}"
@@ -31,3 +31,7 @@ docs: |
 
   ## HTTP Method
   `POST /api/User/create-encoder` -> `GET /api/User/encorders/1`
+
+  ## Test Cases
+  - [ ] Crear encordador exitosamente
+  - [ ] Verificar que el nuevo encordador aparece en la lista de encordadores del torneo

@@ -13,7 +13,7 @@ http:
 runtime:
   variables:
     - name: tournamentId
-      value: 01KR42E3NRTHEKKH1VHSNZK74E
+      value: 01KS0Q28TEJ0SYA6JJ5H4W4CMP
 
 settings:
   encodeUrl: true
@@ -40,3 +40,9 @@ docs: |
   ## Responses
   - **200 OK**: Archivo Excel (.xlsx)
   - **403 Forbidden**: No es supervisor del torneo
+
+  ## Test Cases
+  - [ ] Exportar datos de torneo existente
+  - [ ] Exportar con tournamentId inválido (404)
+  - [ ] Intentar exportar sin permisos de supervisor (403)
+  - [ ] Exportar torneo sin jugadores (archivo con datos vacíos)

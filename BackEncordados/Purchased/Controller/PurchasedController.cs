@@ -202,6 +202,7 @@ public class PurchasedController(
                 onFailure: error => error switch
                 {
                     PurchasedNotFoundError => NotFound(new { error.Error }),
+                    UserNotFoundError => NotFound(new { error.Error }),
                     InvalidStatusError => BadRequest(new { error.Error }),
                     _ => StatusCode(StatusCodes.Status500InternalServerError, new { error.Error })
                 });

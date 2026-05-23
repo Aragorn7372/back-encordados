@@ -4,6 +4,7 @@ using BackEncordados.Common.Utils;
 using BackEncordados.Export.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BackEncordados.Export.Controller;
 
@@ -63,6 +64,10 @@ public class ExportController(
             await exportService.ImportDatabaseAsync(stream);
 
             return Ok(new { message = "Database imported successfully" });
+        }
+        catch (DbUpdateException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

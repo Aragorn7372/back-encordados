@@ -42,11 +42,21 @@ http:
     type: json
     data: |-
       {
-        "Username":"example",
+        "Username":"jugador_test",
         "Email":"{{$randomExampleEmail}}",
-        "Password":"buenas noches"
+        "Password":"test123"
       }
   auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const data = res.getBody();
+        bru.setEnvVar("test_player_name", "jugador_test");
+        if (data.token) {
+          bru.setEnvVar("test_player_token", data.token);
+        }
 
 settings:
   encodeUrl: true

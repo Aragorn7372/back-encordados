@@ -57,6 +57,14 @@ docs: |
   - **403 Forbidden**: No tiene permisos (no es Admin)
   - **500 Internal Server Error**: Error durante la importación (hace rollback automático)
 
+  ## Test Cases
+  - [ ] Importar ZIP válido con todos los datos
+  - [ ] Importar con archivo corrupto (400)
+  - [ ] Importar con archivo que no es ZIP (400)
+  - [ ] Intentar importar sin token (401)
+  - [ ] Intentar importar sin rol Admin (403)
+  - [ ] Verificar que la importación fallida hace rollback
+
   ## Notas
   - Usa transacciones: si falla algo, se revierten todos los cambios
   - En desarrollo (in-memory): las transacciones se saltan automáticamente

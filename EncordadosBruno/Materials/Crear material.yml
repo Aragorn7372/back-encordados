@@ -3,6 +3,44 @@ info:
   type: http
   seq: 4
 
+http:
+  method: POST
+  url: "{{api-url}}/api/Materials"
+  body:
+    type: multipart-form
+    data:
+      - name: Marca
+        type: text
+        value: Head
+      - name: TournamentId
+        type: text
+        value: 01KS0Q28TEJ0SYA6JJ5H4W4CMP
+      - name: Modelo
+        type: text
+        value: Grip Pro
+      - name: Stock
+        type: text
+        value: "50"
+      - name: Precio
+        type: text
+        value: "12.99"
+      - name: Type
+        type: text
+        value: Grip
+      - name: Imagen
+        type: file
+        value:
+          - C:\Users\Aragorn\Desktop\docker-enviroment\back-encordados\EncordadosBruno\image\Captura de pantalla 2026-02-21 221125.png
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
 docs: |
   # Crear Material
 
@@ -47,27 +85,3 @@ docs: |
   - [ ] Crear material con campos mínimos
   - [ ] Crear material duplicado (409)
   - [ ] Intentar sin permisos de Admin (403)
-
-http:
-  method: POST
-  url: "{{api-url}}/api/Materials"
-  body:
-    type: json
-    data: |-
-      {
-        "Marca": "Head",
-        "TournamentId": 1,
-        "Modelo": "Grip Pro",
-        "Stock": 50,
-        "Precio": 12.99,
-        "Type": "Grip"
-      }
-  auth:
-    type: bearer
-    token: "{{token_admin}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5

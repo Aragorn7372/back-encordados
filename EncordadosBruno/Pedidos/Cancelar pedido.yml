@@ -36,4 +36,11 @@ docs: |
   - **200 OK**: `PurchasedResponseDto` con estado cancelado
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Encoder
-  - **404 Not Found**: Pedido no encontrado
+   - **404 Not Found**: Pedido no encontrado
+
+   ## Test Cases
+   - [ ] Cancelar pedido existente (200)
+   - [ ] Cancelar pedido ya cancelado (400)
+   - [ ] Cancelar pedido inexistente (404)
+   - [ ] Cancelar sin token (401)
+   - [ ] Cancelar con token de Admin (403)

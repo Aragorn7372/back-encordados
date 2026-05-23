@@ -8,5 +8,6 @@ public record CuerdaResponseDto(
   int Stock,
   double Precio,
   string StringFormat,
-  string StringsType
+  string StringsType,
+  string ImageUrl
   );
