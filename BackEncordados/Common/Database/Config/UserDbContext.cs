@@ -59,7 +59,7 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
         var supervisor2 = Ulid.Parse("01KS0Q28TEXTDY9TQNRAXKAJ81");
         var t1 = Ulid.Parse("01KS0Q28TEJ0SYA6JJ5H4W4CMP");
         var t2 = Ulid.Parse("01KS0Q28TE9N7TG55K98TCB4X0");
-        var t5 = Ulid.Parse("01KS0Q28TE5BA449NS2EVCBTDQ");
+        var user = Ulid.Parse("01KS0Q28TE5BA449NS2EVCBTDQ");
         var users = new List<User>
         {
             
@@ -228,6 +228,21 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 TournamentId = null,
                 
             },
+            new() {
+                Id = user,
+                Username = "user",
+                Name = "User",
+                Email = "user@example.com",
+                Phone = "999999000",
+                PasswordHash = userPasswordHash,
+                Role = User.UserRoles.USER,
+                IsDeleted = false,
+                ImageUrl = CloudinaryConstants.DEFAULT_IMAGE_USUARIOS,
+                CloudinaryPublicId = null,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                TournamentId = null,
+            }
         };
 
         modelBuilder.Entity<User>().HasData(users);

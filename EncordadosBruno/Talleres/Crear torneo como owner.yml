@@ -38,7 +38,16 @@ docs: |
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Owner
   - **404 Not Found**: Usuario no encontrado
-  - **409 Conflict**: Ya existe un torneo con ese nombre
+   - **409 Conflict**: Ya existe un torneo con ese nombre
+
+   ## Test Cases
+   - [ ] Crear torneo con todos los campos (201)
+   - [ ] Crear torneo sin logo (201)
+   - [ ] Crear torneo con datos inválidos (400)
+   - [ ] Crear torneo con nombre duplicado (409)
+   - [ ] Crear torneo sin token (401)
+   - [ ] Crear torneo con token de Encoder (403)
+
 
 http:
   method: POST

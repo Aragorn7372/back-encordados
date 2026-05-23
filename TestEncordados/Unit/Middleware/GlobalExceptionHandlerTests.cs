@@ -134,8 +134,8 @@ public class GlobalExceptionHandlerTests
 
         await handler.InvokeAsync(context);
 
-        context.Response.StatusCode.Should().Be(409);
-        await VerifyResponse(context, "Error al actualizar la base de datos", "ConflictError");
+        context.Response.StatusCode.Should().Be(400);
+        await VerifyResponse(context, "Los datos enviados contienen errores de integridad (duplicados o estructura inválida)", "DataIntegrityError");
     }
 
     [Test]

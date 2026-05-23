@@ -113,7 +113,7 @@ public class TournamentsController(ILogger<TournamentsController> logger, ITourn
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(Policy = "RequireOwnerRole")]
-    public async Task<IActionResult> UpdateTournament(Ulid id, [FromBody] TournamentPatchDto request) {
+    public async Task<IActionResult> UpdateTournament(Ulid id, [FromForm] TournamentPatchDto request) {
         logger.LogInformation("Received request to update tournament: {id} with data: {@Request}", id, request);
         return await tournamentsService.UpdateTournament(id, request).Match(
             success => Ok(success),

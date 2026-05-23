@@ -66,6 +66,8 @@ public class CuerdasRepository(ILogger<CuerdasRepository>logger, MaterialsDbCont
         if (item.Precio >= 0) cuerda.Precio = item.Precio;
         cuerda.StringFormat = item.StringFormat;
         cuerda.StringsType = item.StringsType;
+        if (!string.IsNullOrEmpty(item.ImageUrl)) cuerda.ImageUrl = item.ImageUrl;
+        if (!string.IsNullOrEmpty(item.CloudinaryPublicId)) cuerda.CloudinaryPublicId = item.CloudinaryPublicId;
         var cuerdaSaved=context.Cuerdas.Update(cuerda);
         await context.SaveChangesAsync();
         return cuerdaSaved.Entity;

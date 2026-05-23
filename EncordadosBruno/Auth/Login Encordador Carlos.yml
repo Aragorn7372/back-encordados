@@ -21,6 +21,7 @@ runtime:
       code: |-
         const data = res.getBody();
         bru.setEnvVar("token_encorder_carlos", data.token);
+        bru.setEnvVar("token_encoder", data.token);
         bru.setEnvVar("user_id_carlos", data.user.id || "01KR424NQJKSBKBMH15K4V835W");
 
 settings:
@@ -28,3 +29,20 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+
+docs: |
+  # Login Encordador Carlos
+
+  Inicia sesión como encordador para obtener token JWT con rol ENCORDER.
+
+  ## HTTP Method
+  `POST /api/Auth/signin`
+
+  ## Responses
+  - **200 OK**: Retorna token JWT y datos del usuario
+  - **401 Unauthorized**: Credenciales inválidas
+
+  ## Test Cases
+  - [ ] Login exitoso con credenciales de encordador
+  - [ ] Token encordador se guarda en variable {{token_encorder_carlos}}
+  - [ ] Fallo con credenciales incorrectas

@@ -31,3 +31,20 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+
+docs: |
+  # Login Jugador Juan
+
+  Inicia sesión como jugador para obtener token JWT con rol USER.
+
+  ## HTTP Method
+  `POST /api/Auth/signin`
+
+  ## Responses
+  - **200 OK**: Retorna token JWT y datos del usuario
+  - **401 Unauthorized**: Credenciales inválidas
+
+  ## Test Cases
+  - [ ] Login exitoso con credenciales de jugador
+  - [ ] Token juan se guarda en variable {{token_juan}}
+  - [ ] Fallo con credenciales incorrectas

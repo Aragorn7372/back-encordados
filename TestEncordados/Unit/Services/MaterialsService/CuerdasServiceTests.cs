@@ -1,4 +1,5 @@
 using BackEncordados.Common.Dto;
+using BackEncordados.Common.Service.Cloudinary;
 using BackEncordados.Common.Utils;
 using BackEncordados.Materials.Dto.Strings;
 using BackEncordados.Materials.Errors;
@@ -17,13 +18,15 @@ public class CuerdasServiceTests
 {
 private readonly Mock<ICuerdasRepositoryType> _mockRepo;
     private readonly Mock<ILogger<CuerdasServiceType>> _mockLogger;
+    private readonly Mock<ICloudinaryService> _mockCloudinary;
     private readonly CuerdasServiceType _service;
 
     public CuerdasServiceTests()
     {
         _mockRepo = new Mock<ICuerdasRepositoryType>();
         _mockLogger = new Mock<ILogger<CuerdasServiceType>>();
-        _service = new CuerdasServiceType(_mockLogger.Object, _mockRepo.Object);
+        _mockCloudinary = new Mock<ICloudinaryService>();
+        _service = new CuerdasServiceType(_mockLogger.Object, _mockRepo.Object, _mockCloudinary.Object);
     }
 
     private static CuerdaFilterdto CreateFilter(Ulid? tournamentId = null, string search = "", int page = 1, int size = 10) => new(tournamentId, search, page, size);
@@ -182,7 +185,9 @@ private readonly Mock<ICuerdasRepositoryType> _mockRepo;
     public async Task DeleteAsync_ExistingCuerda_ReturnsSuccess()
     {
         var id = 1L;
+        var cuerda = CuerdasBuilder.Create(id: id);
 
+        _mockRepo.Setup(r => r.FindByIdAsync(id)).ReturnsAsync(cuerda);
         _mockRepo.Setup(r => r.DeleteAsync(id)).ReturnsAsync(true);
 
         var result = await _service.DeleteAsync(id);
@@ -195,7 +200,7 @@ private readonly Mock<ICuerdasRepositoryType> _mockRepo;
     {
         var id = 999L;
 
-        _mockRepo.Setup(r => r.DeleteAsync(id)).ReturnsAsync(false);
+        _mockRepo.Setup(r => r.FindByIdAsync(id)).ReturnsAsync((Cuerdas?)null);
 
         var result = await _service.DeleteAsync(id);
 
@@ -268,8 +273,8 @@ private readonly Mock<ICuerdasRepositoryType> _mockRepo;
         var existing = CuerdasBuilder.Create(id: id);
         var patch = new CuerdaPatchDto { Marca = "New" };
 
-        _mockRepo.Setup(r => r.FindByIdAsync(id)).ReturnsAsync(existing); // La encuentra
-        _mockRepo.Setup(r => r.UpdateAsync(It.IsAny<Cuerdas>(), id)).ReturnsAsync((Cuerdas?)null); // Falla al guardar
+        _mockRepo.Setup(r => r.FindByIdAsync(id)).ReturnsAsync(existing);
+        _mockRepo.Setup(r => r.UpdateAsync(It.IsAny<Cuerdas>(), id)).ReturnsAsync((Cuerdas?)null);
 
         var result = await _service.UpdateAsync(id, patch);
 

@@ -7,17 +7,33 @@ http:
   method: POST
   url: "{{api-url}}/api/Cuerdas"
   body:
-    type: json
-    data: |-
-      {
-        "Marca": "Babolat",
-        "TournamentId": 1,
-        "Modelo": "RPM Blast",
-        "Stock": 200,
-        "Precio": 18.50,
-        "StringFormat": "Reel",
-        "StringsType": "Polyester"
-      }
+    type: multipart-form
+    data:
+      - name: Marca
+        type: text
+        value: Babolat
+      - name: TournamentId
+        type: text
+        value: 01KS0Q28TEJ0SYA6JJ5H4W4CMP
+      - name: Modelo
+        type: text
+        value: RPM Blast
+      - name: Stock
+        type: text
+        value: "200"
+      - name: Precio
+        type: text
+        value: "18.50"
+      - name: StringFormat
+        type: text
+        value: Reel
+      - name: StringsType
+        type: text
+        value: Polyester
+      - name: Imagen
+        type: file
+        value:
+          - C:\Users\Aragorn\Desktop\docker-enviroment\back-encordados\EncordadosBruno\image\Captura de pantalla 2026-02-21 221125.png
   auth:
     type: bearer
     token: "{{token_admin}}"

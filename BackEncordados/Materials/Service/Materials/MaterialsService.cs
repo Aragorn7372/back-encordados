@@ -1,4 +1,5 @@
 ﻿using BackEncordados.Common.Dto;
+using BackEncordados.Common.Service.Cloudinary;
 using BackEncordados.Common.Utils;
 using BackEncordados.Materials.Dto.Materials;
 using BackEncordados.Materials.Errors;
@@ -9,14 +10,14 @@ using CSharpFunctionalExtensions;
 
 namespace BackEncordados.Materials.Service.Materials;
 
-public class MaterialsService(ILogger<MaterialsService> logger, IMaterialsRepository repository):IMaterialsService {
+public class MaterialsService(ILogger<MaterialsService> logger, IMaterialsRepository repository, ICloudinaryService cloudinary):IMaterialsService {
     
     public async Task<PageResponseDto<MaterialResponseDto>> FindAllAsync(MaterialFilterDto filter) {
         logger.LogInformation("CuerdasService::FindAllAsync");
         var paged= await repository.FindAllAsync(filter);
         int totalPages = filter.Size > 0 ? (int)Math.Ceiling(paged.TotalCount / (double)filter.Size) : 0;
         return new PageResponseDto<MaterialResponseDto>(
-            Content: paged.Items.Select(item => item.ToDto()).ToList(),
+            Content: paged.Items.Select(item => item.ToDto(cloudinary)).ToList(),
             TotalPages: totalPages,
             TotalElements: paged.TotalCount,
             PageSize: filter.Size,
@@ -30,7 +31,7 @@ public class MaterialsService(ILogger<MaterialsService> logger, IMaterialsReposi
     public async Task<Result<MaterialResponseDto, MaterialError>> FindByNameAsync(string name) {
         logger.LogInformation("Buscando material con nombre {Modelo}", name);
         return await repository.FindByNameAsync(name) is { } result
-            ? Result.Success<MaterialResponseDto, MaterialError>(result.ToDto())
+            ? Result.Success<MaterialResponseDto, MaterialError>(result.ToDto(cloudinary))
                 .Tap(() => logger.LogInformation("Material con nombre {Modelo} encontrado", name))
             : Result.Failure<MaterialResponseDto, MaterialError>(new MaterialNotFoundError())
                 .TapError(() => logger.LogInformation("Material con nombre {Modelo} no encontrado", name));
@@ -39,7 +40,7 @@ public class MaterialsService(ILogger<MaterialsService> logger, IMaterialsReposi
     public async Task<Result<MaterialResponseDto, MaterialError>> FindByIdAsync(long id) {
         logger.LogInformation("Buscando material con id {Id}", id);
         return await repository.FindByIdAsync(id) is { } result
-            ? Result.Success<MaterialResponseDto, MaterialError>(result.ToDto())
+            ? Result.Success<MaterialResponseDto, MaterialError>(result.ToDto(cloudinary))
                 .Tap(() => logger.LogInformation("Material con id {Id} encontrado", id))
             : Result.Failure<MaterialResponseDto, MaterialError>(new MaterialNotFoundError())
                 .TapError(() => logger.LogInformation("Material con id {Id} no encontrado", id));
@@ -47,8 +48,15 @@ public class MaterialsService(ILogger<MaterialsService> logger, IMaterialsReposi
 
     public async Task<Result<MaterialResponseDto, MaterialError>> CreateAsync(MaterialRequestDto request) {
         logger.LogInformation("Creando material con nombre {Modelo}", request.Modelo);
-        return await repository.CreateAsync(request.ToModel()) is { } result
-            ? Result.Success<MaterialResponseDto, MaterialError>(result.ToDto())
+        var material = request.ToModel();
+        if (request.Imagen is not null)
+        {
+            var upload = await cloudinary.UploadWithAutoNameAsync(request.Imagen, material.Id.ToString(), CloudinaryConstants.FOLDER_MATERIES);
+            material.ImageUrl = upload.ImageUrl;
+            material.CloudinaryPublicId = upload.PublicId;
+        }
+        return await repository.CreateAsync(material) is { } result
+            ? Result.Success<MaterialResponseDto, MaterialError>(result.ToDto(cloudinary))
                 .Tap(() => logger.LogInformation("Material creado con id {Id}", result.Id))
             : Result.Failure<MaterialResponseDto, MaterialError>(new MaterialConflictError("No se pudo crear el material"))
                 .TapError(() => logger.LogError("Error al crear el material"));
@@ -63,9 +71,17 @@ public class MaterialsService(ILogger<MaterialsService> logger, IMaterialsReposi
         if (request.Precio >= 0) material.Precio = request.Precio;
         if (request.Stock >= 0) material.Stock = request.Stock;
         if (!string.IsNullOrEmpty(request.Type)) material.Type = Enum.Parse<MaterialType>(request.Type, true);
+        if (request.Imagen is not null)
+        {
+            if (material.ImageUrl != CloudinaryConstants.DEFAULT_IMAGE_MATERIALES)
+                await cloudinary.DeleteAsync(material.CloudinaryPublicId!);
+            var upload = await cloudinary.UploadWithAutoNameAsync(request.Imagen, id.ToString(), CloudinaryConstants.FOLDER_MATERIES);
+            material.ImageUrl = upload.ImageUrl;
+            material.CloudinaryPublicId = upload.PublicId;
+        }
         var updated = await repository.UpdateAsync(material,id);
         return updated is { } result
-            ? Result.Success<MaterialResponseDto, MaterialError>(result.ToDto())
+            ? Result.Success<MaterialResponseDto, MaterialError>(result.ToDto(cloudinary))
                 .Tap(() => logger.LogInformation("Material con id {Id} actualizado", id))
             : Result.Failure<MaterialResponseDto, MaterialError>(new MaterialConflictError("No se pudo actualizar el material"))
                 .TapError(() => logger.LogError("Error al actualizar el material con id {Id}", id));
@@ -73,6 +89,12 @@ public class MaterialsService(ILogger<MaterialsService> logger, IMaterialsReposi
 
     public async Task<Result<Unit, MaterialError>> DeleteAsync(long id) {
         logger.LogInformation("Eliminando material con id {Id}", id);
+        var material = await repository.FindByIdAsync(id);
+        if (material == null)
+            return Result.Failure<Unit, MaterialError>(new MaterialNotFoundError())
+                .TapError(() => logger.LogInformation("Material con id {Id} no encontrado para eliminar", id));
+        if (material.ImageUrl != CloudinaryConstants.DEFAULT_IMAGE_MATERIALES)
+            await cloudinary.DeleteAsync(material.CloudinaryPublicId!);
         return await repository.DeleteAsync(id) 
             ? Result.Success<Unit, MaterialError>(Unit.Value)
                 .Tap(() => logger.LogInformation("Material con id {Id} eliminado", id))

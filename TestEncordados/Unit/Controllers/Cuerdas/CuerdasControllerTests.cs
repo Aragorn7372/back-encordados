@@ -37,7 +37,8 @@ public class CuerdasControllerTests
         Stock: 10,
         Precio: 25.99,
         StringFormat: "4 Strings",
-        StringsType: "Light"
+        StringsType: "Light",
+        ImageUrl: "test.jpg"
     );
 
     private static CuerdaRequestDto CreateCuerdaRequest() => new()

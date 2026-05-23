@@ -64,7 +64,7 @@ public class CuerdaResponseDtoTests
         var id = 42L;
         var tournamentId = Ulid.NewUlid();
 
-        var dto = new CuerdaResponseDto(id, tournamentId, "Babolat", "Pure Drive", 10, 199.99, "16x19", "Polyester");
+        var dto = new CuerdaResponseDto(id, tournamentId, "Babolat", "Pure Drive", 10, 199.99, "16x19", "Polyester", "test.jpg");
 
         dto.Id.Should().Be(id);
         dto.TournamentId.Should().Be(tournamentId);
@@ -74,14 +74,15 @@ public class CuerdaResponseDtoTests
         dto.Precio.Should().Be(199.99);
         dto.StringFormat.Should().Be("16x19");
         dto.StringsType.Should().Be("Polyester");
+        dto.ImageUrl.Should().Be("test.jpg");
     }
 
     [Test]
     public void Equality_SameValues_AreEqual()
     {
         var tournamentId = Ulid.NewUlid();
-        var dto1 = new CuerdaResponseDto(1, tournamentId, "Marca", "Modelo", 5, 99.99, "16x19", "Nylon");
-        var dto2 = new CuerdaResponseDto(1, tournamentId, "Marca", "Modelo", 5, 99.99, "16x19", "Nylon");
+        var dto1 = new CuerdaResponseDto(1, tournamentId, "Marca", "Modelo", 5, 99.99, "16x19", "Nylon", "test.jpg");
+        var dto2 = new CuerdaResponseDto(1, tournamentId, "Marca", "Modelo", 5, 99.99, "16x19", "Nylon", "test.jpg");
 
         dto1.Should().Be(dto2);
         (dto1 == dto2).Should().BeTrue();
@@ -91,8 +92,8 @@ public class CuerdaResponseDtoTests
     public void Equality_DifferentValues_AreNotEqual()
     {
         var tournamentId = Ulid.NewUlid();
-        var dto1 = new CuerdaResponseDto(1, tournamentId, "Marca", "Modelo", 5, 99.99, "16x19", "Nylon");
-        var dto2 = new CuerdaResponseDto(2, tournamentId, "Marca", "Modelo", 5, 99.99, "16x19", "Nylon");
+        var dto1 = new CuerdaResponseDto(1, tournamentId, "Marca", "Modelo", 5, 99.99, "16x19", "Nylon", "test.jpg");
+        var dto2 = new CuerdaResponseDto(2, tournamentId, "Marca", "Modelo", 5, 99.99, "16x19", "Nylon", "test.jpg");
 
         dto1.Should().NotBe(dto2);
         (dto1 == dto2).Should().BeFalse();
@@ -102,9 +103,9 @@ public class CuerdaResponseDtoTests
     public void Deconstruct_ReturnsValuesInOrder()
     {
         var tournamentId = Ulid.NewUlid();
-        var dto = new CuerdaResponseDto(42, tournamentId, "Wilson", "Blade", 3, 159.50, "18x20", "Multi");
+        var dto = new CuerdaResponseDto(42, tournamentId, "Wilson", "Blade", 3, 159.50, "18x20", "Multi", "test.jpg");
 
-        var (id, tid, marca, modelo, stock, precio, format, type) = dto;
+        var (id, tid, marca, modelo, stock, precio, format, type, imageUrl) = dto;
 
         id.Should().Be(42);
         tid.Should().Be(tournamentId);
@@ -114,6 +115,7 @@ public class CuerdaResponseDtoTests
         precio.Should().Be(159.50);
         format.Should().Be("18x20");
         type.Should().Be("Multi");
+        imageUrl.Should().Be("test.jpg");
     }
 }
 

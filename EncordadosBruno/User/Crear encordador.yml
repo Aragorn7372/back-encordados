@@ -43,3 +43,9 @@ docs: |
   - **403 Forbidden**: No tiene permisos de Owner
   - **404 Not Found**: Usuario no encontrado
   - **409 Conflict**: El usuario ya es encordador
+
+  ## Test Cases
+  - [ ] Crear encordador con usuario válido
+  - [ ] Crear encordador con usuario que ya es encordador (409)
+  - [ ] Crear encordador con usuario inexistente (404)
+  - [ ] Intentar sin permisos de Owner (403)

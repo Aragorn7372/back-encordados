@@ -39,4 +39,11 @@ docs: |
   ## Responses
   - **200 OK**: `PageResponseDto<MaterialResponseDto>`
   - **401 Unauthorized**: Token inválido o expirado
-  - **403 Forbidden**: No tiene permisos de Owner
+   - **403 Forbidden**: No tiene permisos de Owner
+
+  ## Test Cases
+  - [ ] Listar todos los materiales con paginación por defecto
+  - [ ] Buscar material por nombre/modelo
+  - [ ] Filtrar materiales por marca
+  - [ ] Ordenar materiales por fecha de creación
+  - [ ] Intentar sin permisos de Owner (403)

@@ -35,7 +35,8 @@ public class MaterialsControllerTests
         Modelo: "Pro Staff",
         Stock: 10,
         Precio: 25.99,
-        MaterialType: "Racket"
+        MaterialType: "Racket",
+        ImageUrl: "test.jpg"
     );
 
     private static MaterialRequestDto CreateMaterialRequest() => new()

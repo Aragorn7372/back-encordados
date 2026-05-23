@@ -52,3 +52,10 @@ docs: |
   ## Responses
   - **200 OK**: Archivo Excel (.xlsx) con sheets por tipo
   - **403 Forbidden**: No tiene permisos (no es Admin/Owner del torneo)
+
+  ## Test Cases
+  - [ ] Exportar todos los tipos de datos del torneo
+  - [ ] Exportar solo usuarios y pedidos
+  - [ ] Exportar con tournamentId inválido (400)
+  - [ ] Intentar exportar sin permisos de Admin (403)
+  - [ ] Exportar torneo sin datos (archivo vacío)

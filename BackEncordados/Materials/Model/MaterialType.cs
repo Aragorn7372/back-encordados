@@ -6,5 +6,6 @@ public enum MaterialType
     Overgrip,
     LeadTape,
     Silicone,
+    Bumper,
     Otro
 }

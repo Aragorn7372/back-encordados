@@ -12,6 +12,10 @@ variables:
   - name: token_supervisor
     value: ""
   - name: supervisor_id_luis
-    value: 01KR424NQJKTASKDL3M5NP7GHS
+    value: 01KS0Q28TEHA2KF5YM3J6QS5Z9
   - name: supervisor_id_pablo
-    value: 01KR424NQJKUBMAEM4N6OQ8JIT
+    value: 01KS0Q28TEXTDY9TQNRAXKAJ81
+  - name: test_player_name
+    value: "jugador_test"
+  - name: test_player_token
+    value: ""

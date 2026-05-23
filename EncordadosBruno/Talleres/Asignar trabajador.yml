@@ -47,13 +47,13 @@ docs: |
 
 http:
   method: PATCH
-  url: "{{api-url}}/api/Tournaments/add-worker/01KR42E3NRTHEKKH1VHSNZK74E"
+  url: "{{api-url}}/api/Tournaments/add-worker/01KS0Q28TEJ0SYA6JJ5H4W4CMP"
   body:
     type: json
     data: |-
       {
-        "WorkerUserId": "{{user_id_carlos}}",
-        "Machine": "Máquina Alpha-1"
+        "UserId": "{{user_id_carlos}}",
+        "MachineName": "Máquina Alpha-1"
       }
   auth:
     type: bearer

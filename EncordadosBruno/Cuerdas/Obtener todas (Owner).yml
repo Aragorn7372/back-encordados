@@ -40,3 +40,10 @@ docs: |
   - **200 OK**: `PageResponseDto<CuerdaResponseDto>`
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Owner
+
+  ## Test Cases
+  - [ ] Listar cuerdas con paginación por defecto
+  - [ ] Buscar cuerda por nombre/modelo
+  - [ ] Ordenar por diferentes campos
+  - [ ] Intentar sin permisos de Owner (403)
+  - [ ] Listar cuerdas con tournamentId específico

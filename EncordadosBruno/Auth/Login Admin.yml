@@ -28,3 +28,20 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+
+docs: |
+  # Login Admin
+
+  Inicia sesión como administrador para obtener token JWT con rol ADMIN.
+
+  ## HTTP Method
+  `POST /api/Auth/signin`
+
+  ## Responses
+  - **200 OK**: Retorna token JWT y datos del usuario
+  - **401 Unauthorized**: Credenciales inválidas
+
+  ## Test Cases
+  - [ ] Login exitoso con credenciales de admin
+  - [ ] Token admin se guarda en variable {{token_admin}}
+  - [ ] Fallo con credenciales incorrectas

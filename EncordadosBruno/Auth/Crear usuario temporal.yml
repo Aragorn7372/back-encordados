@@ -1,0 +1,46 @@
+info:
+  name: Crear usuario temporal
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{api-url}}/api/Auth/signup"
+  body:
+    type: json
+    data: |-
+      {
+        "Username":"user_temporal",
+        "Password":"temporal123",
+        "Email":"{{$randomExampleEmail}}"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const data = res.getBody();
+        bru.setEnvVar("token", data.token);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Crear Usuario Temporal
+
+  Crea un usuario temporal que será eliminado por el test "delete me".
+  Este usuario no es necesario para ninguna otra prueba.
+
+  ## Authorization
+  Ninguno (endpoint público)
+
+  ## HTTP Method
+  `POST /api/Auth/signup`
+
+  ## Responses
+  - **201 Created**: Usuario creado exitosamente
+  - **400 Bad Request**: Datos inválidos o usuario ya existe

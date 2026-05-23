@@ -1,7 +1,7 @@
 info:
   name: Cambiar estado de todas las líneas - Error pedido no encontrado
   type: http
-  seq: 23
+  seq: 19
 
 http:
   method: PATCH

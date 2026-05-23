@@ -22,16 +22,16 @@ public class ExportRepository(
 
         var data = new ExportDataDto();
 
-        data.Tournaments = await talleresDbContext.Partidos.ToListAsync();
+        data.Tournaments = await talleresDbContext.Partidos.IgnoreQueryFilters().ToListAsync();
         logger.LogInformation("Fetched {Count} tournaments", data.Tournaments.Count);
 
-        data.Users = await userDbContext.Users.ToListAsync();
+        data.Users = await userDbContext.Users.IgnoreQueryFilters().ToListAsync();
         logger.LogInformation("Fetched {Count} users", data.Users.Count);
 
-        data.Materials = await materialsDbContext.Materiales.ToListAsync();
+        data.Materials = await materialsDbContext.Materiales.IgnoreQueryFilters().ToListAsync();
         logger.LogInformation("Fetched {Count} materials", data.Materials.Count);
 
-        data.Cuerdas = await materialsDbContext.Cuerdas.ToListAsync();
+        data.Cuerdas = await materialsDbContext.Cuerdas.IgnoreQueryFilters().ToListAsync();
         logger.LogInformation("Fetched {Count} cuerdas", data.Cuerdas.Count);
 
         var pedidos = await pedidosDbContext.Pedidos.ToListAsync();
@@ -81,12 +81,12 @@ public class ExportRepository(
         await materialsDbContext.SaveChangesAsync();
         logger.LogInformation("Cleared materials");
 
-        var users = await userDbContext.Users.ToListAsync();
+        var users = await userDbContext.Users.IgnoreQueryFilters().ToListAsync();
         userDbContext.Users.RemoveRange(users);
         await userDbContext.SaveChangesAsync();
         logger.LogInformation("Cleared users");
 
-        var tournaments = await talleresDbContext.Partidos.ToListAsync();
+        var tournaments = await talleresDbContext.Partidos.IgnoreQueryFilters().ToListAsync();
         talleresDbContext.Partidos.RemoveRange(tournaments);
         await talleresDbContext.SaveChangesAsync();
         logger.LogInformation("Cleared tournaments");
@@ -112,7 +112,7 @@ public class ExportRepository(
         await userDbContext.Users.ExecuteDeleteAsync();
         logger.LogInformation("Cleared users");
 
-        var tournaments = await talleresDbContext.Partidos.ToListAsync();
+        var tournaments = await talleresDbContext.Partidos.IgnoreQueryFilters().ToListAsync();
         talleresDbContext.Partidos.RemoveRange(tournaments);
         await talleresDbContext.SaveChangesAsync();
         logger.LogInformation("Cleared tournaments");

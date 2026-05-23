@@ -1,7 +1,7 @@
 info:
   name: Cambiar estado de todas las líneas - Cancelar
   type: http
-  seq: 21
+  seq: 17
 
 http:
   method: PATCH

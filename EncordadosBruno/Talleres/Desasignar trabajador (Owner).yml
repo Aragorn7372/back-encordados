@@ -31,9 +31,14 @@ docs: |
   - **403 Forbidden**: No tiene permisos de Owner
   - **404 Not Found**: Torneo o usuario no encontrado
 
+  ## Test Cases
+  - [ ] Desasignar trabajador de torneo como Owner
+  - [ ] Desasignar trabajador no asignado previamente
+  - [ ] Intentar desasignar de torneo inexistente (404)
+
 http:
   method: PATCH
-  url: "{{api-url}}/api/Tournaments/remove-worker/01KR42E3NRTHEKKH1VHSNZK74E"
+  url: "{{api-url}}/api/Tournaments/remove-worker/01KS0Q28TEJ0SYA6JJ5H4W4CMP"
   body:
     type: json
     data: |-

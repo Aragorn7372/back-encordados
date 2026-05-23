@@ -7,12 +7,12 @@ http:
   method: POST
   url: "{{api-url}}/api/export/manifest"
   body:
-    type: formData
-    formData:
-      file:
+    type: multipart-form
+    data:
+      - name: file
         type: file
-        enabled: true
-        fileName: ""
+        value:
+          - C:\Users\Aragorn\Desktop\docker-enviroment\back-encordados\EncordadosBruno\image\database_export_2026-05-16.zip
   auth:
     type: bearer
     token: "{{token_admin}}"
@@ -57,3 +57,10 @@ docs: |
   - **400 Bad Request**: Archivo inválido o no contiene manifest
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos (no es Admin)
+
+  ## Test Cases
+  - [ ] Ver manifest de ZIP exportado válido
+  - [ ] Ver manifest de ZIP sin manifest.json (400)
+  - [ ] Intentar con archivo corrupto (400)
+  - [ ] Intentar sin token (401)
+  - [ ] Intentar sin rol Admin (403)

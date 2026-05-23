@@ -23,11 +23,19 @@ docs: |
   - **204 No Content**: Pedido cancelado exitosamente
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Encoder
-  - **404 Not Found**: Pedido no encontrado
+   - **404 Not Found**: Pedido no encontrado
+
+   ## Test Cases
+   - [ ] Cancelar pedido existente (204)
+   - [ ] Cancelar pedido ya cancelado (400)
+   - [ ] Cancelar pedido inexistente (404)
+   - [ ] Cancelar sin token (401)
+   - [ ] Cancelar con token de Admin (403)
+
 
 http:
-  method: DELETE
-  url: "{{api-url}}/api/Purchased/01ARZ3NDEKTSV4RRFFQ69G1FAV"
+  method: PATCH
+  url: "{{api-url}}/api/Purchased/cancel/01KR42ME5P1Q2BGWW1DY11Z4TJ"
   auth:
     type: bearer
     token: "{{token_encoder}}"
