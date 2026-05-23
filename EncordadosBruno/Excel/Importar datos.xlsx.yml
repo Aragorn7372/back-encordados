@@ -11,11 +11,12 @@ http:
       value: "{{tournamentId}}"
       type: query
   body:
-    type: file
+    type: multipart-form
     data:
-      - filePath: C:\Users\Aragorn\Desktop\docker-enviroment\back-encordados\EncordadosBruno\image\torneo_advanced_01KRZE8PBX2M9XKA61ECWZXASY_2026-05-19.xlsx
-        contentType: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
-        selected: true
+      - name: file
+        type: file
+        value:
+          - C:\Users\Aragorn\Desktop\docker-enviroment\back-encordados\EncordadosBruno\image\torneo_advanced_01KR42E3NRTHEKKH1VHSNZK74E_2026-05-19.xlsx
   auth:
     type: bearer
     token: "{{token_admin}}"
@@ -23,7 +24,7 @@ http:
 runtime:
   variables:
     - name: tournamentId
-      value: 01KR42E3NRTHEKKH1VHSNZK74E
+      value: 01KS0Q28TEJ0SYA6JJ5H4W4CMP
 
 settings:
   encodeUrl: true
@@ -57,3 +58,10 @@ docs: |
   - **200 OK**: Retorna ExcelImportResultDto con el resumen de importación
   - **400 Bad Request**: Archivo inválido o formato incorrecto
   - **403 Forbidden**: No tiene permisos (no es Admin/Owner del torneo)
+
+  ## Test Cases
+  - [ ] Importar datos válidos desde archivo Excel
+  - [ ] Importar con archivo corrupto (400)
+  - [ ] Importar con tournamentId inválido (404)
+  - [ ] Intentar importar sin permisos de Admin (403)
+  - [ ] Importar datos duplicados (actualización en lugar de inserción)

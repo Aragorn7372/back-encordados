@@ -80,7 +80,7 @@ public class MaterialsController(
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(policy: "RequireAdminRole")]
-    public async Task<IActionResult> Create(MaterialRequestDto request) {
+    public async Task<IActionResult> Create([FromForm] MaterialRequestDto request) {
         logger.LogInformation("Create material with name {Name}", request.Modelo);
         
         var validationResult = await validator.ValidateAsync(request);
@@ -102,7 +102,7 @@ public class MaterialsController(
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(policy: "RequireAdminRole")]
-    public async Task<IActionResult> Update(long id, MaterialPatchDto request) {
+    public async Task<IActionResult> Update(long id, [FromForm] MaterialPatchDto request) {
         logger.LogInformation("Update material with id {Id}", id);
         return await service.UpdateAsync(id, request).Match(
             onSuccess: material => Ok(material),

@@ -81,7 +81,7 @@ public class CuerdasController(
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(policy: "RequireAdminRole")]
-    public async Task<IActionResult> Create(CuerdaRequestDto request) {
+    public async Task<IActionResult> Create([FromForm] CuerdaRequestDto request) {
         logger.LogInformation("Create cuerda with name {Name}", request.Modelo);
         
         var validationResult = await validator.ValidateAsync(request);
@@ -103,7 +103,7 @@ public class CuerdasController(
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(policy: "RequireAdminRole")]
-    public async Task<IActionResult> Update(long id, CuerdaPatchDto request) {
+    public async Task<IActionResult> Update(long id, [FromForm] CuerdaPatchDto request) {
         logger.LogInformation("Update cuerda with id {Id}", id);
         return await service.UpdateAsync(id, request).Match(
             onSuccess: cuerda => Ok(cuerda),

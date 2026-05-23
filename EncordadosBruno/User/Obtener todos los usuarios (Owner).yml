@@ -5,10 +5,10 @@ info:
 
 http:
   method: GET
-  url: "{{api-url}}/api/User?tournamentId=1&findUsers=true&page=0&size=10&sortBy=createdAt&direction=desc"
+  url: "{{api-url}}/api/User?tournamentId=01KS0Q28TEJ0SYA6JJ5H4W4CMP&findUsers=true&page=0&size=10&sortBy=createdAt&direction=desc"
   params:
     - name: tournamentId
-      value: "1"
+      value: "01KS0Q28TEJ0SYA6JJ5H4W4CMP"
       type: query
     - name: findUsers
       value: "true"
@@ -62,3 +62,9 @@ docs: |
   - **200 OK**: `PageResponseDto<UserWithIdDto>` con campos: userId, username, imageUrl, name
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Owner
+
+  ## Test Cases
+  - [ ] Listar todos los usuarios como Owner con paginación
+  - [ ] Buscar usuario por nombre/username como Owner
+  - [ ] Filtrar solo usuarios (findUsers=true)
+  - [ ] Intentar sin permisos de Owner (403)

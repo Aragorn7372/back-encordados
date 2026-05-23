@@ -3,6 +3,22 @@ info:
   type: http
   seq: 1
 
+http:
+  method: POST
+  url: "{{api-url}}/api/User/01KS0Q28TD6SAPN0GN0XKRPK5D/bonos"
+  body:
+    type: json
+    data: "50.0"
+  auth:
+    type: bearer
+    token: "{{token_owner}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
 docs: |
   # Añadir Bonos a Usuario
 
@@ -37,19 +53,3 @@ docs: |
   - [ ] Intentar añadir bonos con token de usuario regular (403)
   - [ ] Intentar añadir cantidad negativa (400)
   - [ ] Intentar añadir a usuario inexistente (404)
-
-http:
-  method: POST
-  url: "{{api-url}}/api/User/01KR424NQJR7CEHQW4STCQ3GGE/bonos"
-  body:
-    type: json
-    data: '50.0'
-  auth:
-    type: bearer
-    token: "{{token_owner}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5

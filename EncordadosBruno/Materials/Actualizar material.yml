@@ -50,16 +50,29 @@ http:
   method: PUT
   url: "{{api-url}}/api/Materials/1"
   body:
-    type: json
-    data: |-
-      {
-        "Marca": "Head",
-        "TournamentId": 1,
-        "Modelo": "Grip Pro Elite",
-        "Stock": 100,
-        "Precio": 15.99,
-        "Type": "Grip"
-      }
+    type: multipart-form
+    data:
+      - name: Marca
+        type: text
+        value: Head
+      - name: TournamentId
+        type: text
+        value: "1"
+      - name: Modelo
+        type: text
+        value: Grip Pro Elite
+      - name: Stock
+        type: text
+        value: "100"
+      - name: Precio
+        type: text
+        value: "15.99"
+      - name: Type
+        type: text
+        value: Grip
+      - name: Imagen
+        type: file
+        value: []
   auth:
     type: bearer
     token: "{{token_admin}}"

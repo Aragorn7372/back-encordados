@@ -58,3 +58,9 @@ docs: |
   - **200 OK**: `PageResponseDto<UserWithIdDto>` con solo encordadores (campos: userId, username, imageUrl, name)
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Owner
+
+  ## Test Cases
+  - [ ] Listar encordadores con paginación como Owner
+  - [ ] Buscar encordador por nombre
+  - [ ] Listar encordadores de torneo sin encordadores (vacío)
+  - [ ] Intentar sin permisos de Owner (403)

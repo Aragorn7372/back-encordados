@@ -10,8 +10,8 @@ http:
     type: json
     data: |-
       {
-        "TournamentId": 1,
-        "PlayerName": "jugador_juan",
+        "TournamentId": "01KS0Q28TE9N7TG55K98TCB4X0",
+        "PlayerName": "{{test_player_name}}",
         "AssignedToName": "carlos_encordador",
         "Machine": "Máquina Alpha-1",
         "Comments": "Nuevo pedido para el Torneo Madrileño",
@@ -20,7 +20,7 @@ http:
         "Lineas": [
           {
             "RaquetModel": "Wilson Clash 100",
-            "Nudos": 1,
+            "Nudos": 2,
             "DateString": "2026-06-15T00:00:00Z",
             "Logotype": true,
             "Color": "Rojo",
@@ -89,4 +89,13 @@ docs: |
   - **201 Created**: `PurchasedResponseDto` con datos del pedido creado
   - **400 Bad Request**: Datos inválidos o sin líneas
   - **401 Unauthorized**: Token inválido o expirado
-  - **403 Forbidden**: No tiene permisos de Encoder
+   - **403 Forbidden**: No tiene permisos de Encoder
+
+   ## Test Cases
+   - [ ] Crear pedido con todos los campos (201)
+   - [ ] Crear pedido con múltiples líneas (201)
+   - [ ] Crear pedido sin líneas (400)
+   - [ ] Crear pedido con datos inválidos (400)
+   - [ ] Crear pedido sin token (401)
+   - [ ] Crear pedido con token de Admin (403)
+   - [ ] Crear pedido con token de Owner (403)

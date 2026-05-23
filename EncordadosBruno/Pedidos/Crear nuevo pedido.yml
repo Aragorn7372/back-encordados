@@ -10,16 +10,17 @@ http:
     type: json
     data: |-
       {
-        "TournamentId": 1,
-        "PlayerName": "jugador_juan",
+        "TournamentId": "01KS0Q28TE9N7TG55K98TCB4X0",
+        "PlayerName": "{{test_player_name}}",
         "AssignedToName": "carlos_encordador",
         "Machine": "Máquina Alpha-1",
         "Comments": "Nuevo pedido para el Torneo Madrileño",
         "PayStatus": "PENDING_PAYMENT",
+        "Price": 30.00,
         "Lineas": [
           {
             "RaquetModel": "Wilson Clash 100",
-            "Nudos": 1,
+            "Nudos": 2,
             "DateString": "2026-06-15T00:00:00Z",
             "Logotype": true,
             "Color": "Rojo",

@@ -37,3 +37,8 @@ docs: |
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Owner
   - **404 Not Found**: Torneo no encontrado
+
+  ## Test Cases
+  - [ ] Obtener trabajadores de torneo como Owner
+  - [ ] Obtener trabajadores de torneo sin asignaciones (lista vacía)
+  - [ ] Intentar obtener trabajadores de torneo inexistente (404)

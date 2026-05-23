@@ -15,4 +15,5 @@ public class MaterialPatchDto
     [MinLength(1)]
     [MaxLength(100)]
     public string Type { get; set; } = string.Empty;
+    public IFormFile? Imagen { get; set; }
 }

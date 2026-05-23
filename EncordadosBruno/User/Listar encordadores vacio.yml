@@ -19,8 +19,8 @@ docs: |
   - [ ] Verificar que retorna vacío para torneo sin encordadores
 
 http:
-method: GET
-url: "{{api-url}}/api/User/encorders?page=0&size=10"
+  method: GET
+  url: "{{api-url}}/api/User/encorders?page=0&size=10"
   auth:
     type: bearer
     token: "{{token_admin}}"

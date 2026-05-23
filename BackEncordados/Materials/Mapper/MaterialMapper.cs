@@ -1,11 +1,12 @@
-﻿using BackEncordados.Materials.Dto.Materials;
+﻿using BackEncordados.Common.Service.Cloudinary;
+using BackEncordados.Materials.Dto.Materials;
 using BackEncordados.Materials.Model;
 
 namespace BackEncordados.Materials.Mapper;
 
 public static class MaterialMapper {
     
-    public static MaterialResponseDto ToDto(this Material material) {
+    public static MaterialResponseDto ToDto(this Material material, ICloudinaryService cloudinary) {
         return new MaterialResponseDto(
             material.Id,
             TournamentId: material.TournamentId,
@@ -13,7 +14,8 @@ public static class MaterialMapper {
             material.Modelo,
             material.Stock,
             material.Precio,
-            material.Type.ToString()
+            material.Type.ToString(),
+            cloudinary.ResolveImageUrl(material.ImageUrl, CloudinaryConstants.FOLDER_MATERIES)
         );
     }
     public static Material ToModel(this MaterialRequestDto material) {

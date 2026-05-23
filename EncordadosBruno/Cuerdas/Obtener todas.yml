@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{api-url}}/api/Cuerdas?page=0&size=10&sortBy=createdAt&direction=desc&tournamentId=1"
+  url: "{{api-url}}/api/Cuerdas?page=0&size=10&sortBy=createdAt&direction=desc&tournamentId=01KS0Q28TEJ0SYA6JJ5H4W4CMP"
   params:
     - name: page
       value: "0"
@@ -20,7 +20,7 @@ http:
       value: desc
       type: query
     - name: tournamentId
-      value: "1"
+      value: "01KS0Q28TEJ0SYA6JJ5H4W4CMP"
       type: query
   auth:
     type: bearer

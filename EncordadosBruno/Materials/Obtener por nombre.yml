@@ -23,7 +23,15 @@ docs: |
   - **200 OK**: `MaterialResponseDto` con datos del material
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Owner
-  - **404 Not Found**: Material no encontrado
+   - **404 Not Found**: Material no encontrado
+
+   ## Test Cases
+   - [ ] Obtener material existente por nombre (200)
+   - [ ] Obtener material con nombre inexistente (404)
+   - [ ] Obtener material con nombre vacío (400)
+   - [ ] Obtener material sin token (401)
+   - [ ] Obtener material con token de Encoder (403)
+
 
 http:
   method: GET

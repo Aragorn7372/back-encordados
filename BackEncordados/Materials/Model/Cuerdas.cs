@@ -1,4 +1,5 @@
 ﻿using BackEncordados.Common.Database.Helpers;
+using BackEncordados.Common.Service.Cloudinary;
 
 namespace BackEncordados.Materials.Model;
 
@@ -19,4 +20,6 @@ public class Cuerdas: ITimestamped
         /// <summary>Fecha de última modificación en UTC.</summary>
         public DateTime UpdatedAt { get; init; } = DateTime.UtcNow;
         public bool IsDeleted { get; set; }=false;
+        public string ImageUrl { get; set; }=CloudinaryConstants.DEFAULT_IMAGE_MATERIALES;
+        public string? CloudinaryPublicId { get; set; }
 }

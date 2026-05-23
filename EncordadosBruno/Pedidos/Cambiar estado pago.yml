@@ -5,7 +5,7 @@ info:
 
 http:
   method: PATCH
-  url: "{{api-url}}/api/Purchased/change-payment-status/01KR424NQJR7CEHQW4STCQ3GGE"
+  url: "{{api-url}}/api/Purchased/change-payment-status/01KR42ME5P1Q2BGWW1DY11Z4TJ"
   body:
     type: json
     data: '"PAID"'
@@ -44,4 +44,13 @@ docs: |
   - **200 OK**: `PurchasedResponseDto` con estado de pago actualizado
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Encoder
-  - **404 Not Found**: Pedido no encontrado
+   - **404 Not Found**: Pedido no encontrado
+
+   ## Test Cases
+   - [ ] Cambiar estado a PAID (200)
+   - [ ] Cambiar estado a PENDING_PAYMENT (200)
+   - [ ] Cambiar estado a OVERDUE (200)
+   - [ ] Cambiar con estado inválido (400)
+   - [ ] Cambiar en pedido inexistente (404)
+   - [ ] Cambiar sin token (401)
+   - [ ] Cambiar con token de Admin (403)

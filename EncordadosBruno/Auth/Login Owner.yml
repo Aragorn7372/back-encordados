@@ -1,7 +1,7 @@
-﻿info:
-  name: Login Admin
+info:
+  name: Login Owner
   type: http
-  seq: 3
+  seq: 2
 
 http:
   method: POST
@@ -10,8 +10,8 @@ http:
     type: json
     data: |-
       {
-        "Username":"admin_encordados",
-        "Password":"admin123"
+        "Username":"owner_principal",
+        "Password":"owner123"
       }
   auth: inherit
 
@@ -20,8 +20,8 @@ runtime:
     - type: after-response
       code: |-
         const data = res.getBody();
-        bru.setEnvVar("token_admin", data.token);
-        bru.setEnvVar("user_id_admin", data.user.id || "01ARZ3NDEKTSV4RRFFQ69G5FAV");
+        bru.setEnvVar("token_owner", data.token);
+        bru.setEnvVar("user_id_owner", data.user.id || "01KS0Q28TE2EFVQTCW8EN0W0MF");
 
 settings:
   encodeUrl: true
@@ -30,9 +30,9 @@ settings:
   maxRedirects: 5
 
 docs: |
-  # Login Admin
+  # Login Owner
 
-  Inicia sesión como administrador para obtener token JWT con rol ADMIN.
+  Inicia sesión como propietario para obtener token JWT con rol OWNER.
 
   ## HTTP Method
   `POST /api/Auth/signin`
@@ -42,6 +42,6 @@ docs: |
   - **401 Unauthorized**: Credenciales inválidas
 
   ## Test Cases
-  - [ ] Login exitoso con credenciales de admin
-  - [ ] Token admin se guarda en variable {{token_admin}}
+  - [ ] Login exitoso con credenciales de owner
+  - [ ] Token owner se guarda en variable {{token_owner}}
   - [ ] Fallo con credenciales incorrectas

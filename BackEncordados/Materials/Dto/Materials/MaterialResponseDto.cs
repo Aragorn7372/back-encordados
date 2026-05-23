@@ -9,5 +9,6 @@ public record MaterialResponseDto(
     string Modelo,
     int Stock,
     double Precio,
-    string MaterialType
+    string MaterialType,
+    string ImageUrl
     );

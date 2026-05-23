@@ -163,10 +163,10 @@ public async Task InvokeAsync(HttpContext context)
             ),
 
             DbUpdateException => (
-                409,
-                "Error al actualizar la base de datos",
+                400,
+                "Los datos enviados contienen errores de integridad (duplicados o estructura inválida)",
                 (Dictionary<string, string[]>?)null,
-                "ConflictError"
+                "DataIntegrityError"
             ),
 
             TimeoutException => (

@@ -1,4 +1,5 @@
 using BackEncordados.Common.Dto;
+using BackEncordados.Common.Service.Cloudinary;
 using BackEncordados.Common.Utils;
 using BackEncordados.Materials.Dto.Materials;
 using BackEncordados.Materials.Errors;
@@ -17,13 +18,15 @@ public class MaterialsServiceTests
 {
 private readonly Mock<IMaterialsRepositoryType> _mockRepo;
     private readonly Mock<ILogger<MaterialsServiceType>> _mockLogger;
+    private readonly Mock<ICloudinaryService> _mockCloudinary;
     private readonly MaterialsServiceType _service;
 
     public MaterialsServiceTests()
     {
         _mockRepo = new Mock<IMaterialsRepositoryType>();
         _mockLogger = new Mock<ILogger<MaterialsServiceType>>();
-        _service = new MaterialsServiceType(_mockLogger.Object, _mockRepo.Object);
+        _mockCloudinary = new Mock<ICloudinaryService>();
+        _service = new MaterialsServiceType(_mockLogger.Object, _mockRepo.Object, _mockCloudinary.Object);
     }
 
     private static MaterialFilterDto CreateFilter(Ulid? tournamentId = null, string search = "", int page = 1, int size = 10) => new(tournamentId, search, page, size);
@@ -195,7 +198,9 @@ private readonly Mock<IMaterialsRepositoryType> _mockRepo;
     public async Task DeleteAsync_ExistingMaterial_ReturnsSuccess()
     {
         var id = 1L;
+        var material = MaterialBuilder.Create(id: id);
 
+        _mockRepo.Setup(r => r.FindByIdAsync(id)).ReturnsAsync(material);
         _mockRepo.Setup(r => r.DeleteAsync(id)).ReturnsAsync(true);
 
         var result = await _service.DeleteAsync(id);
@@ -208,7 +213,7 @@ private readonly Mock<IMaterialsRepositoryType> _mockRepo;
     {
         var id = 999L;
 
-        _mockRepo.Setup(r => r.DeleteAsync(id)).ReturnsAsync(false);
+        _mockRepo.Setup(r => r.FindByIdAsync(id)).ReturnsAsync((Material?)null);
 
         var result = await _service.DeleteAsync(id);
 

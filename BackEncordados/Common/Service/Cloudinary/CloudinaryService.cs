@@ -51,6 +51,7 @@ public class CloudinaryService(ILogger<CloudinaryService> logger) : ICloudinaryS
         {
             CloudinaryConstants.FOLDER_USUARIOS => CloudinaryOptions.Current.DefaultImages.Usuarios,
             CloudinaryConstants.FOLDER_TALLERES => CloudinaryOptions.Current.DefaultImages.Talleres,
+            CloudinaryConstants.FOLDER_MATERIES => CloudinaryOptions.Current.DefaultImages.Materies,
             _ => throw new CloudinaryInvalidParameterException($"Carpeta no válida: {folder}")
         };
 
@@ -241,7 +242,7 @@ public class CloudinaryService(ILogger<CloudinaryService> logger) : ICloudinaryS
     
     private static void ValidateFolder(string folder)
     {
-        var validFolders = new[] { CloudinaryConstants.FOLDER_USUARIOS, CloudinaryConstants.FOLDER_TALLERES };
+        var validFolders = new[] { CloudinaryConstants.FOLDER_USUARIOS, CloudinaryConstants.FOLDER_TALLERES, CloudinaryConstants.FOLDER_MATERIES };
         if (!validFolders.Contains(folder.ToLower()))
         {
             throw new CloudinaryInvalidParameterException($"Carpeta no válida. Debe ser: {string.Join(", ", validFolders)}");
@@ -274,5 +275,6 @@ public class DefaultImageOptions
 {
     public string Usuarios { get; set; } = CloudinaryConstants.DEFAULT_IMAGE_USUARIOS;
     public string Talleres { get; set; } = CloudinaryConstants.DEFAULT_IMAGE_TALLERES;
+    public string Materies { get; set; } = CloudinaryConstants.DEFAULT_IMAGE_MATERIALES;
 }
 

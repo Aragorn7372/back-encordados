@@ -105,6 +105,7 @@ public class UserServiceTests
     {
         var userId = Ulid.NewUlid();
 
+        _mockRepo.Setup(r => r.FindByIdAsync(userId)).ReturnsAsync(UserBuilder.StandardUser());
         _mockRepo.Setup(r => r.UserChageRoleAsync(userId, User.UserRoles.ADMIN)).ReturnsAsync(true);
 
         var result = await _service.GiveRoleToUserAsync(userId, User.UserRoles.ADMIN);

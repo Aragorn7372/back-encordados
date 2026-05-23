@@ -66,7 +66,7 @@ public class GlobalExceptionHandlerTests
     {
         var context = await ExecuteWithException(new DbUpdateException("DB error"));
 
-        context.Response.StatusCode.Should().Be(409);
+        context.Response.StatusCode.Should().Be(400);
     }
 
     [Test]

@@ -45,7 +45,8 @@ public static class CloudinaryConfig {
             DefaultImages = new DefaultImageOptions
             {
                 Usuarios = cloudinarySection["DefaultImages:Usuarios"] ?? CloudinaryConstants.DEFAULT_IMAGE_USUARIOS,
-                Talleres = cloudinarySection["DefaultImages:Talleres"] ?? CloudinaryConstants.DEFAULT_IMAGE_TALLERES
+                Talleres = cloudinarySection["DefaultImages:Talleres"] ?? CloudinaryConstants.DEFAULT_IMAGE_TALLERES,
+                Materies = cloudinarySection["DefaultImages:Materies"] ?? CloudinaryConstants.DEFAULT_IMAGE_MATERIALES
             }
         };
 

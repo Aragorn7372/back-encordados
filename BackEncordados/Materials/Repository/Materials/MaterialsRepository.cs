@@ -61,6 +61,8 @@ public class MaterialsRepository(ILogger<MaterialsRepository>logger,MaterialsDbC
         if (item.Stock >= 0) material.Stock = item.Stock;
         if (item.Precio >= 0) material.Precio = item.Precio;
         material.Type = item.Type;
+        if (!string.IsNullOrEmpty(item.ImageUrl)) material.ImageUrl = item.ImageUrl;
+        if (!string.IsNullOrEmpty(item.CloudinaryPublicId)) material.CloudinaryPublicId = item.CloudinaryPublicId;
         context.Materiales.Update(material);
         await context.SaveChangesAsync();
         return material;

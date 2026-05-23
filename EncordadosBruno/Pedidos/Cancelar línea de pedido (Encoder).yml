@@ -4,8 +4,8 @@ info:
   seq: 12
 
 http:
-  method: DELETE
-  url: "{{api-url}}/api/Purchased/lineas/01KR424NQJDA22KTM967R9RW9N"
+  method: PATCH
+  url: "{{api-url}}/api/Purchased/lineas/01KR424NQJDA22KTM967R9RWAN/cancel"
   auth:
     type: bearer
     token: "{{token_encoder}}"
@@ -36,4 +36,11 @@ docs: |
   - **204 No Content**: Línea cancelada exitosamente
   - **401 Unauthorized**: Token inválido o expirado
   - **403 Forbidden**: No tiene permisos de Encoder
-  - **404 Not Found**: Línea no encontrada
+   - **404 Not Found**: Línea no encontrada
+
+   ## Test Cases
+   - [ ] Cancelar línea existente (204)
+   - [ ] Cancelar línea ya cancelada (400)
+   - [ ] Cancelar línea inexistente (404)
+   - [ ] Cancelar sin token (401)
+   - [ ] Cancelar con token de Admin (403)

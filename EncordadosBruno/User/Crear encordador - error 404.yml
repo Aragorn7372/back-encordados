@@ -9,7 +9,7 @@ http:
   body:
     type: json
     data: |
-      "01KRZAJVCA133EKNDN01TCBMJS"
+      "01KS0Q28TD6SAPN0GN0XKRPK5D"
   auth:
     type: bearer
     token: "{{token_owner}}"
@@ -30,3 +30,6 @@ docs: |
 
   ## HTTP Method
   `POST /api/User/create-encoder`
+
+  ## Test Cases
+  - [ ] Intentar crear encordador con ID de usuario inexistente (404)

@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{api-url}}/api/User/users/1?page=0&size=10"
+  url: "{{api-url}}/api/User/users/01KS0Q28TEJ0SYA6JJ5H4W4CMP?page=0&size=10"
   params:
     - name: page
       value: "0"

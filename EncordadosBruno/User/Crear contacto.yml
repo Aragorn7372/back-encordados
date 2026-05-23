@@ -13,7 +13,7 @@ http:
           "name": "Contacto Test",
           "email": "contacto@test.coma",
           "phone": "600123456",
-          "tournamentId": 1
+          "tournamentId": "01KS0Q28TEJ0SYA6JJ5H4W4CMP"
       }
   auth:
     type: bearer
