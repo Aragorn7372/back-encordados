@@ -21,7 +21,7 @@ http:
       - name: Logotype
         type: file
         value:
-          - C:\Users\Aragorn\Desktop\docker-enviroment\back-encordados\EncordadosBruno\image\Captura de pantalla 2026-02-21 221125.png
+          - ../image/Captura de pantalla 2026-02-21 221125.png
       - name: OwnerId
         type: text
         value: 01KS0Q28TE2EFVQTCW8EN0W0MF
