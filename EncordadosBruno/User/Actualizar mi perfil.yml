@@ -24,7 +24,7 @@ http:
       - name: Avatar
         type: file
         value:
-          - C:\Users\Aragorn\RiderProjects\BackEncordados\EncordadosBruno\image\Captura de pantalla 2026-02-21 221125.png
+          - ../image/Captura de pantalla 2026-02-21 221125.png
         contentType: file
   auth:
     type: bearer

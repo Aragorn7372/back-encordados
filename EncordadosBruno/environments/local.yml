@@ -14,3 +14,25 @@ variables:
     value: "01KR424NQJKTASKDL3M5NP7GHS"
   - name: supervisor_id_pablo
     value: "01KR424NQJKUBMAEM4N6OQ8JIT"
+  - name: token_admin
+    value: ""
+  - name: token_juan
+    value: ""
+  - name: token_encorder_carlos
+    value: ""
+  - name: token_luis_supervisor
+    value: ""
+  - name: test_player_token
+    value: ""
+  - name: test_player_name
+    value: ""
+  - name: user_id_admin
+    value: ""
+  - name: user_id_owner
+    value: ""
+  - name: user_id_juan
+    value: ""
+  - name: user_id_carlos
+    value: ""
+  - name: user_id_luis
+    value: ""

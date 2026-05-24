@@ -30,7 +30,7 @@ http:
       - name: Imagen
         type: file
         value:
-          - C:\Users\Aragorn\Desktop\docker-enviroment\back-encordados\EncordadosBruno\image\Captura de pantalla 2026-02-21 221125.png
+          - ../image/Captura de pantalla 2026-02-21 221125.png
   auth:
     type: bearer
     token: "{{token_admin}}"
