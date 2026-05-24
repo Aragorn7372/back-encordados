@@ -25,21 +25,23 @@ public class ExportRepository(
         data.Tournaments = await talleresDbContext.Partidos.IgnoreQueryFilters().ToListAsync();
         logger.LogInformation("Fetched {Count} tournaments", data.Tournaments.Count);
 
-        data.Users = await userDbContext.Users.IgnoreQueryFilters().ToListAsync();
+        data.Users = await userDbContext.Users.AsNoTracking().IgnoreQueryFilters().ToListAsync();
         logger.LogInformation("Fetched {Count} users", data.Users.Count);
 
-        data.Materials = await materialsDbContext.Materiales.IgnoreQueryFilters().ToListAsync();
+        data.Materials = await materialsDbContext.Materiales.AsNoTracking().IgnoreQueryFilters().ToListAsync();
         logger.LogInformation("Fetched {Count} materials", data.Materials.Count);
 
-        data.Cuerdas = await materialsDbContext.Cuerdas.IgnoreQueryFilters().ToListAsync();
+        data.Cuerdas = await materialsDbContext.Cuerdas.AsNoTracking().IgnoreQueryFilters().ToListAsync();
         logger.LogInformation("Fetched {Count} cuerdas", data.Cuerdas.Count);
 
         var pedidos = await pedidosDbContext.Pedidos.ToListAsync();
-        var lineas = await pedidosDbContext.PedidoLineas.ToListAsync();
+        var lineasLookup = (await pedidosDbContext.PedidoLineas.ToListAsync())
+            .ToLookup(x => x.PedidoId);
+
 
         foreach (var pedido in pedidos)
         {
-            pedido.Lineas = lineas.Where(l => l.PedidoId == pedido.Id).ToList();
+            pedido.Lineas = lineasLookup[pedido.Id].ToList();
         }
         data.Pedidos = pedidos;
         logger.LogInformation("Fetched {Count} pedidos", data.Pedidos.Count);

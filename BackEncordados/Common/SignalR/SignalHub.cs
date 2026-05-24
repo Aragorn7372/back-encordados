@@ -23,29 +23,20 @@ public class SignalHub(TalleresDbContext context) : Hub {
 
                 if (Ulid.TryParse(userUlidRaw, out Ulid userUlid))
                 {
-                    // Query 1: Traer Partidos donde el usuario es Owner 
-                    var ownedIds = await context.Partidos
-                        .Where(t => !t.IsDeleted && t.Owner == userUlid)
-                        .Select(t => t.Id)
-                        .ToListAsync();
-
-                    // Query 2: Traer el resto de Partidos a memoria para filtrar por WorkersList y SupervisorList
-                    var otherPartidos = await context.Partidos
-                        .Where(t => !t.IsDeleted && t.Owner != userUlid)
+                    var torneosIds = await context.Partidos
+                        .Where(t => !t.IsDeleted)
+                        .Select(t => new { t.Id, t.Owner, t.WorkersList, t.SupervisorList })
                         .AsNoTracking()
                         .ToListAsync();
 
-                    // Filtrar en memoria 
-                    var otherIds = otherPartidos
-                        .Where(t => t.WorkersList?.Contains(userUlid) == true || 
-                                    t.SupervisorList?.Contains(userUlid) == true)
+                    var hubIds = torneosIds
+                        .Where(t => t.Owner == userUlid ||
+                                    t.WorkersList.Contains(userUlid) ||
+                                    t.SupervisorList.Contains(userUlid))
                         .Select(t => t.Id)
                         .ToList();
 
-                    // Combinar los resultados
-                    var torneosIds = ownedIds.Union(otherIds).ToList();
-
-                    foreach (var torneoId in torneosIds)
+                    foreach (var torneoId in hubIds)
                     {
                         await Groups.AddToGroupAsync(Context.ConnectionId, $"Tournament_{torneoId}");
                     }

@@ -80,7 +80,7 @@ public class CuerdasController(
     [ProducesResponseType(typeof(CuerdaResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(policy: "RequireAdminRole")]
+    [Authorize(policy: "RequireOwnerRole")]
     public async Task<IActionResult> Create([FromForm] CuerdaRequestDto request) {
         logger.LogInformation("Create cuerda with name {Name}", request.Modelo);
         
@@ -102,7 +102,7 @@ public class CuerdasController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(policy: "RequireAdminRole")]
+    [Authorize(policy: "RequireOwnerRole")]
     public async Task<IActionResult> Update(long id, [FromForm] CuerdaPatchDto request) {
         logger.LogInformation("Update cuerda with id {Id}", id);
         return await service.UpdateAsync(id, request).Match(
@@ -119,7 +119,7 @@ public class CuerdasController(
     [ProducesResponseType(typeof(CuerdaResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(policy: "RequireAdminRole")]
+    [Authorize(policy: "RequireOwnerRole")]
     public async Task<IActionResult> Delete(long id) {
         logger.LogInformation("Delete cuerda with id {Id}", id);
         return await service.DeleteAsync(id).Match(
