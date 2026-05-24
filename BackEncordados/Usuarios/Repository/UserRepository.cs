@@ -17,25 +17,25 @@ public class UserRepository(
     /// <inheritdoc/>
     public async Task<User?> FindByIdAsync(Ulid id)
     {
-        return await context.Users.FindAsync(id);
+        return await context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
     }
 
     /// <inheritdoc/>
     public async Task<User?> FindByUsernameAsync(string username)
     {
-        return await context.Users.FirstOrDefaultAsync(u => u.Username == username);
+        return await context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Username == username);
     }
 
     /// <inheritdoc/>
     public async Task<User?> FindByEmailAsync(string email)
     {
-        return await context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        return await context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Email == email);
     }
 
     /// <inheritdoc/>
     public async Task<(IEnumerable<User> Items, int TotalCount)> FindAllAsync(FilterUserDto filter)
     {
-        var query = context.Users.AsQueryable();
+        var query = context.Users.AsNoTracking().AsQueryable();
         query = query.Where(u => !u.IsDeleted);
         
         if (filter.TournamentId.HasValue)
@@ -72,15 +72,14 @@ public class UserRepository(
 
     public async Task<bool> UserChageRoleAsync(Ulid id, string role)
     {
-        var user = await FindByIdAsync(id);
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);
         if (user is not null)
         {
             if (user.Role == role)
                 return false;
             user.Role = role;
-            context.Users.Update(user);
             await context.SaveChangesAsync();
-            logger.LogInformation("Usuario creado con ID: {Id}", user.Id);
+            logger.LogInformation("Rol de usuario actualizado con ID: {Id}", user.Id);
             return true;
         }
         return false;
@@ -106,7 +105,7 @@ public class UserRepository(
     /// <inheritdoc/>
     public async Task DeleteAsync(Ulid id)
     {
-        var user = await FindByIdAsync(id);
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);
         if (user is not null)
         {
             user.IsDeleted = true;
@@ -121,7 +120,7 @@ public class UserRepository(
     public async Task<IEnumerable<User>> GetActiveUsersAsync()
     {
         logger.LogDebug("Obteniendo usuarios activos");
-        return await context.Users
+        return await context.Users.AsNoTracking()
             .Where(u => !u.IsDeleted)
             .OrderBy(u => u.Email)
             .ToListAsync();
@@ -132,7 +131,7 @@ public class UserRepository(
         var idList = ids.ToList();
         if (idList.Count == 0)
             return [];
-        return await context.Users
+        return await context.Users.AsNoTracking()
             .Where(u => idList.Contains(u.Id))
             .ToListAsync();
     }

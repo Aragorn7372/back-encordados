@@ -39,25 +39,45 @@ public class PurchasedService(
         logger.LogInformation("Obteniendo todos los pedidos con filtro: Página {Page}, Tamaño {Size}", filter.Page, filter.Size);
         var (paginatedItems, totalCount) = await repository.FindAllAsync(filter);
         int totalPages = filter.Size > 0 ? (int)Math.Ceiling(totalCount / (double)filter.Size) : 0;
-        var items = new List<PurchasedResponseDto>();
 
+        var allUserIds = paginatedItems
+            .SelectMany(p => new[] { p.PlayerId, p.AssignedTo })
+            .Distinct()
+            .ToList();
+
+        var userDict = new Dictionary<Ulid, UserResponseDto>();
+        var missingIds = new List<Ulid>();
+
+        foreach (var id in allUserIds)
+        {
+            var cached = await cache.GetAsync<UserResponseDto>(CacheKeys.UserDataKey + id);
+            if (cached is not null)
+                userDict[id] = cached;
+            else
+                missingIds.Add(id);
+        }
+
+        if (missingIds.Count != 0)
+        {
+            var dbUsers = await userRepository.FindByIdsAsync(missingIds);
+            foreach (var dbUser in dbUsers)
+            {
+                var dto = dbUser.ToDto(cloudinary);
+                await cache.SetAsync(CacheKeys.UserDataKey + dbUser.Id, dto, TimeSpan.FromMinutes(10));
+                userDict[dbUser.Id] = dto;
+            }
+        }
+
+        var items = new List<PurchasedResponseDto>();
         foreach (var item in paginatedItems)
         {
-            var playerResult = await GetUserDtoCachedAsync(item.PlayerId);
-            if (playerResult.IsFailure)
+            if (!userDict.TryGetValue(item.PlayerId, out var playerDto) ||
+                !userDict.TryGetValue(item.AssignedTo, out var encorderDto))
             {
-                logger.LogWarning("Jugador con ID {PlayerId} no encontrado para el pedido {PurchasedId}", item.PlayerId, item.Id);
+                logger.LogWarning("Jugador o encordador no encontrado para el pedido {PurchasedId}", item.Id);
                 continue;
             }
-
-            var encorderResult = await GetUserDtoCachedAsync(item.AssignedTo);
-            if (encorderResult.IsFailure)
-            {
-                logger.LogWarning("Encordador con ID {EncorderId} no encontrado para el pedido {PurchasedId}", item.AssignedTo, item.Id);
-                continue;
-            }
-
-            items.Add(item.ToDto(playerResult.Value, encorderResult.Value));
+            items.Add(item.ToDto(playerDto, encorderDto));
         }
 
         logger.LogInformation("Se obtuvieron {ItemCount} pedidos de un total de {TotalCount}", items.Count, totalCount);

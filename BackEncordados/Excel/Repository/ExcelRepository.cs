@@ -75,6 +75,7 @@ public class ExcelRepository(
         if (types.Contains("users"))
         {
             var users = await userDbContext.Users
+                .AsNoTracking()
                 .Where(u => u.TournamentId == tournamentId)
                 .ToListAsync();
             
@@ -92,6 +93,7 @@ public class ExcelRepository(
         if (types.Contains("materials"))
         {
             var materials = await materialsDbContext.Materiales
+                .AsNoTracking()
                 .Where(m => m.TournamentId == tournamentId)
                 .ToListAsync();
 
@@ -110,6 +112,7 @@ public class ExcelRepository(
         if (types.Contains("cuerdas"))
         {
             var cuerdas = await materialsDbContext.Cuerdas
+                .AsNoTracking()
                 .Where(c => c.TournamentId == tournamentId)
                 .ToListAsync();
 
