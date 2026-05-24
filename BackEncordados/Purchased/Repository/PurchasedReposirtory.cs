@@ -9,7 +9,7 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
 {
     public async Task<(IEnumerable<Pedidos> Items, int TotalCount)> FindAllAsync(FilterPurchasedDto filter)
     {
-        var query = context.Pedidos.AsQueryable();
+        var query = context.Pedidos.AsNoTracking().AsQueryable();
 
         if (filter.IsEncorder == true && filter.UserId != null && Ulid.TryParse(filter.UserId, out var encorderId))
             query = query.Where(p => p.AssignedTo == encorderId);
@@ -63,7 +63,7 @@ public class PurchasedReposirtory(PedidosDbContext context, ILogger<PurchasedRep
     public async Task<Pedidos?> FindByIdAsync(Ulid id)
     {
         logger.LogInformation("Buscando pedido con ID {Id}", id);
-        var pedido = await context.Pedidos.FirstOrDefaultAsync(p => p.Id == id);
+        var pedido = await context.Pedidos.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
         if (pedido != null)
         {
             pedido.Lineas = await context.PedidoLineas.Where(l => l.PedidoId == id).ToListAsync();

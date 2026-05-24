@@ -10,7 +10,7 @@ public class CuerdasRepository(ILogger<CuerdasRepository>logger, MaterialsDbCont
     public async Task<(IEnumerable<Cuerdas> Items, int TotalCount)> FindAllAsync(CuerdaFilterdto filter)
     {
         logger.LogInformation("Buscando cuerdas con filtro: search={Marca}, Page={Page}, PageSize={PageSize}", filter.Search,filter.Page,filter.Size);
-        var query = context.Cuerdas.AsQueryable();
+        var query = context.Cuerdas.AsNoTracking().AsQueryable();
         query = query.Where(c=>!c.IsDeleted);
         if (filter.TournamentId != null) 
             query = query.Where(c => c.TournamentId == filter.TournamentId);
@@ -46,13 +46,13 @@ public class CuerdasRepository(ILogger<CuerdasRepository>logger, MaterialsDbCont
     public async Task<Cuerdas?> FindByIdAsync(long id)
     {
         logger.LogInformation("Buscando cuerda con ID {Id}", id);
-        return await context.Cuerdas.FindAsync(id);
+        return await context.Cuerdas.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted);
     }
 
     public async Task<Cuerdas?> FindByNameAsync(string name)
     {
         logger.LogInformation("Buscando cuerda con Name {Name} ", name);
-        return await context.Cuerdas.FirstOrDefaultAsync(c => c.Marca == name || c.Modelo == name);
+        return await context.Cuerdas.AsNoTracking().FirstOrDefaultAsync(c => (c.Marca == name || c.Modelo == name) && !c.IsDeleted);
     }
 
     public async Task<Cuerdas?> UpdateAsync(Cuerdas item, long id)

@@ -10,7 +10,7 @@ public class MaterialsRepository(ILogger<MaterialsRepository>logger,MaterialsDbC
     public async Task<(IEnumerable<Material> Items, int TotalCount)> FindAllAsync(MaterialFilterDto filter)
     {
         logger.LogInformation("Buscando materiales con filtro: search={Marca}, Page={Page}, PageSize={PageSize}", filter.Search,filter.Page,filter.Size);
-        var query = context.Materiales.AsQueryable();
+        var query = context.Materiales.AsNoTracking().AsQueryable();
         query = query.Where(m=>!m.IsDeleted);
         if(filter.TournamentId != null)
             query = query.Where(m => m.TournamentId == filter.TournamentId);
@@ -25,7 +25,7 @@ public class MaterialsRepository(ILogger<MaterialsRepository>logger,MaterialsDbC
         }
         
         
-        var totalCount = query.Count();
+        var totalCount = await query.CountAsync();
         bool isDesc= filter.Direction.ToLower() == "desc";
         query = filter.SortBy.ToLower() switch
         {
@@ -42,13 +42,14 @@ public class MaterialsRepository(ILogger<MaterialsRepository>logger,MaterialsDbC
     public async Task<Material?> FindByIdAsync(long id)
     {
         logger.LogInformation("Buscando material con ID {Id}", id);
-        return await context.Materiales.FindAsync(id);
+        return await context.Materiales.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
     }
 
     public async Task<Material?> FindByNameAsync(string name)
     {
         logger.LogInformation("Buscando material con Name {Name} ", name);
-        return await context.Materiales.FirstOrDefaultAsync(m => m.Modelo == name && !m.IsDeleted);
+        return await context.Materiales.AsNoTracking().FirstOrDefaultAsync(m => m.Modelo == name && !m.IsDeleted);
     }
 
     public async Task<Material?> UpdateAsync(Material item, long id)

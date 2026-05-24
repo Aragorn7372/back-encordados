@@ -10,7 +10,7 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
 {
     public async Task<(IEnumerable<Tournaments> Items, int TotalCount)> FindAllAsync(FilterTournamentDto filter) {
         logger.LogInformation("Buscando torneos");
-        var query = context.Partidos.AsQueryable();
+        var query = context.Partidos.AsNoTracking().AsQueryable();
         query = query.Where(x => !x.IsDeleted);
         
         IEnumerable<Tournaments> items;
@@ -64,7 +64,7 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
     public async Task<Tournaments?> FindByNameAsync(string name)
     {
         logger.LogInformation("Buscando torneo con Nombre {Nombre}", name);
-        return await context.Partidos.Include(x=>x.WorkerMachineAssignments).FirstOrDefaultAsync(t => t.Title == name && !t.IsDeleted);
+        return await context.Partidos.AsNoTracking().Include(x=>x.WorkerMachineAssignments).FirstOrDefaultAsync(t => t.Title == name && !t.IsDeleted);
     }
 
     public async Task<Tournaments> SaveAsync(Tournaments tournament)
@@ -100,10 +100,9 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
         // bool no nullable → se actualiza siempre o puedes decidir lógica
         existingTournament.IsDeleted = tournament.IsDeleted;
         
-        var saved=context.Partidos.Update(existingTournament);
         await context.SaveChangesAsync();
 
-        return saved.Entity;
+        return existingTournament;
     }
 
     public async Task<bool> DeleteAsync(Ulid id)
@@ -113,7 +112,6 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
         if (existingTournament == null || existingTournament.IsDeleted)
             return false;
         existingTournament.IsDeleted = true;
-        context.Partidos.Update(existingTournament);
         await context.SaveChangesAsync();
         return true;
     }
@@ -148,10 +146,9 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
                     MachineName = machineName
                 });
         }
-        var saved=context.Partidos.Update(existingTournament);
         await context.SaveChangesAsync();
 
-        return saved.Entity;
+        return existingTournament;
     }
 
     public async Task<Tournaments?> RemoveWorker(Ulid id, Ulid workerId)
@@ -170,16 +167,15 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
 
         existingTournament.WorkerMachineAssignments
             .RemoveAll(x => x.WorkerId == workerId);
-        var saved =context.Partidos.Update(existingTournament);
         await context.SaveChangesAsync();
 
-        return saved.Entity;
+        return existingTournament;
     }
 
     public async Task<IEnumerable<WorkerMachineAssignment>?> GetAssignedWorkerMachinesAsync(Ulid tournamentId)
     {
         logger.LogInformation("Obteniendo máquinas asignadas para el torneo con ID {Id}", tournamentId);
-        return await context.Partidos
+        return await context.Partidos.AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == tournamentId && !x.IsDeleted) is { } tournament ? tournament.WorkerMachineAssignments : null;
     }
 
@@ -197,10 +193,9 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
         if (!existingTournament.SupervisorList.Contains(supervisorId))
             existingTournament.SupervisorList.Add(supervisorId);
         
-        var saved=context.Partidos.Update(existingTournament);
         await context.SaveChangesAsync();
 
-        return saved.Entity;
+        return existingTournament;
     }
 
     public async Task<Tournaments?> RemoveSupervisor(Ulid id, Ulid supervisorId) {
@@ -217,9 +212,8 @@ public class TournamentRepository(TalleresDbContext context, ILogger<TournamentR
         if (existingTournament.SupervisorList.Contains(supervisorId))
             existingTournament.SupervisorList.Remove(supervisorId);
         
-        var saved =context.Partidos.Update(existingTournament);
         await context.SaveChangesAsync();
 
-        return saved.Entity;
+        return existingTournament;
     }
 }

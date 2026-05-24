@@ -154,12 +154,15 @@ public class PurchasedServiceTests
 
         _mockRepo.Setup(r => r.FindAllAsync(filter)).ReturnsAsync((new List<Pedidos> { purchased }, 1));
 
+        player.Id = purchased.PlayerId;
+        encorder.Id = purchased.AssignedTo;
+
         _mockCache.Setup(c => c.GetAsync<UserResponseDto>(CacheKeys.UserDataKey + purchased.PlayerId))
             .ReturnsAsync((UserResponseDto?)null);
-        _mockUserRepo.Setup(r => r.FindByIdAsync(purchased.PlayerId)).ReturnsAsync(player);
         _mockCache.Setup(c => c.GetAsync<UserResponseDto>(CacheKeys.UserDataKey + purchased.AssignedTo))
             .ReturnsAsync((UserResponseDto?)null);
-        _mockUserRepo.Setup(r => r.FindByIdAsync(purchased.AssignedTo)).ReturnsAsync(encorder);
+        _mockUserRepo.Setup(r => r.FindByIdsAsync(It.IsAny<IEnumerable<Ulid>>()))
+            .ReturnsAsync(new List<User> { player, encorder });
 
         var result = await _service.FindAllAsync(filter);
 
@@ -1034,8 +1037,16 @@ public class PurchasedServiceTests
 
         _mockCache.Setup(c => c.GetAsync<UserResponseDto>(CacheKeys.UserDataKey + It.IsAny<Ulid>()))
             .ReturnsAsync((UserResponseDto?)null);
-        _mockUserRepo.Setup(r => r.FindByIdAsync(It.IsAny<Ulid>()))
-            .ReturnsAsync((Ulid id) => id == purchased1.PlayerId || id == purchased2.PlayerId ? player : encorder);
+
+        player.Id = purchased1.PlayerId;
+        encorder.Id = purchased1.AssignedTo;
+        var player2 = CreateUser("p2", User.UserRoles.USER, 50);
+        player2.Id = purchased2.PlayerId;
+        var encorder2 = CreateUser("e2", User.UserRoles.ENCORDER, 0);
+        encorder2.Id = purchased2.AssignedTo;
+
+        _mockUserRepo.Setup(r => r.FindByIdsAsync(It.IsAny<IEnumerable<Ulid>>()))
+            .ReturnsAsync(new List<User> { player, encorder, player2, encorder2 });
 
         var result = await _service.FindAllAsync(filter);
 
@@ -1062,7 +1073,7 @@ public class PurchasedServiceTests
         var result = await _service.FindAllAsync(filter);
 
         result.Content.Should().HaveCount(1);
-        _mockUserRepo.Verify(r => r.FindByIdAsync(It.IsAny<Ulid>()), Times.Never);
+        _mockUserRepo.Verify(r => r.FindByIdsAsync(It.IsAny<IEnumerable<Ulid>>()), Times.Never);
     }
 
     // ===== CancelPurchasedAsync Additional Tests =====
