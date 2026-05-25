@@ -5,6 +5,63 @@ using MimeKit;
 namespace BackEncordados.Common.Service.Email;
 
 
+/// <summary>
+/// Implementación de <see cref="IEmailService"/> que envía correos electrónicos reales
+/// mediante SMTP utilizando la librería MailKit.
+/// </summary>
+/// <remarks>
+/// <para>Lee la configuración SMTP de las siguientes claves de <see cref="IConfiguration"/>:</para>
+/// <list type="table">
+///   <listheader>
+///     <term>Clave</term>
+///     <description>Descripción</description>
+///     <description>Requerido</description>
+///   </listheader>
+///   <item>
+///     <term><c>Smtp:Host</c></term>
+///     <description>Servidor SMTP (ej: <c>smtp.gmail.com</c>)</description>
+///     <description>Sí</description>
+///   </item>
+///   <item>
+///     <term><c>Smtp:Port</c></term>
+///     <description>Puerto SMTP (default: <c>587</c>)</description>
+///     <description>No (default 587)</description>
+///   </item>
+///   <item>
+///     <term><c>Smtp:Username</c></term>
+///     <description>Usuario de autenticación SMTP</description>
+///     <description>Sí</description>
+///   </item>
+///   <item>
+///     <term><c>Smtp:Password</c></term>
+///     <description>Contraseña o App Password SMTP</description>
+///     <description>No (conexión sin autenticar si se omite)</description>
+///   </item>
+///   <item>
+///     <term><c>Smtp:FromEmail</c></term>
+///     <description>Dirección remitente (default: <c>Smtp:Username</c>)</description>
+///     <description>No</description>
+///   </item>
+///   <item>
+///     <term><c>Smtp:FromName</c></term>
+///     <description>Nombre del remitente (default: <c>"TiendaApi"</c>)</description>
+///     <description>No</description>
+///   </item>
+/// </list>
+///
+/// <para>Si <c>Smtp:Host</c> o <c>Smtp:Username</c> no están configurados, el envío se omite
+/// con un warning en log — permite que la aplicación funcione sin SMTP en entornos de desarrollo.</para>
+///
+/// <para><b>Comportamiento de conexión:</b></para>
+/// <list type="bullet">
+///   <item><description>Conexión con <c>StartTlsWhenAvailable</c> (cifrado oportunista).</description></item>
+///   <item><description>Autenticación solo si <c>Smtp:Password</c> está presente.</description></item>
+///   <item><description>Desconexión explícita al finalizar (<c>DisconnectAsync(true)</c>).</description></item>
+/// </list>
+/// </remarks>
+/// <param name="configuration">Configuración de la aplicación (sección <c>Smtp</c>).</param>
+/// <param name="logger">Logger para registrar envíos y errores.</param>
+/// <param name="emailChannel">Canal en memoria para encolar mensajes (<see cref="EnqueueEmailAsync"/>).</param>
 public class MailKitEmailService(
     IConfiguration configuration,
     ILogger<MailKitEmailService> logger,
@@ -12,6 +69,21 @@ public class MailKitEmailService(
 ) : IEmailService {
 
 
+    /// <summary>
+    /// Envía un correo electrónico real mediante SMTP usando MailKit.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Flujo detallado:</b></para>
+    /// <list type="number">
+    ///   <item><description>Lee configuración SMTP de <see cref="IConfiguration"/>.</description></item>
+    ///   <item><description>Si <c>Host</c> o <c>Username</c> faltan → log warning y retorna sin error (graceful degradation).</description></item>
+    ///   <item><description>Construye un <c>MimeMessage</c> con <c>MailboxAddress</c> para el remitente y destinatario.</description></item>
+    ///   <item><description>Configura el cuerpo: HTML si <c>message.IsHtml</c> es <c>true</c>, texto plano en caso contrario.</description></item>
+    ///   <item><description>Abre conexión SMTP con <c>StartTlsWhenAvailable</c>, autentica si hay password, envía y desconecta.</description></item>
+    ///   <item><description>Si falla cualquier paso, loggea el error y relanza la excepción (no se traga).</description></item>
+    /// </list>
+    /// </remarks>
+    /// <param name="message">Mensaje de correo con destinatario, asunto, cuerpo y formato.</param>
     public async Task SendEmailAsync(EmailMessage message)
     {
         try
@@ -60,6 +132,16 @@ public class MailKitEmailService(
         }
     }
     
+    /// <summary>
+    /// Encola un correo electrónico para envío diferido en segundo plano.
+    /// </summary>
+    /// <remarks>
+    /// <para>Escribe el mensaje en <c>emailChannel.Writer</c> para que
+    /// <c>EmailBackgroundService</c> lo procese asincrónicamente.</para>
+    /// <para>Si el canal está completo o cerrado, captura la excepción y la registra
+    /// sin propagarla al llamante.</para>
+    /// </remarks>
+    /// <param name="message">Mensaje de correo a encolar.</param>
     public async Task EnqueueEmailAsync(EmailMessage message)
     {
         try

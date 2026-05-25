@@ -1,15 +1,61 @@
 namespace BackEncordados.Common.Service.Email;
 
+/// <summary>Representa un artículo dentro de un pedido para su inclusión en emails de resumen.</summary>
+/// <param name="ProductName">Nombre del producto o servicio.</param>
+/// <param name="Quantity">Cantidad adquirida.</param>
+/// <param name="Price">Precio unitario del artículo.</param>
 public record OrderItemEmailDto(string ProductName, int Quantity, decimal Price);
 
+/// <summary>
+/// Genera plantillas HTML de correos electrónicos con diseño corporativo consistente.
+/// </summary>
+/// <remarks>
+/// <para>Todas las plantillas utilizan un diseño base responsive de 600px con:</para>
+/// <list type="bullet">
+///   <item><description><b>Header:</b> Logo "Encordados" con separador inferior.</description></item>
+///   <item><description><b>Cuerpo:</b> Título + contenido específico de cada template.</description></item>
+///   <item><description><b>Footer:</b> Copyright + teléfono de soporte.</description></item>
+/// </list>
+/// <para>Los templates se construyen con dos capas: <see cref="CreateBase"/> (estructura completa)
+/// y <see cref="CreateBaseWithButton"/> (agrega botón CTA). Los templates específicos generan
+/// solo el contenido interno y delegan el armado HTML a estos métodos base.</para>
+/// <para><b>Colores corporativos:</b></para>
+/// <list type="table">
+///   <listheader><term>Constante</term><description>Color</description><description>Uso</description></listheader>
+///   <item><term><c>PrimaryColor</c></term><description><c>#2563eb</c> (azul)</description><description>Botones, enlaces</description></item>
+///   <item><term><c>TextColor</c></term><description><c>#1f2937</c> (gris oscuro)</description><description>Textos principales</description></item>
+///   <item><term><c>LightGray</c></term><description><c>#f3f4f6</c> (gris claro)</description><description>Fondos de tabla, footer</description></item>
+///   <item><term><c>BorderColor</c></term><description><c>#e5e7eb</c> (gris borde)</description><description>Separadores</description></item>
+/// </list>
+/// </remarks>
 public static class EmailTemplates
 {
+    /// <summary>Color primario de la marca (azul). Usado en botones y enlaces.</summary>
     private const string PrimaryColor = "#2563eb";
+
+    /// <summary>Color de texto principal (gris oscuro).</summary>
     private const string TextColor = "#1f2937";
+
+    /// <summary>Color de fondo secundario (gris claro). Usado en tablas, footer y boxes.</summary>
     private const string LightGray = "#f3f4f6";
+
+    /// <summary>Color de bordes y separadores (gris).</summary>
     private const string BorderColor = "#e5e7eb";
+
+    /// <summary>Teléfono de soporte al cliente. Debe configurarse con el número real antes de producción.</summary>
     private const string SupportPhone = "";
 
+    /// <summary>
+    /// Construye la estructura HTML completa de un correo electrónico.
+    /// </summary>
+    /// <remarks>
+    /// <para>Incluye header con el nombre de la marca, el título del email, el contenido
+    /// específico y un footer con copyright y teléfono de soporte.</para>
+    /// <para>Diseño responsive con max-width 600px, bordes redondeados (12px) y sombra suave.</para>
+    /// </remarks>
+    /// <param name="title">Título del email (se muestra en el <c>&lt;title&gt;</c> y como encabezado <c>&lt;h2&gt;</c>).</param>
+    /// <param name="content">HTML del contenido específico del template (insertado en el cuerpo).</param>
+    /// <returns>String HTML completo del email.</returns>
     public static string CreateBase(string title, string content)
     {
         return $@"<!DOCTYPE html>
@@ -42,6 +88,18 @@ public static class EmailTemplates
 </html>";
     }
 
+    /// <summary>
+    /// Construye la estructura HTML completa de un email con un botón de llamada a la acción.
+    /// </summary>
+    /// <remarks>
+    /// <para>Agrega un botón estilizado (<c>background-color: PrimaryColor</c>) debajo del contenido
+    /// y delega el armado HTML a <see cref="CreateBase"/>.</para>
+    /// </remarks>
+    /// <param name="title">Título del email.</param>
+    /// <param name="content">HTML del contenido previo al botón.</param>
+    /// <param name="buttonUrl">URL de destino del botón.</param>
+    /// <param name="buttonText">Texto del botón.</param>
+    /// <returns>String HTML completo del email con botón CTA.</returns>
     public static string CreateBaseWithButton(string title, string content, string buttonUrl, string buttonText)
     {
         string contentWithButton = content + $@"
@@ -52,6 +110,10 @@ public static class EmailTemplates
         return CreateBase(title, contentWithButton);
     }
 
+    /// <summary>Plantilla de bienvenida: notifica que la cuenta fue creada y muestra usuario/email.</summary>
+    /// <param name="userName">Nombre de usuario registrado.</param>
+    /// <param name="email">Correo electrónico registrado.</param>
+    /// <returns>HTML del email de bienvenida.</returns>
     public static string AccountCreated(string userName, string email)
     {
         string content = $@"
@@ -77,6 +139,10 @@ public static class EmailTemplates
         return CreateBase("Cuenta creada", content);
     }
 
+    /// <summary>Plantilla de restablecimiento de contraseña con botón de enlace y tiempo de expiración.</summary>
+    /// <param name="resetUrl">URL de restablecimiento (con token incluido).</param>
+    /// <param name="expiryHours">Horas hasta que expire el enlace (default: 1).</param>
+    /// <returns>HTML del email de restablecimiento con botón CTA.</returns>
     public static string PasswordReset(string resetUrl, int expiryHours = 1)
     {
         string content = $@"
@@ -89,6 +155,9 @@ public static class EmailTemplates
         return CreateBaseWithButton("Restablecer contraseña", content, resetUrl, "Restablecer contraseña");
     }
 
+    /// <summary>Plantilla de cancelación de pedido con número de pedido destacado y box de advertencia.</summary>
+    /// <param name="orderId">Identificador del pedido cancelado.</param>
+    /// <returns>HTML del email de cancelación.</returns>
     public static string OrderCancelled(string orderId)
     {
         string content = $@"
@@ -107,6 +176,10 @@ public static class EmailTemplates
 
     
 
+    /// <summary>Plantilla de confirmación de pago con importe destacado en verde, número de pedido y nota de seguimiento.</summary>
+    /// <param name="orderId">Identificador del pedido pagado.</param>
+    /// <param name="amount">Importe pagado en euros.</param>
+    /// <returns>HTML del email de confirmación de pago.</returns>
     public static string PaymentConfirmed(string orderId, double amount)
     {
         string content = $@"
@@ -128,6 +201,11 @@ public static class EmailTemplates
 
   
 
+    /// <summary>Plantilla de notificación de línea de encordado completada, lista para recoger.</summary>
+    /// <param name="lineaId">Identificador de la línea completada.</param>
+    /// <param name="pedidoId">Identificador del pedido al que pertenece.</param>
+    /// <param name="model">Modelo de la raqueta encordada.</param>
+    /// <returns>HTML del email de línea completada.</returns>
     public static string LineaCompleted(string lineaId, string pedidoId,string model)
     {
         string content = $@"
@@ -153,6 +231,11 @@ public static class EmailTemplates
         return CreateBase("Línea completada", content);
     }
 
+    /// <summary>Plantilla de notificación de línea de encordado entregada al cliente.</summary>
+    /// <param name="lineaId">Identificador de la línea entregada.</param>
+    /// <param name="pedidoId">Identificador del pedido al que pertenece.</param>
+    /// <param name="model">Modelo de la raqueta entregada.</param>
+    /// <returns>HTML del email de línea entregada.</returns>
     public static string LineaDelivered(string lineaId, string pedidoId, string model)
     {
         string content = $@"
