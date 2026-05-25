@@ -118,6 +118,7 @@ public class ExportRepositoryTests
             Modelo = "StringModel",
             Stock = 5,
             Precio = 15.0,
+            Calibre = 1.25,
             StringFormat = FormatoCuerda.Set,
             StringsType = StringsType.Polyester,
             CreatedAt = DateTime.UtcNow,
@@ -207,7 +208,7 @@ public class ExportRepositoryTests
             UpdatedAt = DateTime.UtcNow
         });
         _materialsContext.Materiales.Add(new Material { Id = 1, Marca = "ClearM", Type = MaterialType.Grip, Stock = 1, Precio = 10, TournamentId = Ulid.NewUlid(), CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow });
-        _materialsContext.Cuerdas.Add(new Cuerdas { Id = 1, Marca = "ClearC", StringFormat = FormatoCuerda.Set, StringsType = StringsType.Polyester, Stock = 1, Precio = 10, TournamentId = Ulid.NewUlid(), CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow });
+        _materialsContext.Cuerdas.Add(new Cuerdas { Id = 1, Marca = "ClearC", Calibre = 1.25, StringFormat = FormatoCuerda.Set, StringsType = StringsType.Polyester, Stock = 1, Precio = 10, TournamentId = Ulid.NewUlid(), CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow });
         _pedidosContext.Pedidos.Add(new Pedidos
         {
             Id = Ulid.NewUlid(),
@@ -275,6 +276,7 @@ public class ExportRepositoryTests
             Modelo = "ImportModel",
             Stock = 10,
             Precio = 50.0,
+            Calibre = 1.25,
             StringFormat = FormatoCuerda.Set,
             StringsType = StringsType.Polyester,
             TournamentId = tournamentId,

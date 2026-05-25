@@ -122,7 +122,7 @@ public class ExcelArchiveManager : IExcelArchiveManager
     private static void CreateCuerdasSheet(IXLWorkbook workbook, List<ExcelCuerdasDto> cuerdas)
     {
         var ws = workbook.Worksheets.Add("Cuerdas");
-        var headers = new[] { "Id", "TournamentId", "Marca", "Modelo", "Stock", "Precio", "StringFormat", "StringsType" };
+        var headers = new[] { "Id", "TournamentId", "Marca", "Modelo", "Stock", "Precio", "Calibre", "StringFormat", "StringsType" };
         AddHeaders(ws, headers);
 
         var row = 2;
@@ -134,8 +134,9 @@ public class ExcelArchiveManager : IExcelArchiveManager
             ws.Cell(row, 4).Value = c.Modelo;
             ws.Cell(row, 5).Value = c.Stock;
             ws.Cell(row, 6).Value = c.Precio;
-            ws.Cell(row, 7).Value = c.StringFormat;
-            ws.Cell(row, 8).Value = c.StringsType;
+            ws.Cell(row, 7).Value = c.Calibre;
+            ws.Cell(row, 8).Value = c.StringFormat;
+            ws.Cell(row, 9).Value = c.StringsType;
             row++;
         }
         ws.Columns().AdjustToContents();
@@ -335,8 +336,9 @@ public class ExcelArchiveManager : IExcelArchiveManager
                     Modelo = modelo,
                     Stock = row.Cell(5).GetValue<int>(),
                     Precio = row.Cell(6).GetValue<double>(),
-                    StringFormat = row.Cell(7).GetString(),
-                    StringsType = row.Cell(8).GetString()
+                    Calibre = row.Cell(7).GetValue<double>(),
+                    StringFormat = row.Cell(8).GetString(),
+                    StringsType = row.Cell(9).GetString()
                 });
             }
         }

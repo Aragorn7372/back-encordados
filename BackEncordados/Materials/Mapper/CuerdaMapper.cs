@@ -16,6 +16,7 @@ public static class CuerdaMapper {
             Precio: cuerda.Precio,
             StringFormat: cuerda.StringFormat.ToString(),
             StringsType: cuerda.StringsType.ToString(),
+            Calibre: cuerda.Calibre,
             ImageUrl: cloudinary.ResolveImageUrl(cuerda.ImageUrl, CloudinaryConstants.FOLDER_MATERIES)
         );
     }
@@ -28,7 +29,8 @@ public static class CuerdaMapper {
             Stock = cuerda.Stock,
             Precio = cuerda.Precio,
             StringFormat = Enum.Parse<FormatoCuerda>(cuerda.StringFormat, true),
-            StringsType = Enum.Parse<StringsType>(cuerda.StringsType, true)
+            StringsType = Enum.Parse<StringsType>(cuerda.StringsType, true),
+            Calibre = cuerda.Calibre
         };
     }
 }

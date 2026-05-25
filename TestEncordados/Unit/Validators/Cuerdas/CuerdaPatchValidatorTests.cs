@@ -14,6 +14,7 @@ public class CuerdaPatchValidatorTests
         Modelo = "Pro Tour",
         Stock = 10,
         Precio = 25.99,
+        Calibre = 1.25,
         StringFormat = "Reel",
         StringsType = "Polyester"
     };

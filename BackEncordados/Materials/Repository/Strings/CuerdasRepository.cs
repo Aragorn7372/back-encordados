@@ -35,6 +35,7 @@ public class CuerdasRepository(ILogger<CuerdasRepository>logger, MaterialsDbCont
             "modelo" => isDesc ? query.OrderByDescending(c => c.Modelo) : query.OrderBy(c => c.Modelo),
             "stock" => isDesc ? query.OrderByDescending(c => c.Stock) : query.OrderBy(c => c.Stock),
             "precio" => isDesc ? query.OrderByDescending(c => c.Precio) : query.OrderBy(c => c.Precio),
+            "calibre" => isDesc ? query.OrderByDescending(c => c.Calibre) : query.OrderBy(c => c.Calibre),
             "stringformat" => isDesc ? query.OrderByDescending(c => c.StringFormat) : query.OrderBy(c => c.StringFormat),
             "stringstype" => isDesc ? query.OrderByDescending(c => c.StringsType) : query.OrderBy(c => c.StringsType),
             _ => isDesc ? query.OrderByDescending(c => c.Id) : query.OrderBy(c => c.Id)
@@ -64,6 +65,7 @@ public class CuerdasRepository(ILogger<CuerdasRepository>logger, MaterialsDbCont
         if (!string.IsNullOrEmpty(item.Modelo)) cuerda.Modelo = item.Modelo;
         if (item.Stock >= 0) cuerda.Stock = item.Stock;
         if (item.Precio >= 0) cuerda.Precio = item.Precio;
+        if (item.Calibre > 0) cuerda.Calibre = item.Calibre;
         cuerda.StringFormat = item.StringFormat;
         cuerda.StringsType = item.StringsType;
         if (!string.IsNullOrEmpty(item.ImageUrl)) cuerda.ImageUrl = item.ImageUrl;

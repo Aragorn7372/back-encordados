@@ -28,6 +28,7 @@ public class CuerdaRequestValidatorTests
         Modelo = "Pro Tour",
         Stock = 10,
         Precio = 25.99,
+        Calibre = 1.25,
         StringFormat = "Reel",
         StringsType = "Polyester"
     };
@@ -39,6 +40,7 @@ public class CuerdaRequestValidatorTests
         Modelo = "Pro Tour",
         Stock = 10,
         Precio = 25.99,
+        Calibre = 1.25,
         StringFormat = format,
         StringsType = "Polyester"
     };
@@ -50,6 +52,7 @@ public class CuerdaRequestValidatorTests
         Modelo = "Pro Tour",
         Stock = 10,
         Precio = 25.99,
+        Calibre = 1.25,
         StringFormat = "Reel",
         StringsType = stringsType
     };
@@ -61,6 +64,7 @@ public class CuerdaRequestValidatorTests
         Modelo = "Pro Tour",
         Stock = 10,
         Precio = 25.99,
+        Calibre = 1.25,
         StringFormat = "Reel",
         StringsType = "Polyester"
     };
@@ -91,6 +95,7 @@ public class CuerdaRequestValidatorTests
             Modelo = "Pro Tour",
             Stock = 10,
             Precio = 25.99,
+            Calibre = 1.25,
             StringFormat = "Reel",
             StringsType = "Polyester"
         };
@@ -145,6 +150,7 @@ public class CuerdaRequestValidatorTests
             Modelo = "Pro Tour",
             Stock = 10,
             Precio = 25.99,
+            Calibre = 1.25,
             StringFormat = "",
             StringsType = "Polyester"
         };
@@ -184,6 +190,7 @@ public class CuerdaRequestValidatorTests
             Modelo = "Pro Tour",
             Stock = 10,
             Precio = 25.99,
+            Calibre = 1.25,
             StringFormat = "Reel",
             StringsType = ""
         };

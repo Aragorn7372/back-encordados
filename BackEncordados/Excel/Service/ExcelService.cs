@@ -244,6 +244,7 @@ public class ExcelService(
                         Modelo = c.Modelo,
                         Stock = c.Stock,
                         Precio = c.Precio,
+                        Calibre = c.Calibre,
                         StringFormat = c.StringFormat,
                         StringsType = c.StringsType
                     };
@@ -258,6 +259,7 @@ public class ExcelService(
                         Modelo = c.Modelo,
                         Stock = c.Stock,
                         Precio = c.Precio,
+                        Calibre = c.Calibre,
                         StringFormat = c.StringFormat,
                         StringsType = c.StringsType,
                         TournamentId = tournamentId

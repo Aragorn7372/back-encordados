@@ -27,7 +27,7 @@ public class ExcelArchiveManagerTests
             ],
             Cuerdas =
             [
-                new ExcelCuerdasDto { Marca = "StringX", Modelo = "ModelX", Stock = 10, Precio = 15.50, StringFormat = "Format1", StringsType = "Type1" }
+                new ExcelCuerdasDto { Marca = "StringX", Modelo = "ModelX", Stock = 10, Precio = 15.50, Calibre = 1.25, StringFormat = "Format1", StringsType = "Type1" }
             ],
             Tournament =
             [
