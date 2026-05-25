@@ -3,8 +3,43 @@ using ClosedXML.Excel;
 
 namespace BackEncordados.Excel.Archive;
 
+/// <summary>
+/// Implementación de <see cref="IExcelArchiveManager"/> que genera y lee archivos Excel
+/// utilizando la biblioteca ClosedXML (sin dependencia de interop COM).
+/// </summary>
+/// <remarks>
+/// <para>Dos modos de exportación:</para>
+/// <list type="bullet">
+///   <item><description><b>Simple</b> (<see cref="CreateExcelAsync"/>): Una sola hoja "Datos del Torneo"
+///   con resumen por jugador (username, name, raquetas encordadas, precio total).</description></item>
+///   <item><description><b>Avanzado</b> (<see cref="CreateAdvancedExcelAsync"/>): Múltiples hojas seleccionables
+///   mediante el parámetro <c>types</c>: <c>"users"</c>, <c>"materials"</c>, <c>"cuerdas"</c>,
+///   <c>"tournament"</c>, <c>"pedidos"</c>. Si ningún tipo coincide, crea hoja "Sin Datos".</description></item>
+/// </list>
+/// <para><b>Importación</b> (<see cref="ReadExcelAsync"/>): Lee hojas por nombre usando <c>TryGetWorksheet</c>.
+/// Las filas con campos clave vacíos se omiten. Las fechas se parsean con <c>DateTime.TryParse</c>
+/// y caen a valores por defecto si falla el parseo.</para>
+/// <para>Todas las hojas tienen encabezados en negrita con fondo gris claro.</para>
+/// </remarks>
 public class ExcelArchiveManager : IExcelArchiveManager
 {
+    /// <summary>
+    /// Genera un archivo Excel con una hoja de resumen de raquetas encordadas por jugador.
+    /// </summary>
+    /// <remarks>
+    /// <para>Crea un libro con una sola hoja llamada "Datos del Torneo" y las columnas:</para>
+    /// <list type="bullet">
+    ///   <item><description>Username — nombre de usuario del jugador.</description></item>
+    ///   <item><description>Name — nombre completo del jugador.</description></item>
+    ///   <item><description>Raquetas Encordadas — cantidad de raquetas procesadas.</description></item>
+    ///   <item><description>Precio Total — suma total de los precios.</description></item>
+    /// </list>
+    /// <para>Los encabezados se formatean con negrita y fondo gris claro.
+    /// El ancho de las columnas se ajusta al contenido.</para>
+    /// </remarks>
+    /// <param name="data">Datos de jugadores a exportar.</param>
+    /// <param name="tournamentName">Nombre del torneo (no se usa en el contenido actual).</param>
+    /// <returns>Array de bytes del archivo Excel.</returns>
     public Task<byte[]> CreateExcelAsync(IEnumerable<TournamentExcelRowDto> data, string tournamentName)
     {
         using var workbook = new XLWorkbook();
@@ -36,6 +71,24 @@ public class ExcelArchiveManager : IExcelArchiveManager
         return Task.FromResult(stream.ToArray());
     }
 
+    /// <summary>
+    /// Genera un archivo Excel con múltiples hojas según los tipos seleccionados.
+    /// </summary>
+    /// <remarks>
+    /// <para>Las hojas se crean condicionalmente según el parámetro <paramref name="types"/>:</para>
+    /// <list type="bullet">
+    ///   <item><description><c>"users"</c> → hoja "Usuarios" con 6 columnas.</description></item>
+    ///   <item><description><c>"materials"</c> → hoja "Materiales" con 7 columnas.</description></item>
+    ///   <item><description><c>"cuerdas"</c> → hoja "Cuerdas" con 9 columnas.</description></item>
+    ///   <item><description><c>"tournament"</c> → hoja "Torneo" con 8 columnas.</description></item>
+    ///   <item><description><c>"pedidos"</c> → hojas "Pedidos" (8 cols) + "PedidoLineas" (14 cols).</description></item>
+    /// </list>
+    /// <para>Si ningún tipo tiene datos, se crea una hoja "Sin Datos" con fondo amarillo.</para>
+    /// </remarks>
+    /// <param name="data">DTO con todos los datos disponibles.</param>
+    /// <param name="types">Lista de tipos de hojas a incluir en el archivo.</param>
+    /// <param name="tournamentName">Nombre del torneo (no se usa en el contenido actual).</param>
+    /// <returns>Array de bytes del archivo Excel.</returns>
     public Task<byte[]> CreateAdvancedExcelAsync(ExcelAdvancedDataDto data, List<string> types, string tournamentName)
     {
         using var workbook = new XLWorkbook();
@@ -78,6 +131,9 @@ public class ExcelArchiveManager : IExcelArchiveManager
         return Task.FromResult(stream.ToArray());
     }
 
+    /// <summary>Crea la hoja "Usuarios" con datos de usuarios.</summary>
+    /// <param name="workbook">Libro de trabajo.</param>
+    /// <param name="users">Lista de usuarios a exportar.</param>
     private static void CreateUsersSheet(IXLWorkbook workbook, List<ExcelUsersDto> users)
     {
         var ws = workbook.Worksheets.Add("Usuarios");
@@ -98,6 +154,9 @@ public class ExcelArchiveManager : IExcelArchiveManager
         ws.Columns().AdjustToContents();
     }
 
+    /// <summary>Crea la hoja "Materiales" con datos de materiales.</summary>
+    /// <param name="workbook">Libro de trabajo.</param>
+    /// <param name="materials">Lista de materiales a exportar.</param>
     private static void CreateMaterialsSheet(IXLWorkbook workbook, List<ExcelMaterialsDto> materials)
     {
         var ws = workbook.Worksheets.Add("Materiales");
@@ -119,6 +178,9 @@ public class ExcelArchiveManager : IExcelArchiveManager
         ws.Columns().AdjustToContents();
     }
 
+    /// <summary>Crea la hoja "Cuerdas" con datos de cuerdas.</summary>
+    /// <param name="workbook">Libro de trabajo.</param>
+    /// <param name="cuerdas">Lista de cuerdas a exportar.</param>
     private static void CreateCuerdasSheet(IXLWorkbook workbook, List<ExcelCuerdasDto> cuerdas)
     {
         var ws = workbook.Worksheets.Add("Cuerdas");
@@ -142,6 +204,9 @@ public class ExcelArchiveManager : IExcelArchiveManager
         ws.Columns().AdjustToContents();
     }
 
+    /// <summary>Crea la hoja "Torneo" con datos del torneo.</summary>
+    /// <param name="workbook">Libro de trabajo.</param>
+    /// <param name="tournament">Lista de torneos a exportar.</param>
     private static void CreateTournamentSheet(IXLWorkbook workbook, List<ExcelTournamentDto> tournament)
     {
         var ws = workbook.Worksheets.Add("Torneo");
@@ -164,6 +229,12 @@ public class ExcelArchiveManager : IExcelArchiveManager
         ws.Columns().AdjustToContents();
     }
 
+    /// <summary>
+    /// Crea las hojas "Pedidos" y "PedidoLineas" con datos de pedidos y sus líneas.
+    /// </summary>
+    /// <param name="workbook">Libro de trabajo.</param>
+    /// <param name="pedidos">Lista de pedidos.</param>
+    /// <param name="lineas">Lista de líneas de pedido.</param>
     private static void CreatePedidosSheet(IXLWorkbook workbook, List<ExcelPedidosDto> pedidos, List<ExcelPedidoLineasDto> lineas)
     {
         var ws = workbook.Worksheets.Add("Pedidos");
@@ -212,6 +283,15 @@ public class ExcelArchiveManager : IExcelArchiveManager
         wsLineas.Columns().AdjustToContents();
     }
 
+    /// <summary>
+    /// Escribe los encabezados en la primera fila de una hoja y aplica formato.
+    /// </summary>
+    /// <remarks>
+    /// <para>Los encabezados se escriben desde la columna 1 en adelante.
+    /// Se aplica negrita y fondo gris claro al rango completo de encabezados.</para>
+    /// </remarks>
+    /// <param name="ws">Hoja de trabajo.</param>
+    /// <param name="headers">Array de nombres de columna.</param>
     private static void AddHeaders(IXLWorksheet ws, string[] headers)
     {
         for (var i = 0; i < headers.Length; i++)
@@ -223,6 +303,16 @@ public class ExcelArchiveManager : IExcelArchiveManager
         headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
     }
 
+    /// <summary>
+    /// Lee un archivo Excel y reconstruye el <see cref="ExcelAdvancedDataDto"/> con todas las hojas.
+    /// </summary>
+    /// <remarks>
+    /// <para>Busca cada hoja por nombre exacto usando <c>TryGetWorksheet</c>.
+    /// Si una hoja no existe, se omite sin error.</para>
+    /// <para>Las filas con campos clave vacíos se filtran durante la lectura.</para>
+    /// </remarks>
+    /// <param name="stream">Stream del archivo Excel a leer.</param>
+    /// <returns>DTO con datos extraídos del archivo.</returns>
     public Task<ExcelAdvancedDataDto> ReadExcelAsync(Stream stream)
     {
         var data = new ExcelAdvancedDataDto();
@@ -259,6 +349,15 @@ public class ExcelArchiveManager : IExcelArchiveManager
         return Task.FromResult(data);
     }
 
+    /// <summary>
+    /// Lee la hoja "Usuarios" y extrae la lista de usuarios.
+    /// </summary>
+    /// <remarks>
+    /// <para>Filtra filas donde <c>Username</c> y <c>Email</c> están ambos vacíos.
+    /// <c>Phone</c> y <c>TournamentId</c> vacíos se convierten a <c>null</c>.</para>
+    /// </remarks>
+    /// <param name="ws">Hoja de trabajo "Usuarios".</param>
+    /// <returns>Lista de usuarios extraídos.</returns>
     private static List<ExcelUsersDto> ReadUsersSheet(IXLWorksheet ws)
     {
         var users = new List<ExcelUsersDto>();
@@ -289,6 +388,14 @@ public class ExcelArchiveManager : IExcelArchiveManager
         return users;
     }
 
+    /// <summary>
+    /// Lee la hoja "Materiales" y extrae la lista de materiales.
+    /// </summary>
+    /// <remarks>
+    /// <para>Filtra filas donde <c>Marca</c> y <c>Modelo</c> están ambos vacíos.</para>
+    /// </remarks>
+    /// <param name="ws">Hoja de trabajo "Materiales".</param>
+    /// <returns>Lista de materiales extraídos.</returns>
     private static List<ExcelMaterialsDto> ReadMaterialsSheet(IXLWorksheet ws)
     {
         var materials = new List<ExcelMaterialsDto>();
@@ -316,6 +423,15 @@ public class ExcelArchiveManager : IExcelArchiveManager
         return materials;
     }
 
+    /// <summary>
+    /// Lee la hoja "Cuerdas" y extrae la lista de cuerdas.
+    /// </summary>
+    /// <remarks>
+    /// <para>Filtra filas donde <c>Marca</c> y <c>Modelo</c> están ambos vacíos.
+    /// <c>Calibre</c> se lee como <c>double</c>.</para>
+    /// </remarks>
+    /// <param name="ws">Hoja de trabajo "Cuerdas".</param>
+    /// <returns>Lista de cuerdas extraídas.</returns>
     private static List<ExcelCuerdasDto> ReadCuerdasSheet(IXLWorksheet ws)
     {
         var cuerdas = new List<ExcelCuerdasDto>();
@@ -345,6 +461,17 @@ public class ExcelArchiveManager : IExcelArchiveManager
         return cuerdas;
     }
 
+    /// <summary>
+    /// Lee la hoja "Torneo" y extrae la lista de torneos.
+    /// </summary>
+    /// <remarks>
+    /// <para>Filtra filas donde <c>Title</c> está vacío.</para>
+    /// <para>Las fechas <c>StartTournament</c> y <c>EndTournament</c> se parsean con
+    /// <c>DateTime.TryParse</c>. Si falla el parseo, se usan valores por defecto:
+    /// <c>DateTime.UtcNow</c> para inicio y <c>DateTime.UtcNow.AddDays(7)</c> para fin.</para>
+    /// </remarks>
+    /// <param name="ws">Hoja de trabajo "Torneo".</param>
+    /// <returns>Lista de torneos extraídos.</returns>
     private static List<ExcelTournamentDto> ReadTournamentSheet(IXLWorksheet ws)
     {
         var tournaments = new List<ExcelTournamentDto>();
@@ -378,6 +505,14 @@ public class ExcelArchiveManager : IExcelArchiveManager
         return tournaments;
     }
 
+    /// <summary>
+    /// Lee la hoja "Pedidos" y extrae la lista de pedidos.
+    /// </summary>
+    /// <remarks>
+    /// <para>Filtra filas donde <c>Machine</c> está vacío.</para>
+    /// </remarks>
+    /// <param name="ws">Hoja de trabajo "Pedidos".</param>
+    /// <returns>Lista de pedidos extraídos.</returns>
     private static List<ExcelPedidosDto> ReadPedidosSheet(IXLWorksheet ws)
     {
         var pedidos = new List<ExcelPedidosDto>();
@@ -407,6 +542,21 @@ public class ExcelArchiveManager : IExcelArchiveManager
         return pedidos;
     }
 
+    /// <summary>
+    /// Lee la hoja "PedidoLineas" y extrae la lista de líneas de pedido.
+    /// </summary>
+    /// <remarks>
+    /// <para>Filtra filas donde <c>RaquetModel</c> está vacío.</para>
+    /// <para>Parseo especial de tipos:</para>
+    /// <list type="bullet">
+    ///   <item><description><c>Logotype</c> — se convierte de string a bool (<c>.ToLower() == "true"</c>).</description></item>
+    ///   <item><description><c>DateString</c> — <c>DateTime.TryParse</c> con fallback a <c>UtcNow.AddDays(7)</c>.</description></item>
+    ///   <item><description><c>Nudos</c> — se lee como <c>byte</c>.</description></item>
+    ///   <item><description><c>PreStetchV</c> y <c>PreStetchH</c> — se leen como <c>short</c>.</description></item>
+    /// </list>
+    /// </remarks>
+    /// <param name="ws">Hoja de trabajo "PedidoLineas".</param>
+    /// <returns>Lista de líneas extraídas.</returns>
     private static List<ExcelPedidoLineasDto> ReadPedidoLineasSheet(IXLWorksheet ws)
     {
         var lineas = new List<ExcelPedidoLineasDto>();
