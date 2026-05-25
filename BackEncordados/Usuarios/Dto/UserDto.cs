@@ -64,7 +64,7 @@ public record UserDto(
 /// <summary>
 /// DTO para el registro de nuevos usuarios.
 /// Define los datos necesarios para crear una nueva cuenta.
-///
+/// </summary>
 /// <remarks>
 /// Validaciones de contraseña:
 /// - Mínimo 6 caracteres
@@ -113,6 +113,7 @@ public record RegisterDto
 /// <summary>
 /// DTO para el inicio de sesión de usuarios.
 /// Credenciales necesarias para obtener token JWT.
+/// </summary>
 public record LoginDto
 {
     /// <summary>

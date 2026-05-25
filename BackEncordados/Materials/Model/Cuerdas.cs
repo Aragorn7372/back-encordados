@@ -13,6 +13,7 @@ public class Cuerdas: ITimestamped
         public double Precio { get; set; } = -1;
         public FormatoCuerda StringFormat { get; set; } = FormatoCuerda.Reel;
         public StringsType StringsType { get; set; } = StringsType.Polyester;
+        public double Calibre { get; set; }
         
         /// <summary>Fecha de creación en UTC.</summary>
         public DateTime CreatedAt { get; init; } = DateTime.UtcNow;

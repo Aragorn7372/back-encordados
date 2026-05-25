@@ -114,6 +114,7 @@ private readonly Mock<ICuerdasRepositoryType> _mockRepo;
             Modelo = "Pro Tour",
             Stock = 10,
             Precio = 25.99,
+            Calibre = 1.25,
             StringFormat = "Reel",
             StringsType = "Polyester",
             TournamentId = Ulid.NewUlid()
@@ -137,6 +138,7 @@ private readonly Mock<ICuerdasRepositoryType> _mockRepo;
             Modelo = "Pro Tour",
             Stock = 10,
             Precio = 25.99,
+            Calibre = 1.25,
             StringFormat = "Reel",
             StringsType = "Polyester",
             TournamentId = Ulid.NewUlid()
@@ -155,7 +157,7 @@ private readonly Mock<ICuerdasRepositoryType> _mockRepo;
     {
         var id = 1L;
         var existing = CuerdasBuilder.Create(id: id, marca: "Old", modelo: "Model");
-        var patch = new CuerdaPatchDto { Marca = "New", Modelo = "Updated" };
+        var patch = new CuerdaPatchDto { Marca = "New", Modelo = "Updated", Calibre = 1.25 };
         var updated = CuerdasBuilder.Create(id: id, marca: "New", modelo: "Updated");
 
         _mockRepo.Setup(r => r.FindByIdAsync(id)).ReturnsAsync(existing);
@@ -171,7 +173,7 @@ private readonly Mock<ICuerdasRepositoryType> _mockRepo;
     public async Task UpdateAsync_NonExistingCuerda_ReturnsNotFoundError()
     {
         var id = 999L;
-        var patch = new CuerdaPatchDto { Marca = "New" };
+        var patch = new CuerdaPatchDto { Marca = "New", Calibre = 1.25 };
 
         _mockRepo.Setup(r => r.FindByIdAsync(id)).ReturnsAsync((Cuerdas?)null);
 
@@ -233,7 +235,7 @@ private readonly Mock<ICuerdasRepositoryType> _mockRepo;
         existing.Precio = 50.0;
         existing.Stock = 20;
 
-        var patch = new CuerdaPatchDto { Precio = -5.0, Stock = -10 }; 
+        var patch = new CuerdaPatchDto { Precio = -5.0, Stock = -10, Calibre = 0 }; 
         
         _mockRepo.Setup(r => r.FindByIdAsync(id)).ReturnsAsync(existing);
         _mockRepo.Setup(r => r.UpdateAsync(It.IsAny<Cuerdas>(), id)).ReturnsAsync(existing);
@@ -251,7 +253,7 @@ private readonly Mock<ICuerdasRepositoryType> _mockRepo;
         var id = 1L;
         var existing = CuerdasBuilder.Create(id: id);
         
-        var patch = new CuerdaPatchDto { StringFormat = "Set", StringsType = "Multifilament" }; 
+        var patch = new CuerdaPatchDto { StringFormat = "Set", StringsType = "Multifilament", Calibre = 0 }; 
         var updated = CuerdasBuilder.Create(id: id);
         updated.StringFormat = Enum.Parse<FormatoCuerda>("Set");
         updated.StringsType = Enum.Parse<StringsType>("Multifilament");
@@ -271,7 +273,7 @@ private readonly Mock<ICuerdasRepositoryType> _mockRepo;
     {
         var id = 1L;
         var existing = CuerdasBuilder.Create(id: id);
-        var patch = new CuerdaPatchDto { Marca = "New" };
+        var patch = new CuerdaPatchDto { Marca = "New", Calibre = 1.25 };
 
         _mockRepo.Setup(r => r.FindByIdAsync(id)).ReturnsAsync(existing);
         _mockRepo.Setup(r => r.UpdateAsync(It.IsAny<Cuerdas>(), id)).ReturnsAsync((Cuerdas?)null);

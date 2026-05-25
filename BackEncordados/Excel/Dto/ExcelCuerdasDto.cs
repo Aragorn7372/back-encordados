@@ -8,6 +8,7 @@ public class ExcelCuerdasDto
     public string Modelo { get; set; } = string.Empty;
     public int Stock { get; set; }
     public double Precio { get; set; }
+    public double Calibre { get; set; }
     public string StringFormat { get; set; } = string.Empty;
     public string StringsType { get; set; } = string.Empty;
 }

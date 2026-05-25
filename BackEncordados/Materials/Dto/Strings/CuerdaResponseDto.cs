@@ -9,5 +9,6 @@ public record CuerdaResponseDto(
   double Precio,
   string StringFormat,
   string StringsType,
+  double Calibre,
   string ImageUrl
   );

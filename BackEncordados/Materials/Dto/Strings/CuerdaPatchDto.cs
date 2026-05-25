@@ -18,5 +18,6 @@ public class CuerdaPatchDto
     [MinLength(1)]
     [MaxLength(100)]
     public string StringsType { get; set; } =string.Empty;
+    public double Calibre { get; set; }
     public IFormFile? Imagen { get; set; }
 }

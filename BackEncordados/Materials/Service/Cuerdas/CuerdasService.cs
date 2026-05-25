@@ -73,6 +73,7 @@ public class CuerdasService(ILogger<CuerdasService> logger, ICuerdasRepository r
         if(!string.IsNullOrEmpty(request.Modelo)) cuerda.Modelo = request.Modelo;
         if (request.Precio >= 0) cuerda.Precio = request.Precio;
         if (request.Stock >= 0) cuerda.Stock = request.Stock;
+        if (request.Calibre > 0) cuerda.Calibre = request.Calibre;
         if(!string.IsNullOrEmpty(request.StringFormat)) 
             cuerda.StringFormat= Enum.Parse<FormatoCuerda>(request.StringFormat, true);
         if (!string.IsNullOrEmpty(request.StringsType)) 
