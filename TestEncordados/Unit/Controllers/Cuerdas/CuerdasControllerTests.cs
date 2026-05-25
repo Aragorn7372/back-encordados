@@ -38,6 +38,7 @@ public class CuerdasControllerTests
         Precio: 25.99,
         StringFormat: "4 Strings",
         StringsType: "Light",
+        Calibre: 1.25,
         ImageUrl: "test.jpg"
     );
 
@@ -48,6 +49,7 @@ public class CuerdasControllerTests
         Modelo = "EJ81",
         Stock = 10,
         Precio = 25.99,
+        Calibre = 1.25,
         StringFormat = "4 Strings",
         StringsType = "Light"
     };
@@ -58,6 +60,7 @@ public class CuerdasControllerTests
         Modelo = "EJ81",
         Stock = 20,
         Precio = 29.99,
+        Calibre = 1.25,
         StringFormat = "4 Strings",
         StringsType = "Medium"
     };

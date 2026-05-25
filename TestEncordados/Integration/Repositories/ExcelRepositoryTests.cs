@@ -578,6 +578,7 @@ public class ExcelRepositoryTests
             Modelo = "Pure Strike",
             Stock = 20,
             Precio = 12.50,
+            Calibre = 1.25,
             StringFormat = StringFormat.Reel,
             StringsType = StringsType.NaturalGut,
             IsDeleted = false

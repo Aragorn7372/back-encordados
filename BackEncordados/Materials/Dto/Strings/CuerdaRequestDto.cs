@@ -27,5 +27,8 @@ public class CuerdaRequestDto {
     [MinLength(1)]
     [MaxLength(100)]
     public string StringsType { get; set; } =string.Empty;
+    [Required]
+    [Range(0, double.MaxValue)]
+    public double Calibre { get; set; }
     public IFormFile? Imagen { get; set; }
 }

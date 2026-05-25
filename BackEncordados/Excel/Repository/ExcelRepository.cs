@@ -124,6 +124,7 @@ public class ExcelRepository(
                 Modelo = c.Modelo,
                 Stock = c.Stock,
                 Precio = c.Precio,
+                Calibre = c.Calibre,
                 StringFormat = c.StringFormat.ToString(),
                 StringsType = c.StringsType.ToString()
             }).ToList();

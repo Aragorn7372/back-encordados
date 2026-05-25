@@ -373,7 +373,7 @@ public class ExcelServiceTests
     {
         _mockArchive.Setup(a => a.ReadExcelAsync(It.IsAny<Stream>())).ReturnsAsync(new ExcelAdvancedDataDto
         {
-            Cuerdas = [new ExcelCuerdasDto { Marca = "StringX", Modelo = "ModelX", Stock = 10, Precio = 15.50 }]
+            Cuerdas = [new ExcelCuerdasDto { Marca = "StringX", Modelo = "ModelX", Stock = 10, Precio = 15.50, Calibre = 1.25 }]
         });
         _mockCuerdasService.Setup(c => c.CreateAsync(It.IsAny<CuerdaRequestDto>()))
             .ReturnsAsync(default(Result<CuerdaResponseDto, CuerdaError>));
@@ -390,7 +390,7 @@ public class ExcelServiceTests
     {
         _mockArchive.Setup(a => a.ReadExcelAsync(It.IsAny<Stream>())).ReturnsAsync(new ExcelAdvancedDataDto
         {
-            Cuerdas = [new ExcelCuerdasDto { Id = 99, Marca = "StringY", Modelo = "ModelY" }]
+            Cuerdas = [new ExcelCuerdasDto { Id = 99, Marca = "StringY", Modelo = "ModelY", Calibre = 1.25 }]
         });
         _mockCuerdasService.Setup(c => c.UpdateAsync(99, It.IsAny<CuerdaPatchDto>()))
             .ReturnsAsync(default(Result<CuerdaResponseDto, CuerdaError>));
@@ -407,7 +407,7 @@ public class ExcelServiceTests
     {
         _mockArchive.Setup(a => a.ReadExcelAsync(It.IsAny<Stream>())).ReturnsAsync(new ExcelAdvancedDataDto
         {
-            Cuerdas = [new ExcelCuerdasDto { Marca = "FailCuerda", Modelo = "Broken" }]
+            Cuerdas = [new ExcelCuerdasDto { Marca = "FailCuerda", Modelo = "Broken", Calibre = 1.25 }]
         });
         _mockCuerdasService.Setup(c => c.CreateAsync(It.IsAny<CuerdaRequestDto>()))
             .ThrowsAsync(new InvalidOperationException("cuerda error"));

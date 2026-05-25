@@ -11,6 +11,7 @@ public static class CuerdasBuilder
         string modelo = "Pro Tour",
         int stock = 10,
         double precio = 25.99,
+        double calibre = 1.25,
         FormatoCuerda stringFormat = FormatoCuerda.Reel,
         StringsType stringsType = StringsType.Polyester,
         bool isDeleted = false)
@@ -23,6 +24,7 @@ public static class CuerdasBuilder
             Modelo = modelo,
             Stock = stock,
             Precio = precio,
+            Calibre = calibre,
             StringFormat = stringFormat,
             StringsType = stringsType,
             IsDeleted = isDeleted
