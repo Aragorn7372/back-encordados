@@ -1,0 +1,47 @@
+﻿info:
+  name: Login Admin
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{api-url}}/api/Auth/signin"
+  body:
+    type: json
+    data: |-
+      {
+        "Username":"admin_encordados",
+        "Password":"admin123"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const data = res.getBody();
+        bru.setEnvVar("token_admin", data.token);
+        bru.setEnvVar("user_id_admin", data.user.id || "01ARZ3NDEKTSV4RRFFQ69G5FAV");
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Login Admin
+
+  Inicia sesión como administrador para obtener token JWT con rol ADMIN.
+
+  ## HTTP Method
+  `POST /api/Auth/signin`
+
+  ## Responses
+  - **200 OK**: Retorna token JWT y datos del usuario
+  - **401 Unauthorized**: Credenciales inválidas
+
+  ## Test Cases
+  - [ ] Login exitoso con credenciales de admin
+  - [ ] Token admin se guarda en variable {{token_admin}}
+  - [ ] Fallo con credenciales incorrectas

@@ -1,0 +1,61 @@
+info:
+  name: Desasignar supervisor de torneo
+  type: http
+  seq: 1
+
+docs: |
+  # Desasignar Supervisor de Torneo
+
+  Elimina la asignación de un supervisor de un torneo.
+
+  ## Authorization
+  RequireOwnerRole
+
+  ## HTTP Method
+  `PATCH /api/Tournaments/remove-supervisor`
+
+  ## Body (JSON)
+  ```json
+  {
+    "TournamentId": 1,
+    "SupervisorId": "{{supervisor_id_luis}}"
+  }
+  ```
+
+  ## Campos
+  | Campo | Tipo | Descripción |
+  |-------|------|-------------|
+  | `TournamentId` | ULID | ID del torneo (formato ULID) |
+  | `SupervisorId` | ULID | ID del usuario supervisor |
+
+  ## Responses
+  - **200 OK**: `TournamentResponseDetailsDto` con supervisor eliminado
+  - **400 Bad Request**: Datos inválidos
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Owner
+  - **404 Not Found**: Torneo o supervisor no encontrado
+
+  ## Test Cases
+  - [ ] Desasignar supervisor de torneo
+  - [ ] Desasignar supervisor no asignado previamente
+  - [ ] Intentar desasignar de torneo inexistente (404)
+
+http:
+  method: PATCH
+  url: "{{api-url}}/api/Tournaments/remove-supervisor"
+  body:
+    type: json
+    data: |-
+      {
+        "TournamentId": "01KS0Q28TEJ0SYA6JJ5H4W4CMP",
+        "SupervisorId": "{{supervisor_id_luis}}"
+      }
+  auth:
+    type: bearer
+    token: "{{token_owner}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

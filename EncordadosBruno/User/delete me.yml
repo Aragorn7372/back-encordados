@@ -1,0 +1,47 @@
+info:
+  name: delete me
+  type: http
+  seq: 4
+
+http:
+  method: DELETE
+  url: "{{api-url}}/api/User/me"
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: bru.deleteEnvVar("token")
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Eliminar Mi Cuenta
+
+  Elimina la cuenta del usuario autenticado actualmente.
+
+  ## Authorization
+  RequireUserRole
+
+  ## HTTP Method
+  `DELETE /api/User/me`
+
+  ## Responses
+  - **204 No Content**: Cuenta eliminada exitosamente
+  - **401 Unauthorized**: Token inválido o expirado
+  - **404 Not Found**: No se encontró el usuario
+  - **500 Internal Server Error**: Error al eliminar
+
+  ## Test Cases
+  - [ ] Eliminar mi propia cuenta exitosamente
+  - [ ] Intentar sin token (401)
+  - [ ] Verificar que el token se elimina después de la cuenta
+
+  ## Warning
+  Esta acción es irreversible. Después de ejecutarse, el token de autenticación será eliminado.

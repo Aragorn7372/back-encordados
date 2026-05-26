@@ -1,0 +1,43 @@
+info:
+  name: Cambiar estado de todas las líneas - Error pedido no encontrado
+  type: http
+  seq: 19
+
+http:
+  method: PATCH
+  url: "{{api-url}}/api/Purchased/change-status/01KR42ME5P1Q2BGWW1DY11Z5ZZ"
+  body:
+    type: json
+    data: '"IN_PROGRESS"'
+  auth:
+    type: bearer
+    token: "{{token_encorder_carlos}}"
+
+settings:
+  encodeUrl: true
+  timeout: 60000
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Cambiar Estado de Todas las Líneas - Error Pedido No Encontrado
+
+  Verifica que retorna 404 cuando el pedido no existe.
+
+  ## Authorization
+  RequireEncorderRole (Admin, Owner, Encorder)
+
+  ## HTTP Method
+  `PATCH /api/Purchased/change-status/{id}`
+
+  ## Body (JSON)
+  ```json
+  "IN_PROGRESS"
+  ```
+
+  ## Responses
+  - **404 Not Found**: Pedido no encontrado
+
+  ## Test Cases
+  - [ ] ID de pedido que no existe
+  - [ ] ID con formato ULID inválido

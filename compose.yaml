@@ -1,0 +1,7 @@
+﻿services:
+  backencordados:
+    image: backencordados
+    build:
+      context: .
+      dockerfile: BackEncordados/Dockerfile
+

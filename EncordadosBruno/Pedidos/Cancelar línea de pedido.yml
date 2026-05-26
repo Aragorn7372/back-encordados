@@ -1,0 +1,54 @@
+info:
+  name: Cancelar línea de pedido
+  type: http
+  seq: 15
+
+http:
+  method: PATCH
+  url: "{{api-url}}/api/Purchased/lineas/01KS0Q28TEW6AVWP9S8WVJ9Z5G/cancel"
+  auth:
+    type: bearer
+    token: "{{token_juan}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Cancelar Línea de Pedido
+
+  Cancela una línea de pedido cambiando su estado a CANCELED.
+
+  ## Authorization
+  RequireUserRole (Admin, Owner, Encorder, User)
+
+  ## Restricciones por Rol
+  - **Admin, Owner, Encorder**: Pueden cancelar líneas en cualquier estado
+  - **User**: Solo pueden cancelar si el estado es `PENDING` o `IN_PROGRESS`
+
+  ## HTTP Method
+  `PATCH /api/Purchased/lineas/{lineaId}/cancel`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `lineaId` | string (ULID) | ID único de la línea de pedido |
+
+  ## Responses
+  - **200 OK**: `PedidoLineaResponseDto` con estado `CANCELED`
+  - **400 Bad Request**: Usuario no puede cancelar (estado COMPLETED o DELIVERED_TOpLAYER)
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos
+  - **404 Not Found**: Línea no encontrada
+
+  ## Test Cases
+  - [ ] Admin cancela línea exitosamente
+  - [ ] Encorder cancela línea exitosamente
+  - [ ] User cancela línea en estado PENDING
+  - [ ] User cancela línea en estado IN_PROGRESS
+  - [ ] User intenta cancelar línea COMPLETED (400)
+  - [ ] User intenta cancelar línea DELIVERED_TOpLAYER (400)
+  - [ ] Línea inexistente (404)
+  - [ ] Sin token (401)

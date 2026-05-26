@@ -1,0 +1,44 @@
+info:
+  name: Cambiar estado de todas las líneas - Error estado inválido
+  type: http
+  seq: 18
+
+http:
+  method: PATCH
+  url: "{{api-url}}/api/Purchased/change-status/01KS0Q28TEW6AVWP9S8WVJ9Z5G"
+  body:
+    type: json
+    data: '"INVALID_STATUS"'
+  auth:
+    type: bearer
+    token: "{{token_encorder_carlos}}"
+
+settings:
+  encodeUrl: true
+  timeout: 60000
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Cambiar Estado de Todas las Líneas - Error Estado Inválido
+
+  Verifica que retorna 400 cuando se envía un estado inválido.
+
+  ## Authorization
+  RequireEncorderRole (Admin, Owner, Encorder)
+
+  ## HTTP Method
+  `PATCH /api/Purchased/change-status/{id}`
+
+  ## Body (JSON)
+  ```json
+  "INVALID_STATUS"
+  ```
+
+  ## Responses
+  - **400 Bad Request**: Estado inválido
+
+  ## Test Cases
+  - [ ] Enviar estado que no existe en el enum
+  - [ ] Enviar string vacío
+  - [ ] Enviar números

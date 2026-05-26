@@ -1,0 +1,21 @@
+info:
+  name: Health
+  type: folder
+  seq: 7
+
+docs: |
+  # Health
+
+  Endpoints de verificación de estado del sistema.
+
+  ## Descripción
+  Esta carpeta contiene los endpoints para:
+  - **GET /health**: Verificación del estado del API
+
+  ## Características
+  - Endpoint público (no requiere autenticación)
+  - Útil para monitoring y load balancers
+  - Verifica que el servicio esté respondiendo
+
+request:
+  auth: inherit

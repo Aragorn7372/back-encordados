@@ -1,0 +1,80 @@
+info:
+  name: Crear torneo como Owner
+  type: http
+  seq: 1
+
+docs: |
+  # Crear Torneo como Owner
+
+  Crea un nuevo torneo en el sistema usando el endpoint de Owner.
+
+  ## Authorization
+  RequireOwnerRole
+
+  ## HTTP Method
+  `POST /api/Tournaments/owner-create`
+
+  ## Body (JSON)
+  ```json
+  {
+    "Name": "Torneo Nacional Madrid 2026",
+    "EndTournament": "2026-09-15T00:00:00Z",
+    "StartTournament": "2026-09-01T00:00:00Z",
+    "Logotype": "/logos/torneo-nacional-madrid.jpg"
+  }
+  ```
+
+  ## Campos
+  | Campo | Tipo | Descripción |
+  |-------|------|-------------|
+  | `Name` | string | Nombre del torneo |
+  | `StartTournament` | datetime | Fecha de inicio |
+  | `EndTournament` | datetime | Fecha de fin |
+  | `Logotype` | string | Ruta al logo del torneo |
+
+  ## Responses
+  - **201 Created**: `TournamentResponseDto` con datos del torneo creado
+  - **400 Bad Request**: Datos inválidos
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Owner
+  - **404 Not Found**: Usuario no encontrado
+   - **409 Conflict**: Ya existe un torneo con ese nombre
+
+   ## Test Cases
+   - [ ] Crear torneo con todos los campos (201)
+   - [ ] Crear torneo sin logo (201)
+   - [ ] Crear torneo con datos inválidos (400)
+   - [ ] Crear torneo con nombre duplicado (409)
+   - [ ] Crear torneo sin token (401)
+   - [ ] Crear torneo con token de Encoder (403)
+
+
+http:
+  method: POST
+  url: "{{api-url}}/api/Tournaments/owner-create"
+  body:
+    type: multipart-form
+    data:
+      - name: Name
+        type: text
+        value: Torneo Nacional Madrid 2026
+      - name: StartTournament
+        type: text
+        value: 2026-09-01T00:00:00Z
+      - name: EndTournament
+        type: text
+        value: 2026-09-15T00:00:00Z
+      - name: Logotype
+        type: file
+        value:
+          - ../image/Captura de pantalla 2026-02-21 221125.png
+   
+  auth:
+    type: bearer
+    token: "{{token_owner}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
