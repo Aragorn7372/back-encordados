@@ -7,8 +7,41 @@ using Microsoft.IdentityModel.Tokens;
 namespace BackEncordados.Usuarios.Service.Auth;
 
 /// <summary>
-/// Implementación de IJwtService para generación y validación de tokens JWT.
+/// Implementación de <see cref="IJwtService"/> para generación y validación de tokens JWT
+/// usando HMAC-SHA256 con clave simétrica.
 /// </summary>
+/// <remarks>
+/// <para><b>Configuración requerida (appsettings.json):</b></para>
+/// <list type="table">
+///   <listheader>
+///     <term>Clave</term>
+///     <description>Propósito</description>
+///     <description>Valor por defecto</description>
+///   </listheader>
+///   <item>
+///     <term><c>Jwt:Key</c></term>
+///     <description>Clave secreta para firmar los tokens (obligatorio).</description>
+///     <description><em>(sin valor por defecto — lanza <see cref="InvalidOperationException"/>)</em></description>
+///   </item>
+///   <item>
+///     <term><c>Jwt:Issuer</c></term>
+///     <description>Emisor del token.</description>
+///     <description><c>"Encordados"</c></description>
+///   </item>
+///   <item>
+///     <term><c>Jwt:Audience</c></term>
+///     <description>Audiencia del token.</description>
+///     <description><c>"Encorders"</c></description>
+///   </item>
+///   <item>
+///     <term><c>Jwt:ExpireMinutes</c></term>
+///     <description>Tiempo de expiración en minutos.</description>
+///     <description><c>60</c></description>
+///   </item>
+/// </list>
+/// <para>Claims incluidos en el token: Sub (username), Email, Role, NameIdentifier (ULID), Jti (UUID único).</para>
+/// <para>Algoritmo de firma: <c>SecurityAlgorithms.HmacSha256</c>.</para>
+/// </remarks>
 public class JwtService(
     IConfiguration configuration,
     ILogger<JwtService> logger
@@ -20,9 +53,19 @@ public class JwtService(
     /// <summary>
     /// Genera un token JWT firmado con la información del usuario.
     /// </summary>
-    /// <param name="user">Usuario para el token.</param>
-    /// <returns>Token JWT firmado.</returns>
-    /// <exception cref="InvalidOperationException">Si la clave JWT no está configurada.</exception>
+    /// <remarks>
+    /// <para><b>Flujo:</b></para>
+    /// <list type="number">
+    ///   <item><description>Lee la configuración JWT (Key, Issuer, Audience, ExpireMinutes) del appsettings.</description></item>
+    ///   <item><description>Crea la clave simétrica y las credenciales de firma HMAC-SHA256.</description></item>
+    ///   <item><description>Construye los claims: Sub (username), Email, Role, NameIdentifier (ULID del usuario), Jti (UUID).</description></item>
+    ///   <item><description>Genera el JWT con el handler estándar y lo serializa a string.</description></item>
+    /// </list>
+    /// <para><b>Casos borde:</b> Si <c>Jwt:Key</c> no está configurada, lanza <see cref="InvalidOperationException"/>.</para>
+    /// </remarks>
+    /// <param name="user">Usuario para el que se genera el token.</param>
+    /// <returns>Token JWT firmado como string.</returns>
+    /// <exception cref="InvalidOperationException">Si la clave JWT no está configurada en appsettings.</exception>
     public string GenerateToken(User user)
     {
         var key = _configuration["Jwt:Key"]
@@ -59,10 +102,21 @@ public class JwtService(
     }
 
     /// <summary>
-    /// Valida un token JWT y extrae el nombre de usuario.
+    /// Valida un token JWT y extrae el nombre de usuario (Sub claim).
     /// </summary>
+    /// <remarks>
+    /// <para><b>Validaciones aplicadas:</b></para>
+    /// <list type="bullet">
+    ///   <item><description>Validez de la clave de firma (<c>ValidateIssuerSigningKey</c>).</description></item>
+    ///   <item><description>Emisor (<c>ValidateIssuer</c>).</description></item>
+    ///   <item><description>Audiencia (<c>ValidateAudience</c>).</description></item>
+    ///   <item><description>Tiempo de vida (<c>ValidateLifetime</c>) con <c>ClockSkew = TimeSpan.Zero</c>.</description></item>
+    /// </list>
+    /// <para>Si la validación falla por cualquier razón (token expirado, firma inválida, etc.),
+    /// retorna <c>null</c> en lugar de lanzar excepción.</para>
+    /// </remarks>
     /// <param name="token">Token JWT a validar.</param>
-    /// <returns>Username del token o null si es inválido.</returns>
+    /// <returns>Username extraído del claim Sub, o <c>null</c> si el token es inválido.</returns>
     public string? ValidateToken(string token)
     {
         try
