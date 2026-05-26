@@ -10,21 +10,78 @@ using Serilog;
 namespace BackEncordados.Infraestructure;
 
 /// <summary>
-/// Extensiones de configuración de repositorios.
+/// Configuración y registro de todos los repositorios de la aplicación
+/// en el contenedor de inyección de dependencias.
 /// </summary>
+/// <remarks>
+/// <para>Proporciona un método de extensión sobre <c>IServiceCollection</c> que
+/// registra los repositorios como servicios <c>Scoped</c>.</para>
+/// <para><b>Repositorios registrados:</b></para>
+/// <list type="table">
+///   <listheader>
+///     <term>Interfaz</term>
+///     <description>Implementación</description>
+///     <description>Módulo</description>
+///   </listheader>
+///   <item>
+///     <term><c>IUserRepository</c></term>
+///     <description>UserRepository</description>
+///     <description>Usuarios</description>
+///   </item>
+///   <item>
+///     <term><c>IPuchasedRepository</c></term>
+///     <description>PurchasedReposirtory</description>
+///     <description>Pedidos</description>
+///   </item>
+///   <item>
+///     <term><c>ITournamentRepository</c></term>
+///     <description>TournamentRepository</description>
+///     <description>Talleres</description>
+///   </item>
+///   <item>
+///     <term><c>IMaterialsRepository</c></term>
+///     <description>MaterialsRepository</description>
+///     <description>Materials</description>
+///   </item>
+///   <item>
+///     <term><c>ICuerdasRepository</c></term>
+///     <description>CuerdasRepository</description>
+///     <description>Materials</description>
+///   </item>
+///   <item>
+///     <term><c>IExportRepository</c></term>
+///     <description>ExportRepository</description>
+///     <description>Export</description>
+///   </item>
+///   <item>
+///     <term><c>IExcelRepository</c></term>
+///     <description>ExcelRepository</description>
+///     <description>Excel</description>
+///   </item>
+/// </list>
+/// <para>Usar <c>services.AddRepositories()</c> en <c>Program.cs</c>.</para>
+/// </remarks>
 public static class RepositoriesConfig
 {
     /// <summary>
-    /// Registra todos los repositorios en el contenedor de dependencias.
-    /// 
-    /// <para>
-    /// El repositorio de pedidos se elige según configuration["Pedidos:RepositoryType"]:
-    /// <list type="bullet">
-    ///   <item><b>MongoDbNative:</b> Usa PedidosNativeRepository (driver nativo, funcional)</item>
-    ///   <item><b>MongoDbEfCore:</b> Usa PedidosEfCoreRepository (Entity Framework Core, tiene bug EF-272)</item>
-    /// </list>
-    /// </para>
+    /// Registra todos los repositorios de la aplicación como servicios <c>Scoped</c>
+    /// en el contenedor de DI.
     /// </summary>
+    /// <remarks>
+    /// <para><b>Flujo:</b></para>
+    /// <list type="number">
+    ///   <item><description>Registra <c>IUserRepository → UserRepository</c> (Usuarios).</description></item>
+    ///   <item><description>Registra <c>IPuchasedRepository → PurchasedReposirtory</c> (Pedidos).</description></item>
+    ///   <item><description>Registra <c>ITournamentRepository → TournamentRepository</c> (Talleres).</description></item>
+    ///   <item><description>Registra <c>IMaterialsRepository → MaterialsRepository</c> (Materials).</description></item>
+    ///   <item><description>Registra <c>ICuerdasRepository → CuerdasRepository</c> (Cuerdas).</description></item>
+    ///   <item><description>Registra <c>IExportRepository → ExportRepository</c> (Exportación BD).</description></item>
+    ///   <item><description>Registra <c>IExcelRepository → ExcelRepository</c> (Exportación Excel).</description></item>
+    /// </list>
+    /// <para>Todos se registran como <c>Scoped</c> (una instancia por request HTTP).</para>
+    /// </remarks>
+    /// <param name="services">Colección de servicios de DI.</param>
+    /// <returns>La misma colección de servicios para encadenamiento fluido.</returns>
     public static IServiceCollection AddRepositories(
         this IServiceCollection services)
     {
