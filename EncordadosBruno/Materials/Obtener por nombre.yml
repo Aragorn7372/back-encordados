@@ -1,0 +1,47 @@
+info:
+  name: Obtener material por nombre
+  type: http
+  seq: 3
+
+docs: |
+  # Obtener Material por Nombre
+
+  Obtiene los detalles de un material específico buscando por nombre/modelo.
+
+  ## Authorization
+  RequireOwnerRole
+
+  ## HTTP Method
+  `GET /api/Materials/name/{name}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `name` | string | Nombre o modelo del material |
+
+  ## Responses
+  - **200 OK**: `MaterialResponseDto` con datos del material
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Owner
+   - **404 Not Found**: Material no encontrado
+
+   ## Test Cases
+   - [ ] Obtener material existente por nombre (200)
+   - [ ] Obtener material con nombre inexistente (404)
+   - [ ] Obtener material con nombre vacío (400)
+   - [ ] Obtener material sin token (401)
+   - [ ] Obtener material con token de Encoder (403)
+
+
+http:
+  method: GET
+  url: "{{api-url}}/api/Materials/name/Grip"
+  auth:
+    type: bearer
+    token: "{{token_owner}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

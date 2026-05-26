@@ -1,0 +1,32 @@
+info:
+  name: Listar encordadores sin resultados
+  type: http
+  seq: 7
+
+docs: |
+  # Listar encordadores de torneo sin encordadores
+
+  Verifica que retorna lista vacía cuando el torneo no tiene encordadores asignados.
+  El torneo 1 tiene usuarios con rol USER, no ENCORDER (en seed data).
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `GET /api/User/encorders/{tournamentId}`
+
+  ## Test Cases
+  - [ ] Verificar que retorna vacío para torneo sin encordadores
+
+http:
+  method: GET
+  url: "{{api-url}}/api/User/encorders?page=0&size=10"
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

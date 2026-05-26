@@ -1,0 +1,44 @@
+info:
+  name: Obtener torneo por id
+  type: http
+  seq: 3
+
+http:
+  method: GET
+  url: "{{api-url}}/api/Tournaments/01KS0Q28TE9N7TG55K98TCB4X0"
+  auth:
+    type: bearer
+    token: "{{token_encorder_carlos}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Obtener Torneo por ID
+
+  Obtiene los detalles de un torneo específico por su ID.
+
+  ## Authorization
+  RequireEncorderRole
+
+  ## HTTP Method
+  `GET /api/Tournaments/{id}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | long | ID numérico del torneo |
+
+  ## Responses
+  - **200 OK**: `TournamentResponseDetailsDto` con datos completos del torneo
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Encorder
+  - **404 Not Found**: Torneo no encontrado
+
+  ## Test Cases
+  - [ ] Obtener torneo existente por ID válido
+  - [ ] Intentar obtener torneo inexistente (404)
+  - [ ] Intentar sin permisos de Encorder (403)

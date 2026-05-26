@@ -1,0 +1,46 @@
+info:
+  name: Cancelar línea de pedido (Encoder)
+  type: http
+  seq: 12
+
+http:
+  method: PATCH
+  url: "{{api-url}}/api/Purchased/lineas/01KR424NQJDA22KTM967R9RWAN/cancel"
+  auth:
+    type: bearer
+    token: "{{token_encoder}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Cancelar Línea de Pedido como Encoder
+
+  Cancela una línea de pedido existente.
+
+  ## Authorization
+  RequireEncoderRole
+
+  ## HTTP Method
+  `DELETE /api/Purchased/lineas/{lineaId}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `lineaId` | string | ID de la línea de pedido |
+
+  ## Responses
+  - **204 No Content**: Línea cancelada exitosamente
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Encoder
+   - **404 Not Found**: Línea no encontrada
+
+   ## Test Cases
+   - [ ] Cancelar línea existente (204)
+   - [ ] Cancelar línea ya cancelada (400)
+   - [ ] Cancelar línea inexistente (404)
+   - [ ] Cancelar sin token (401)
+   - [ ] Cancelar con token de Admin (403)

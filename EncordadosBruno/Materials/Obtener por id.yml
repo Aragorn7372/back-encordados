@@ -1,0 +1,46 @@
+info:
+  name: Obtener material por id
+  type: http
+  seq: 2
+
+docs: |
+  # Obtener Material por ID
+
+  Obtiene los detalles de un material específico por su ID.
+
+  ## Authorization
+  RequireOwnerRole
+
+  ## HTTP Method
+  `GET /api/Materials/{id}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | long | ID numérico del material |
+
+  ## Responses
+  - **200 OK**: `MaterialResponseDto` con datos del material
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Owner
+   - **404 Not Found**: Material no encontrado
+
+   ## Test Cases
+   - [ ] Obtener material existente por ID (200)
+   - [ ] Obtener material con ID inexistente (404)
+   - [ ] Obtener material sin token (401)
+   - [ ] Obtener material con token de Encoder (403)
+
+
+http:
+  method: GET
+  url: "{{api-url}}/api/Materials/1"
+  auth:
+    type: bearer
+    token: "{{token_owner}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

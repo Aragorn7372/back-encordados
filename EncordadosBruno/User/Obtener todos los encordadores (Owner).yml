@@ -1,0 +1,66 @@
+info:
+  name: Obtener todos los encordadores (Owner)
+  type: http
+  seq: 7
+
+http:
+  method: GET
+  url: "{{api-url}}/api/User/encorders?page=0&size=10&sortBy=name&direction=asc"
+  params:
+    - name: page
+      value: "0"
+      type: query
+    - name: size
+      value: "10"
+      type: query
+    - name: sortBy
+      value: name
+      type: query
+    - name: direction
+      value: asc
+      type: query
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Obtener Todos los Encordadores como Owner
+
+  Lista usuarios con rol Encordador de un torneo específico con soporte para filtros y paginación.
+
+  ## Authorization
+  RequireOwnerRole
+
+  ## HTTP Method
+  `GET /api/User/encorders/{tournamentId}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `tournamentId` | long | ID del torneo (obligatorio) |
+
+  ## Parameters (Query)
+  | Parámetro | Tipo | Default | Descripción |
+  |-----------|------|---------|-------------|
+  | `search` | string | "" | Búsqueda por nombre/username |
+  | `page` | int | 0 | Número de página |
+  | `size` | int | 10 | Tamaño de página |
+  | `sortBy` | string | "name" | Campo de ordenamiento |
+  | `direction` | string | "asc" | Dirección (asc/desc) |
+
+  ## Responses
+  - **200 OK**: `PageResponseDto<UserWithIdDto>` con solo encordadores (campos: userId, username, imageUrl, name)
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Owner
+
+  ## Test Cases
+  - [ ] Listar encordadores con paginación como Owner
+  - [ ] Buscar encordador por nombre
+  - [ ] Listar encordadores de torneo sin encordadores (vacío)
+  - [ ] Intentar sin permisos de Owner (403)

@@ -1,0 +1,54 @@
+info:
+  name: Login Supervisor Luis
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{api-url}}/api/Auth/signin"
+  body:
+    type: json
+    data: |-
+      {
+        "Username": "supervisor_luis",
+        "Password": "supervisor123"
+      }
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const data = res.getBody();
+        bru.setEnvVar("token_luis_supervisor", data.token);
+        bru.setEnvVar("user_id_luis", data.user.id || "01KR424NQJR7CEHQW4STCQ3GGE");
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Login Supervisor Luis
+
+  Inicia sesión como supervisor para obtener token JWT.
+
+  ## HTTP Method
+  `POST /api/Auth/iniciar-sesion`
+
+  ## Body (JSON)
+  ```json
+  {
+    "Email": "luis@encordados.com",
+    "Password": "supervisor123"
+  }
+  ```
+
+  ## Responses
+  - **200 OK**: Retorna token JWT
+  - **401 Unauthorized**: Credenciales inválidas
+
+  ## Test Cases
+  - [ ] Login exitoso con credenciales de supervisor
+  - [ ] Token supervisor se guarda en variable {{token_luis_supervisor}}
+  - [ ] Fallo con credenciales incorrectas

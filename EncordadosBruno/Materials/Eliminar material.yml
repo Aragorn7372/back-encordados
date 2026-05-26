@@ -1,0 +1,44 @@
+info:
+  name: Eliminar material
+  type: http
+  seq: 6
+
+docs: |
+  # Eliminar Material
+
+  Elimina un material del sistema.
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `DELETE /api/Materials/{id}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | long | ID numérico del material |
+
+  ## Responses
+  - **200 OK**: `{ "message": "Material deleted successfully" }`
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Admin
+  - **404 Not Found**: Material no encontrado
+
+  ## Test Cases
+  - [ ] Eliminar material existente
+  - [ ] Intentar eliminar material inexistente (404)
+  - [ ] Intentar sin permisos de Admin (403)
+
+http:
+  method: DELETE
+  url: "{{api-url}}/api/Materials/1"
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

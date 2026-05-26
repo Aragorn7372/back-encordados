@@ -1,0 +1,44 @@
+info:
+  name: Eliminar cuerda
+  type: http
+  seq: 6
+
+docs: |
+  # Eliminar Cuerda
+
+  Elimina una cuerda del sistema.
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `DELETE /api/Cuerdas/{id}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | long | ID numérico de la cuerda |
+
+  ## Responses
+  - **200 OK**: `{ "message": "cuerda deleted successfully" }`
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Admin
+  - **404 Not Found**: Cuerda no encontrada
+
+  ## Test Cases
+  - [ ] Eliminar cuerda existente
+  - [ ] Intentar eliminar cuerda inexistente (404)
+  - [ ] Intentar sin permisos de Admin (403)
+
+http:
+  method: DELETE
+  url: "{{api-url}}/api/Cuerdas/1"
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

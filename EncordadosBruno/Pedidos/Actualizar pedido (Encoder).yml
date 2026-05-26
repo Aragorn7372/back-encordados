@@ -1,0 +1,68 @@
+info:
+  name: Actualizar pedido (Encoder)
+  type: http
+  seq: 5
+
+http:
+  method: PUT
+  url: "{{api-url}}/api/Purchased/01KR42ME5P1Q2BGWW1DY11Z4TJ"
+  body:
+    type: json
+    data: |-
+      {
+        "PlayerName": "jugador_juan",
+        "AssignedToName": "carlos_encordador_actualizado",
+        "Machine": "Máquina Beta-2",
+        "Comments": "Comentarios actualizados",
+        "PayStatus": "PAID"
+      }
+  auth:
+    type: bearer
+    token: "{{token_encoder}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Actualizar Pedido como Encoder
+
+  Actualiza los datos de un pedido existente.
+
+  ## Authorization
+  RequireEncoderRole
+
+  ## HTTP Method
+  `PUT /api/Purchased/{id}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | string | ID del pedido |
+
+  ## Body (JSON)
+  ```json
+  {
+    "PlayerName": "jugador_juan",
+    "AssignedToName": "carlos_encordador_actualizado",
+    "Machine": "Máquina Beta-2",
+    "Comments": "Comentarios actualizados",
+    "PayStatus": "PAID"
+  }
+  ```
+
+  ## Responses
+  - **200 OK**: `PurchasedResponseDto` con datos actualizados
+  - **400 Bad Request**: Datos inválidos
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Encoder
+   - **404 Not Found**: Pedido no encontrado
+
+   ## Test Cases
+   - [ ] Actualizar pedido con todos los campos (200)
+   - [ ] Actualizar pedido con campos inválidos (400)
+   - [ ] Actualizar pedido inexistente (404)
+   - [ ] Actualizar sin token (401)
+   - [ ] Actualizar con token de Admin (403)

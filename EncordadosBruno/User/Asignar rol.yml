@@ -1,0 +1,62 @@
+info:
+  name: Asignar rol a usuario
+  type: http
+  seq: 16
+
+http:
+  method: POST
+  url: "{{api-url}}/api/User/{{user_id_juan}}/roles"
+  body:
+    type: json
+    data: '"encordador"'
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+runtime:
+  variables:
+    - name: user_id_juan
+      value: 01KRZAJVCA133EKNDN01TCBMJS
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Asignar Rol a Usuario
+
+  Asigna un rol específico a un usuario existente.
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `POST /api/User/{id}/roles`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | ULID | ID único del usuario |
+
+  ## Body (JSON)
+  ```json
+  "ADMIN"
+  ```
+
+  ## Responses
+  - **204 No Content**: Rol asignado exitosamente
+  - **400 Bad Request**: Nombre de rol inválido
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Admin
+  - **404 Not Found**: Usuario no encontrado
+  - **409 Conflict**: El usuario ya tiene ese rol
+
+  ## Test Cases
+  - [ ] Asignar rol ADMIN a usuario
+  - [ ] Asignar rol ENCORDER a usuario
+  - [ ] Asignar rol USER a usuario
+  - [ ] Asignar rol inexistente (400)
+  - [ ] Asignar rol a usuario inexistente (404)
+  - [ ] Intentar sin permisos de Admin (403)
