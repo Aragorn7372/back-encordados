@@ -17,6 +17,42 @@ using ValidationError = BackEncordados.Talleres.Error.ValidationError;
 
 namespace BackEncordados.Talleres.Service;
 
+/// <summary>
+/// Implementación de <see cref="ITournamentService"/> que orquesta las operaciones de negocio
+/// sobre torneos coordinando el repositorio de torneos, repositorio de usuarios y Cloudinary.
+/// </summary>
+/// <remarks>
+/// <para><b>Dependencias inyectadas:</b></para>
+/// <list type="table">
+///   <listheader>
+///     <term>Parámetro</term>
+///     <term>Tipo</term>
+///     <description>Propósito</description>
+///   </listheader>
+///   <item>
+///     <term><c>logger</c></term>
+///     <term><c>ILogger&lt;TournamentService&gt;</c></term>
+///     <description>Logging de todas las operaciones de torneos.</description>
+///   </item>
+///   <item>
+///     <term><c>repository</c></term>
+///     <term><see cref="ITournamentRepository"/></term>
+///     <description>Acceso a datos de torneos (CRUD + asignaciones).</description>
+///   </item>
+///   <item>
+///     <term><c>userRepository</c></term>
+///     <term><see cref="IUserRepository"/></term>
+///     <description>Acceso a datos de usuarios para resolver workers, supervisores y owners.</description>
+///   </item>
+///   <item>
+///     <term><c>cloudinary</c></term>
+///     <term><see cref="ICloudinaryService"/></term>
+///     <description>Gestión de logotipos de torneos (subida, borrado, resolución de URLs).</description>
+///   </item>
+/// </list>
+/// <para>El método privado <c>BuildResponseAsync</c> es el corazón del servicio: construye el DTO detallado
+/// resolviendo todos los IDs de usuarios (workers, supervisores, owner) a sus DTOs correspondientes.</para>
+/// </remarks>
 public class TournamentService(
     ILogger<TournamentService> logger,
     ITournamentRepository repository, 
@@ -24,6 +60,24 @@ public class TournamentService(
     ICloudinaryService cloudinary
     ): ITournamentService
 {
+    /// <summary>
+    /// Construye la respuesta detallada de un torneo resolviendo todos los IDs de usuarios.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Flujo:</b></para>
+    /// <list type="number">
+    ///   <item><description>Recolecta todos los IDs de <c>WorkersList</c>, <c>SupervisorList</c> y <c>Owner</c>.</description></item>
+    ///   <item><description>Consulta los usuarios en lote mediante <c>userRepository.FindByIdsAsync</c>.</description></item>
+    ///   <item><description>Si el owner no está en el resultado, intenta cargarlo individualmente (o usa <c>preloadedOwner</c> si se proporciona).</description></item>
+    ///   <item><description>Mapea workers, supervisores y owner a DTOs mediante <see cref="UserMapper.ToDto"/>.</description></item>
+    ///   <item><description>Construye el <see cref="TournamentResponseDetailsDto"/> con todas las listas.</description></item>
+    /// </list>
+    /// <para><b>Casos borde:</b> Si un usuario referenciado en WorkersList o SupervisorList no existe en la BD,
+    /// se omite silenciosamente (no se incluye en la lista del DTO).</para>
+    /// </remarks>
+    /// <param name="tournament">Entidad de torneo con sus listas de IDs.</param>
+    /// <param name="preloadedOwner">Usuario owner precargado (opcional, para evitar consultas duplicadas).</param>
+    /// <returns>DTO detallado del torneo o error si el owner no existe.</returns>
     private async Task<Result<TournamentResponseDetailsDto, DomainErrors>> BuildResponseAsync(Tournaments tournament, User? preloadedOwner = null)
     {
         var allIds = tournament.WorkersList
@@ -63,6 +117,19 @@ public class TournamentService(
             tournament.ToTournamentResponseDetailsDto(workers, owner, supervisors, cloudinary));
     }
 
+    /// <summary>
+    /// Obtiene el detalle completo de un torneo por ULID.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Flujo:</b></para>
+    /// <list type="number">
+    ///   <item><description>Busca el torneo por ULID en el repositorio.</description></item>
+    ///   <item><description>Si no existe o está eliminado, retorna <see cref="TournamentNotFoundError"/>.</description></item>
+    ///   <item><description>Construye la respuesta detallada resolviendo usuarios mediante <c>BuildResponseAsync</c>.</description></item>
+    /// </list>
+    /// </remarks>
+    /// <param name="id">ULID del torneo.</param>
+    /// <returns>DTO detallado del torneo o <see cref="TournamentNotFoundError"/>.</returns>
     public async Task<Result<TournamentResponseDetailsDto, DomainErrors>> GetTournament(Ulid id)
     {
         logger.LogInformation("Getting tournament {Id}", id);
@@ -75,6 +142,11 @@ public class TournamentService(
         return await BuildResponseAsync(tournament);
     }
 
+    /// <summary>
+    /// Obtiene una lista paginada de torneos con filtros.
+    /// </summary>
+    /// <param name="filter">DTO con filtros de búsqueda, usuario y paginación.</param>
+    /// <returns>Página con DTOs básicos de torneo (sin listas de usuarios).</returns>
     public async Task<PageResponseDto<TournamentResponseDto>> GetAllTournamentsAsync(FilterTournamentDto filter)
     {
         var paged= await repository.FindAllAsync(filter);
@@ -91,6 +163,20 @@ public class TournamentService(
         );
     }
 
+    /// <summary>
+    /// Crea un nuevo torneo (solo administradores, especificando OwnerId).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Flujo:</b></para>
+    /// <list type="number">
+    ///   <item><description>Valida que el usuario <c>OwnerId</c> exista y tenga rol OWNER.</description></item>
+    ///   <item><description>Si se proporciona logotipo, lo sube a Cloudinary.</description></item>
+    ///   <item><description>Mapea el DTO a entidad y persiste mediante <c>repository.SaveAsync</c>.</description></item>
+    ///   <item><description>Construye la respuesta detallada con el owner precargado.</description></item>
+    /// </list>
+    /// </remarks>
+    /// <param name="adminRequest">DTO con nombre, OwnerId, fechas y logotipo opcional.</param>
+    /// <returns>DTO detallado del torneo creado o error si el owner no es válido.</returns>
     public async Task<Result<TournamentResponseDetailsDto, DomainErrors>> CreateTournament(
         TournamentAdminRequestDto adminRequest)
     {
@@ -110,6 +196,20 @@ public class TournamentService(
         return await BuildResponseAsync(saved, user);
     }
 
+    /// <summary>
+    /// Actualiza parcialmente un torneo existente.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Flujo:</b></para>
+    /// <list type="number">
+    ///   <item><description>Busca el torneo por ID. Si no existe, retorna <see cref="TournamentNotFoundError"/>.</description></item>
+    ///   <item><description>Aplica cambios: fechas (si se proporcionan), nombre (si no es null/vacío), logotipo (subiendo nuevo y eliminando anterior si no es el default).</description></item>
+    ///   <item><description>Persiste mediante <c>repository.UpdateAsync</c>.</description></item>
+    /// </list>
+    /// </remarks>
+    /// <param name="id">ULID del torneo.</param>
+    /// <param name="request">DTO con campos opcionales (nombre, fechas, logotipo).</param>
+    /// <returns>DTO básico actualizado o error.</returns>
     public async Task<Result<TournamentResponseDto, TournamentsErrors>> UpdateTournament(Ulid id, TournamentPatchDto request)
     {
         logger.LogInformation("Updating tournament {Id}", id);
@@ -141,6 +241,11 @@ public class TournamentService(
             : Result.Failure<TournamentResponseDto, TournamentsErrors>(new ConflictError("Error updating tournament"));
     }
 
+    /// <summary>
+    /// Elimina un torneo (soft delete).
+    /// </summary>
+    /// <param name="id">ULID del torneo a eliminar.</param>
+    /// <returns>Unit en éxito o <see cref="TournamentNotFoundError"/> si no existe.</returns>
     public async Task<Result<Unit, TournamentsErrors>> DeleteTournament(Ulid id)
     {
         logger.LogInformation("Deleting tournament {Id}", id);
@@ -149,6 +254,21 @@ public class TournamentService(
             : Result.Failure<Unit, TournamentsErrors>(new TournamentNotFoundError());
     }
 
+    /// <summary>
+    /// Asigna un trabajador a una máquina dentro del torneo.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Flujo:</b></para>
+    /// <list type="number">
+    ///   <item><description>Parsea el <c>UserId</c> string a ULID. Si no es válido, retorna <see cref="ValidationError"/>.</description></item>
+    ///   <item><description>Delega la asignación a <c>repository.AsignWorker</c>.</description></item>
+    ///   <item><description>Si el torneo no existe, retorna <see cref="TournamentNotFoundError"/>.</description></item>
+    ///   <item><description>Construye la respuesta detallada del torneo actualizado.</description></item>
+    /// </list>
+    /// </remarks>
+    /// <param name="tournamentId">ULID del torneo.</param>
+    /// <param name="request">DTO con UserId (string) y MachineName.</param>
+    /// <returns>DTO detallado del torneo actualizado o error.</returns>
     public async Task<Result<TournamentResponseDetailsDto, DomainErrors>> AssignWorkerMachine(Ulid tournamentId, WorkerMachineAssignmentRequestDto request)
     {
         logger.LogInformation("Assigning worker machine {Id}", tournamentId);
@@ -166,6 +286,12 @@ public class TournamentService(
         return await BuildResponseAsync(tournamentUpdated);
     }
 
+    /// <summary>
+    /// Desasigna un trabajador del torneo y elimina sus asignaciones de máquina.
+    /// </summary>
+    /// <param name="tournamentId">ULID del torneo.</param>
+    /// <param name="request">ULID del trabajador en formato string.</param>
+    /// <returns>DTO detallado del torneo actualizado o error.</returns>
     public async Task<Result<TournamentResponseDetailsDto, DomainErrors>> UnassignWorkerMachine(Ulid tournamentId, string request)
     {
         logger.LogInformation("Unassigning worker machine {Id}", tournamentId);
@@ -183,6 +309,20 @@ public class TournamentService(
         return await BuildResponseAsync(tournamentUpdated);
     }
 
+    /// <summary>
+    /// Obtiene todas las asignaciones trabajador-máquina de un torneo.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Flujo:</b></para>
+    /// <list type="number">
+    ///   <item><description>Obtiene las asignaciones del repositorio.</description></item>
+    ///   <item><description>Si el torneo no existe, retorna <see cref="TournamentNotFoundError"/>.</description></item>
+    ///   <item><description>Recolecta los IDs de workers y los resuelve a DTOs mediante <c>userRepository.FindByIdsAsync</c>.</description></item>
+    ///   <item><description>Construye la lista de <see cref="WorkerMachineAssignmentResponseDto"/>.</description></item>
+    /// </list>
+    /// </remarks>
+    /// <param name="tournamentId">ULID del torneo.</param>
+    /// <returns>Lista de asignaciones con datos del usuario, o error si el torneo no existe.</returns>
     public async Task<Result<IEnumerable<WorkerMachineAssignmentResponseDto>, TournamentsErrors>> GetAssignedWorkerMachines(Ulid tournamentId)
     {
         logger.LogInformation("Getting assigned worker machines for tournament {Id}", tournamentId);
@@ -208,6 +348,11 @@ public class TournamentService(
         return Result.Success<IEnumerable<WorkerMachineAssignmentResponseDto>, TournamentsErrors>(responseDtos);
     }
 
+    /// <summary>
+    /// Busca un torneo por su nombre exacto.
+    /// </summary>
+    /// <param name="name">Nombre exacto del torneo.</param>
+    /// <returns>DTO detallado del torneo o <see cref="TournamentNotFoundError"/>.</returns>
     public async Task<Result<TournamentResponseDetailsDto, DomainErrors>> GetTournamentByName(string name)
     {
         logger.LogInformation("Getting tournament {Id}", name);
@@ -220,6 +365,15 @@ public class TournamentService(
         return await BuildResponseAsync(tournament);
     }
 
+    /// <summary>
+    /// Crea un torneo desde el propietario autenticado (ownerId extraído del JWT).
+    /// </summary>
+    /// <remarks>
+    /// <para>Similar a <c>CreateTournament</c> pero el ownerId se pasa como parámetro en lugar de venir del DTO.</para>
+    /// </remarks>
+    /// <param name="request">DTO con nombre, fechas y logotipo opcional.</param>
+    /// <param name="ownerId">ULID del propietario (extraído del token JWT).</param>
+    /// <returns>DTO detallado del torneo creado o error.</returns>
     public async Task<Result<TournamentResponseDetailsDto, DomainErrors>> OwnerCreateTournament(TournamentRequestDto request, Ulid ownerId) {
         var user= await userRepository.FindByIdAsync(ownerId);
         if (user is null || user.Role!= User.UserRoles.OWNER) 
@@ -236,6 +390,15 @@ public class TournamentService(
         return await BuildResponseAsync(saved, user);
     }
 
+    /// <summary>
+    /// Asigna un supervisor a un torneo.
+    /// </summary>
+    /// <remarks>
+    /// <para>Parsea el <c>SupervisorId</c> string a ULID. Si no es válido, retorna <see cref="ValidationError"/>.
+    /// Delega la asignación a <c>repository.AsignSupervisor</c>.</para>
+    /// </remarks>
+    /// <param name="request">DTO con TournamentId y SupervisorId (string).</param>
+    /// <returns>DTO detallado del torneo actualizado o error.</returns>
     public async Task<Result<TournamentResponseDetailsDto, DomainErrors>> AssingSupervisor(SupervisorAsignmentRequestDto request) {
         
         logger.LogInformation("Assigning worker machine {Id}", request.TournamentId);
@@ -253,6 +416,14 @@ public class TournamentService(
         return await BuildResponseAsync(tournamentUpdated);
     }
 
+    /// <summary>
+    /// Desasigna un supervisor de un torneo.
+    /// </summary>
+    /// <remarks>
+    /// <para>Parsea el <c>SupervisorId</c> string a ULID. Delega la operación a <c>repository.RemoveSupervisor</c>.</para>
+    /// </remarks>
+    /// <param name="request">DTO con TournamentId y SupervisorId (string).</param>
+    /// <returns>DTO detallado del torneo actualizado o error.</returns>
     public async Task<Result<TournamentResponseDetailsDto, DomainErrors>> AnassingSupervisor(SupervisorAsignmentRequestDto request) {
         logger.LogInformation("Assigning worker machine {Id}", request.TournamentId);
         var supervisorId= Ulid.TryParse(request.SupervisorId, out var ulid) ? ulid : Ulid.Empty;
