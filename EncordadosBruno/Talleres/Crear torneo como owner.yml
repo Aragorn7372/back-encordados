@@ -3,6 +3,35 @@ info:
   type: http
   seq: 1
 
+http:
+  method: POST
+  url: "{{api-url}}/api/Tournaments/owner-create"
+  body:
+    type: multipart-form
+    data:
+      - name: Name
+        type: text
+        value: Torneo Nacional Madrid 2026
+      - name: StartTournament
+        type: text
+        value: 2026-09-01T00:00:00Z
+      - name: EndTournament
+        type: text
+        value: 2026-09-15T00:00:00Z
+      - name: Logotype
+        type: file
+        value:
+          - C:\Users\Aragorn\Desktop\docker-enviroment\back-encordados\EncordadosBruno\image\Captura de pantalla 2026-02-21 221125.png
+  auth:
+    type: bearer
+    token: "{{token_owner}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
 docs: |
   # Crear Torneo como Owner
 
@@ -47,34 +76,3 @@ docs: |
    - [ ] Crear torneo con nombre duplicado (409)
    - [ ] Crear torneo sin token (401)
    - [ ] Crear torneo con token de Encoder (403)
-
-
-http:
-  method: POST
-  url: "{{api-url}}/api/Tournaments/owner-create"
-  body:
-    type: multipart-form
-    data:
-      - name: Name
-        type: text
-        value: Torneo Nacional Madrid 2026
-      - name: StartTournament
-        type: text
-        value: 2026-09-01T00:00:00Z
-      - name: EndTournament
-        type: text
-        value: 2026-09-15T00:00:00Z
-      - name: Logotype
-        type: file
-        value:
-          - ../image/Captura de pantalla 2026-02-21 221125.png
-   
-  auth:
-    type: bearer
-    token: "{{token_owner}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5

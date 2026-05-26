@@ -12,7 +12,7 @@ http:
       - name: file
         type: file
         value:
-          - ../image/database_export_2026-05-16.zip
+          - C:\Users\Aragorn\Desktop\docker-enviroment\back-encordados\EncordadosBruno\image\database_export_2026-05-16.zip
   auth:
     type: bearer
     token: "{{token_admin}}"

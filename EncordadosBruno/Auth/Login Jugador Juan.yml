@@ -18,13 +18,12 @@ http:
 runtime:
   variables:
     - name: api-url
-      value: http://localhost:5032
+      value: https://localhost
   scripts:
     - type: after-response
       code: |-
         const data = res.getBody();
         bru.setEnvVar("token_juan", data.token);
-        bru.setEnvVar("user_id_juan", data.user.id || "01KR424NQJR7CEHQW4STCQ3GGE");
 
 settings:
   encodeUrl: true

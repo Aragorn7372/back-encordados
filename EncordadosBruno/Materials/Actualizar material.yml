@@ -3,6 +3,44 @@ info:
   type: http
   seq: 5
 
+http:
+  method: PUT
+  url: "{{api-url}}/api/Materials/1"
+  body:
+    type: multipart-form
+    data:
+      - name: Marca
+        type: text
+        value: Head
+      - name: TournamentId
+        type: text
+        value: "1"
+      - name: Modelo
+        type: text
+        value: Grip Pro Elite
+      - name: Stock
+        type: text
+        value: "100"
+      - name: Precio
+        type: text
+        value: "15.99"
+      - name: Type
+        type: text
+        value: Grip
+      - name: Imagen
+        type: file
+        value:
+          - C:\Users\Aragorn\Desktop\docker-enviroment\back-encordados\EncordadosBruno\image\Captura de pantalla 2026-02-21 221125.png
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
 docs: |
   # Actualizar Material
 
@@ -45,40 +83,3 @@ docs: |
   - [ ] Actualizar modelo de material
   - [ ] Intentar actualizar material inexistente (404)
   - [ ] Intentar sin permisos de Admin (403)
-
-http:
-  method: PUT
-  url: "{{api-url}}/api/Materials/1"
-  body:
-    type: multipart-form
-    data:
-      - name: Marca
-        type: text
-        value: Head
-      - name: TournamentId
-        type: text
-        value: "1"
-      - name: Modelo
-        type: text
-        value: Grip Pro Elite
-      - name: Stock
-        type: text
-        value: "100"
-      - name: Precio
-        type: text
-        value: "15.99"
-      - name: Type
-        type: text
-        value: Grip
-      - name: Imagen
-        type: file
-        value: []
-  auth:
-    type: bearer
-    token: "{{token_admin}}"
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5
