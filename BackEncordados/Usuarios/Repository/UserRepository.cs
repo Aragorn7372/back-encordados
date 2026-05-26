@@ -6,8 +6,35 @@ using Microsoft.EntityFrameworkCore;
 namespace BackEncordados.Usuarios.Repository;
 
 /// <summary>
-/// Implementación del repositorio de usuarios.
+/// Implementación de <see cref="IUserRepository"/> que accede a la entidad <see cref="User"/>
+/// a través de <see cref="UserDbContext"/> con Entity Framework Core.
 /// </summary>
+/// <remarks>
+/// <para>Proporciona operaciones CRUD completas sobre usuarios:</para>
+/// <list type="table">
+///   <listheader>
+///     <term>Operación</term>
+///     <description>Comportamiento</description>
+///   </listheader>
+///   <item>
+///     <term>Consultas</term>
+///     <description>Todas las consultas usan <c>AsNoTracking()</c> para optimizar rendimiento de solo lectura.</description>
+///   </item>
+///   <item>
+///     <term>Soft Delete</term>
+///     <description><c>DeleteAsync</c> marca <c>IsDeleted=true</c> y reemplaza el username con un prefijo <c>deleted_</c> para liberar la constraint única.</description>
+///   </item>
+///   <item>
+///     <term>Paginación</term>
+///     <description><c>FindAllAsync</c> soporta ordenación por name, username, email, createdAt o id, en dirección asc/desc.</description>
+///   </item>
+///   <item>
+///     <term>Búsqueda</term>
+///     <description>Filtro textual aplicado a email, username, name y phone mediante <c>EF.Functions.Like</c>.</description>
+///   </item>
+/// </list>
+/// <para>Los usuarios eliminados lógicamente se excluyen automáticamente de todas las consultas (<c>!u.IsDeleted</c>).</para>
+/// </remarks>
 public class UserRepository(
     UserDbContext context,
     ILogger<UserRepository> logger
@@ -70,6 +97,16 @@ public class UserRepository(
         return (items, totalCount);
     }
 
+    /// <summary>
+    /// Cambia el rol de un usuario en la base de datos.
+    /// </summary>
+    /// <remarks>
+    /// <para>Usa seguimiento de cambios (sin AsNoTracking) porque necesita persistir la modificación.</para>
+    /// <para>Si el usuario ya tiene el rol especificado, retorna <c>false</c> sin realizar cambios.</para>
+    /// </remarks>
+    /// <param name="id">ULID del usuario.</param>
+    /// <param name="role">Nuevo rol a asignar.</param>
+    /// <returns><c>true</c> si el rol se actualizó, <c>false</c> si el usuario no existe o ya tenía ese rol.</returns>
     public async Task<bool> UserChageRoleAsync(Ulid id, string role)
     {
         var user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);
@@ -126,6 +163,15 @@ public class UserRepository(
             .ToListAsync();
     }
 
+    /// <summary>
+    /// Busca múltiples usuarios por sus ULIDs.
+    /// </summary>
+    /// <remarks>
+    /// <para>Si la lista de IDs está vacía, retorna una colección vacía sin realizar consulta a la BD.</para>
+    /// <para>Usa <c>AsNoTracking()</c> para optimizar rendimiento.</para>
+    /// </remarks>
+    /// <param name="ids">Colección de ULIDs a buscar.</param>
+    /// <returns>Colección de usuarios encontrados (los IDs no existentes se omiten silenciosamente).</returns>
     public async Task<IEnumerable<User>> FindByIdsAsync(IEnumerable<Ulid> ids)
     {
         var idList = ids.ToList();
