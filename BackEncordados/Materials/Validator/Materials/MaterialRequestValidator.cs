@@ -5,8 +5,23 @@ using FluentValidation;
 
 namespace BackEncordados.Materials.Validator.Materials;
 
+/// <summary>
+/// Validador FluentValidation para <see cref="MaterialRequestDto"/>.
+/// </summary>
+/// <remarks>
+/// <para>Reglas de validación:</para>
+/// <list type="bullet">
+///   <item><description><c>TournamentId</c> — obligatorio, debe existir en BD y no estar eliminado (validación asíncrona).</description></item>
+///   <item><description><c>Type</c> — obligatorio, debe ser un valor válido de <see cref="MaterialType"/> (case-insensitive).</description></item>
+/// </list>
+/// <para>Depende de <see cref="ITournamentRepository"/> para la validación de existencia del torneo.</para>
+/// </remarks>
 public class MaterialRequestValidator : AbstractValidator<MaterialRequestDto>
 {
+    /// <summary>
+    /// Inicializa el validador con las reglas de negocio para la creación de materiales.
+    /// </summary>
+    /// <param name="tournamentRepository">Repositorio de torneos para validar existencia.</param>
     public MaterialRequestValidator(ITournamentRepository tournamentRepository)
     {
         RuleFor(x => x.TournamentId)
