@@ -13,9 +13,46 @@ using BCrypt.Net;
 namespace BackEncordados.Usuarios.Service.Auth;
 
 /// <summary>
-/// Servicio de autenticación usando Patrón Result.
-/// Encapsula la lógica de autenticación con Programación Orientada al Resultado.
+/// Servicio de autenticación que orquesta registro, inicio de sesión, cambio de contraseña
+/// y recuperación de cuenta usando el patrón Result para manejo de errores tipados.
 /// </summary>
+/// <remarks>
+/// <para><b>Dependencias inyectadas:</b></para>
+/// <list type="table">
+///   <listheader>
+///     <term>Parámetro</term>
+///     <term>Tipo</term>
+///     <description>Propósito</description>
+///   </listheader>
+///   <item>
+///     <term><c>userRepository</c></term>
+///     <term><see cref="IUserRepository"/></term>
+///     <description>Acceso a datos de usuarios (búsqueda por username, email, ID; guardar y actualizar).</description>
+///   </item>
+///   <item>
+///     <term><c>jwtService</c></term>
+///     <term><see cref="IJwtService"/></term>
+///     <description>Generación de tokens JWT firmados con la información del usuario.</description>
+///   </item>
+///   <item>
+///     <term><c>logger</c></term>
+///     <term><c>ILogger&lt;AuthService&gt;</c></term>
+///     <description>Logging de eventos de autenticación (registros, inicios de sesión, cambios de contraseña).</description>
+///   </item>
+///   <item>
+///     <term><c>cache</c></term>
+///     <term><see cref="ICacheService"/></term>
+///     <description>Almacenamiento temporal de GUIDs de cambio de contraseña con expiración de 60 minutos.</description>
+///   </item>
+///   <item>
+///     <term><c>emailService</c></term>
+///     <term><see cref="IEmailService"/></term>
+///     <description>Envío de emails de bienvenida y recuperación de contraseña.</description>
+///   </item>
+/// </list>
+/// <para>Sanitiza los usernames eliminando caracteres de nueva línea (\n, \r) antes de procesarlos.</para>
+/// <para>Las contraseñas se hashean con BCrypt con factor de trabajo 11.</para>
+/// </remarks>
 public class AuthService(
     IUserRepository userRepository,
     IJwtService jwtService,
@@ -25,6 +62,23 @@ public class AuthService(
 ) : IAuthService {
     private const string CacheKey = CacheKeys.PasswordChange;
 
+    /// <summary>
+    /// Registra un nuevo usuario en el sistema.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Flujo:</b></para>
+    /// <list type="number">
+    ///   <item><description>Sanitiza el username eliminando saltos de línea.</description></item>
+    ///   <item><description>Verifica duplicados de username y email mediante <c>CheckDuplicatesAsync</c>.</description></item>
+    ///   <item><description>Si hay duplicados, retorna <see cref="ConflictError"/>.</description></item>
+    ///   <item><description>Genera el hash BCrypt de la contraseña con workFactor 11.</description></item>
+    ///   <item><description>Crea la entidad <see cref="User"/> con rol USER y la persiste.</description></item>
+    ///   <item><description>Genera el token JWT y la respuesta de autenticación.</description></item>
+    ///   <item><description>Envía email de bienvenida de forma asíncrona (fire-and-forget con TapAsync).</description></item>
+    /// </list>
+    /// </remarks>
+    /// <param name="dto">Datos de registro: username, email y password.</param>
+    /// <returns><see cref="AuthResponseDto"/> con token JWT y datos del usuario, o error de conflicto/validación.</returns>
     public async Task<Result<AuthResponseDto, AuthError>> SignUpAsync(RegisterDto dto)
     {
         var sanitizedUsername = dto.Username.Replace("\n", "").Replace("\r", "");
@@ -59,6 +113,11 @@ public class AuthService(
         });
     }
 
+    /// <summary>
+    /// Envía un email de bienvenida al nuevo usuario registrado.
+    /// </summary>
+    /// <param name="username">Nombre de usuario para personalizar el mensaje.</param>
+    /// <param name="email">Dirección de correo del destinatario.</param>
     private async Task SendWelcomeEmail(string username, string email) {
         var message = new EmailMessage {
             To = email,
@@ -69,6 +128,23 @@ public class AuthService(
         await emailService.EnqueueEmailAsync(message);
     }
 
+    /// <summary>
+    /// Inicia sesión con username y password.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Flujo:</b></para>
+    /// <list type="number">
+    ///   <item><description>Sanitiza el username eliminando saltos de línea.</description></item>
+    ///   <item><description>Busca el usuario por username en el repositorio.</description></item>
+    ///   <item><description>Si no existe, retorna <see cref="UnauthorizedError"/> (mensaje genérico "credenciales invalidas").</description></item>
+    ///   <item><description>Verifica la contraseña con BCrypt.Verify.</description></item>
+    ///   <item><description>Si la contraseña no coincide, retorna <see cref="UnauthorizedError"/>.</description></item>
+    ///   <item><description>Genera el token JWT y la respuesta de autenticación.</description></item>
+    /// </list>
+    /// <para>Por seguridad, el mensaje de error es idéntico tanto si el usuario no existe como si la contraseña es incorrecta.</para>
+    /// </remarks>
+    /// <param name="dto">Credenciales de acceso: username y password.</param>
+    /// <returns><see cref="AuthResponseDto"/> con token JWT, o <see cref="UnauthorizedError"/> si las credenciales son inválidas.</returns>
     public async Task<Result<AuthResponseDto, AuthError>> SignInAsync(LoginDto dto)
     {
         var sanitizedUsername = dto.Username.Replace("\n", "").Replace("\r", "");
@@ -99,6 +175,24 @@ public class AuthService(
         return Result.Success<AuthResponseDto, AuthError>(authResponse);
     }
 
+    /// <summary>
+    /// Cambia la contraseña de un usuario usando un GUID de verificación almacenado en caché.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Flujo:</b></para>
+    /// <list type="number">
+    ///   <item><description>Busca el GUID en caché para obtener el ULID del usuario.</description></item>
+    ///   <item><description>Si la clave de caché expiró o no existe, retorna <see cref="PasswordChangeExpiredTimeout"/>.</description></item>
+    ///   <item><description>Busca el usuario por ULID. Si no existe, retorna <see cref="PasswordChangeExpiredTimeout"/>.</description></item>
+    ///   <item><description>Verifica que la nueva contraseña no sea igual a la anterior usando BCrypt.Verify.</description></item>
+    ///   <item><description>Si es igual, retorna <see cref="ValidationError"/>.</description></item>
+    ///   <item><description>Hashea la nueva contraseña y actualiza el usuario.</description></item>
+    ///   <item><description>Invalida la clave de caché del GUID para evitar reuso.</description></item>
+    /// </list>
+    /// </remarks>
+    /// <param name="guid">GUID de verificación unique recibido por email.</param>
+    /// <param name="dto">DTO con la nueva contraseña y su confirmación.</param>
+    /// <returns>Unit en éxito, o error si el GUID expiró, el usuario no existe, o la contraseña se repite.</returns>
     public async Task<Result<Unit, AuthError>> ChangePasswordAsync(Guid guid, ChangePasswordRequestDto dto) {
         logger.LogInformation("ChangePassword request for guid: {Guid}", guid);
         var cached= await cache.GetAsync<Ulid?>(CacheKey+guid);
@@ -124,7 +218,19 @@ public class AuthService(
                 .TapError((() => logger.LogInformation("user no found with {Id}",cached.Value)));
     }
     
-
+    /// <summary>
+    /// Inicia el proceso de recuperación de contraseña enviando un email con enlace de cambio.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Flujo:</b></para>
+    /// <list type="number">
+    ///   <item><description>Busca el usuario por email en el repositorio.</description></item>
+    ///   <item><description>Si el email existe, genera un GUID, lo almacena en caché con expiración de 60 minutos asociado al ULID del usuario, y envía el email con el enlace.</description></item>
+    ///   <item><description>Si el email no existe, retorna <see cref="UserNotFoundError"/>.</description></item>
+    /// </list>
+    /// </remarks>
+    /// <param name="userEmail">Dirección de correo electrónico registrada.</param>
+    /// <returns>Unit en éxito (email enviado), o <see cref="UserNotFoundError"/> si el email no está registrado.</returns>
     public async Task<Result<Unit, AuthError>> GetEmailAsync(string userEmail) {
         return await userRepository.FindByEmailAsync(userEmail) is { } result
             ? await Result.Success<Unit, AuthError>(Unit.Value)
@@ -137,6 +243,11 @@ public class AuthService(
                 .TapError((() => logger.LogInformation("user no found with email {Email}", userEmail)));
     }
     
+    /// <summary>
+    /// Envía un email con el enlace de cambio de contraseña.
+    /// </summary>
+    /// <param name="email">Dirección de correo del destinatario.</param>
+    /// <param name="guid">GUID único para identificar la solicitud de cambio.</param>
     private Task SendPasswordChangeEmail(string email, string guid) {
         var passwordUrl= $"{AppConfig.Current.FrontendUrl}/changePassword?guid={guid}";
         var message = new EmailMessage {
@@ -148,6 +259,11 @@ public class AuthService(
         return emailService.EnqueueEmailAsync(message);
     }
     
+    /// <summary>
+    /// Verifica que no existan duplicados de username ni email durante el registro.
+    /// </summary>
+    /// <param name="dto">DTO de registro con username y email.</param>
+    /// <returns>UnitResult.Success si no hay duplicados, o <see cref="ConflictError"/> si existe conflicto.</returns>
     private async Task<UnitResult<AuthError>> CheckDuplicatesAsync(RegisterDto dto)
     {
         var existingUser = await userRepository.FindByUsernameAsync(dto.Username);
@@ -165,6 +281,11 @@ public class AuthService(
         return UnitResult.Success<AuthError>();
     }
     
+    /// <summary>
+    /// Genera la respuesta de autenticación combinando el token JWT con los datos del usuario.
+    /// </summary>
+    /// <param name="user">Usuario autenticado para el que se genera la respuesta.</param>
+    /// <returns><see cref="AuthResponseDto"/> con token y datos del usuario (ID, username, email, rol, createdAt).</returns>
     private AuthResponseDto GenerateAuthResponse(User user)
     {
         var token = jwtService.GenerateToken(user);

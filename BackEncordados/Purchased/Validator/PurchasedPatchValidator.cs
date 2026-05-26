@@ -3,8 +3,15 @@ using FluentValidation;
 
 namespace BackEncordados.Purchased.Validator;
 
+/// <summary>
+/// Validates a <see cref="PurchasedPatchDto"/> for partial order updates.
+/// Only validates fields that are present (non-null), allowing granular patches.
+/// </summary>
 public class PurchasedPatchValidator : AbstractValidator<PurchasedPatchDto>
 {
+    /// <summary>
+    /// Defines length constraints for Machine and Comments when they are provided.
+    /// </summary>
     public PurchasedPatchValidator()
     {
         RuleFor(x => x.Machine)
