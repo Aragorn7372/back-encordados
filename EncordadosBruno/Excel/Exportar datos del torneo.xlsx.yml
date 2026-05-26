@@ -8,7 +8,7 @@ http:
   url: "{{api-url}}/api/excel/export/{{tournamentId}}"
   auth:
     type: bearer
-    token: "{{token_luis_supervisor}}"
+    token: "{{token_admin}}"
 
 runtime:
   variables:

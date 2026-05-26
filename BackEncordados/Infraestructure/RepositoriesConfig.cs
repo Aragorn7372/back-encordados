@@ -49,14 +49,44 @@ namespace BackEncordados.Infraestructure;
 ///     <description>Materials</description>
 ///   </item>
 ///   <item>
-///     <term><c>IExportRepository</c></term>
-///     <description>ExportRepository</description>
-///     <description>Export</description>
+///     <term><c>IExcelUserRepository</c></term>
+///     <description>ExcelUserRepository</description>
+///     <description>Excel — Users</description>
 ///   </item>
 ///   <item>
-///     <term><c>IExcelRepository</c></term>
-///     <description>ExcelRepository</description>
-///     <description>Excel</description>
+///     <term><c>IExcelPedidosRepository</c></term>
+///     <description>ExcelPedidosRepository</description>
+///     <description>Excel — Pedidos</description>
+///   </item>
+///   <item>
+///     <term><c>IExcelTalleresRepository</c></term>
+///     <description>ExcelTalleresRepository</description>
+///     <description>Excel — Talleres</description>
+///   </item>
+///   <item>
+///     <term><c>IExcelMaterialsRepository</c></term>
+///     <description>ExcelMaterialsRepository</description>
+///     <description>Excel — Materials</description>
+///   </item>
+///   <item>
+///     <term><c>IExportUserRepository</c></term>
+///     <description>ExportUserRepository</description>
+///     <description>Export — Users</description>
+///   </item>
+///   <item>
+///     <term><c>IExportPedidosRepository</c></term>
+///     <description>ExportPedidosRepository</description>
+///     <description>Export — Pedidos</description>
+///   </item>
+///   <item>
+///     <term><c>IExportTalleresRepository</c></term>
+///     <description>ExportTalleresRepository</description>
+///     <description>Export — Talleres</description>
+///   </item>
+///   <item>
+///     <term><c>IExportMaterialsRepository</c></term>
+///     <description>ExportMaterialsRepository</description>
+///     <description>Export — Materials</description>
 ///   </item>
 /// </list>
 /// <para>Usar <c>services.AddRepositories()</c> en <c>Program.cs</c>.</para>
@@ -75,8 +105,14 @@ public static class RepositoriesConfig
     ///   <item><description>Registra <c>ITournamentRepository → TournamentRepository</c> (Talleres).</description></item>
     ///   <item><description>Registra <c>IMaterialsRepository → MaterialsRepository</c> (Materials).</description></item>
     ///   <item><description>Registra <c>ICuerdasRepository → CuerdasRepository</c> (Cuerdas).</description></item>
-    ///   <item><description>Registra <c>IExportRepository → ExportRepository</c> (Exportación BD).</description></item>
-    ///   <item><description>Registra <c>IExcelRepository → ExcelRepository</c> (Exportación Excel).</description></item>
+    ///   <item><description>Registra <c>IExcelUserRepository → ExcelUserRepository</c> (Excel — Users).</description></item>
+    ///   <item><description>Registra <c>IExcelPedidosRepository → ExcelPedidosRepository</c> (Excel — Pedidos).</description></item>
+    ///   <item><description>Registra <c>IExcelTalleresRepository → ExcelTalleresRepository</c> (Excel — Talleres).</description></item>
+    ///   <item><description>Registra <c>IExcelMaterialsRepository → ExcelMaterialsRepository</c> (Excel — Materials).</description></item>
+    ///   <item><description>Registra <c>IExportUserRepository → ExportUserRepository</c> (Export — Users).</description></item>
+    ///   <item><description>Registra <c>IExportPedidosRepository → ExportPedidosRepository</c> (Export — Pedidos).</description></item>
+    ///   <item><description>Registra <c>IExportTalleresRepository → ExportTalleresRepository</c> (Export — Talleres).</description></item>
+    ///   <item><description>Registra <c>IExportMaterialsRepository → ExportMaterialsRepository</c> (Export — Materials).</description></item>
     /// </list>
     /// <para>Todos se registran como <c>Scoped</c> (una instancia por request HTTP).</para>
     /// </remarks>
@@ -92,8 +128,16 @@ public static class RepositoriesConfig
         services.AddScoped<ITournamentRepository, TournamentRepository>();
         services.AddScoped<IMaterialsRepository, MaterialsRepository>();
         services.AddScoped<ICuerdasRepository, CuerdasRepository>();
-services.AddScoped<IExportRepository, ExportRepository>();
-        services.AddScoped<IExcelRepository, ExcelRepository>();
+
+        services.AddScoped<IExcelUserRepository, ExcelUserRepository>();
+        services.AddScoped<IExcelPedidosRepository, ExcelPedidosRepository>();
+        services.AddScoped<IExcelTalleresRepository, ExcelTalleresRepository>();
+        services.AddScoped<IExcelMaterialsRepository, ExcelMaterialsRepository>();
+
+        services.AddScoped<IExportUserRepository, ExportUserRepository>();
+        services.AddScoped<IExportPedidosRepository, ExportPedidosRepository>();
+        services.AddScoped<IExportTalleresRepository, ExportTalleresRepository>();
+        services.AddScoped<IExportMaterialsRepository, ExportMaterialsRepository>();
 
         return services;
     }
