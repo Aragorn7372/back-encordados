@@ -46,6 +46,22 @@ public static class AuthenticationConfig
                 RoleClaimType = System.Security.Claims.ClaimTypes.Role
             };
             options.MapInboundClaims = false;
+
+            // SignalR WebSocket no puede mandar el header Authorization en el upgrade;
+            // el cliente pasa el token como query string `?access_token=...`.
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    var accessToken = context.Request.Query["access_token"];
+                    var path = context.HttpContext.Request.Path;
+                    if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hub"))
+                    {
+                        context.Token = accessToken;
+                    }
+                    return Task.CompletedTask;
+                }
+            };
         });
 
         Log.Information("Configurando políticas de autorización...");

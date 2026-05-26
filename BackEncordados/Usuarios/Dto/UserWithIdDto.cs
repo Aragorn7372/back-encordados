@@ -4,5 +4,8 @@ public record UserWithIdDto(
     string UserId,
     string Username,
     string ImageUrl,
-    string Name
+    string Name,
+    string Email,
+    string Role,
+    string? TournamentId
 );

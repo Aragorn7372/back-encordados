@@ -118,7 +118,7 @@ public class MaterialsController(
     [ProducesResponseType(typeof(MaterialResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(policy: "RequireAdminRole")]
+    [Authorize(policy: "RequireOwnerRole")]
     public async Task<IActionResult> Delete(long id) {
         logger.LogInformation("Delete material with id {Id}", id);
         return await service.DeleteAsync(id).Match(
