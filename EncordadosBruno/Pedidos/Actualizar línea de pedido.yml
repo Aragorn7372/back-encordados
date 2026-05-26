@@ -1,0 +1,91 @@
+info:
+  name: Actualizar línea de pedido
+  type: http
+  seq: 14
+
+http:
+  method: PUT
+  url: "{{api-url}}/api/Purchased/lineas/01KR42ME5P1Q2BGWW1DY11Z5AA"
+  body:
+    type: json
+    data: |-
+      {
+        "RaquetModel": "Babolat Pure Drive",
+            "Nudos": 2,
+        "Logotype": true,
+        "Color": "Verde",
+        "Status": "IN_PROGRESS",
+        "StringSetup": {
+          "StringV": "Head Sonic Pro",
+          "TensionV": 25.0,
+          "PreStetchV": 1,
+          "TensionH": 25.5,
+          "PreStetchH": 1
+        }
+      }
+  auth:
+    type: bearer
+    token: "{{token_encoder}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Actualizar Línea de Pedido
+
+  Actualiza los datos de una línea de pedido existente.
+
+  ## Authorization
+  RequireEncoderRole
+
+  ## HTTP Method
+  `PUT /api/Purchased/lineas/{lineaId}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `lineaId` | string (ULID) | ID único de la línea |
+
+  ## Body (JSON - todos los campos opcionales)
+  ```json
+  {
+    "RaquetModel": "Babolat Pure Drive",
+    "Nudos": 1,
+    "Logotype": true,
+    "Color": "Verde",
+    "Status": "IN_PROGRESS",
+    "StringSetup": {
+      "StringV": "Head Sonic Pro",
+      "TensionV": 25.0,
+      "PreStetchV": 1
+    }
+  }
+  ```
+
+  ## Campos Actualizables
+  | Campo | Tipo | Descripción |
+  |-------|------|-------------|
+  | `RaquetModel` | string? | Modelo de raqueta |
+  | `Nudos` | byte? | Número de nudos |
+  | `Logotype` | bool? | Si lleva logo |
+  | `Color` | string? | Color |
+  | `Status` | string? | Estado de la línea |
+  | `StringSetup` | object? | Configuración de cuerdas |
+
+  ## Responses
+  - **200 OK**: `PedidoLineaResponseDto` con datos actualizados
+  - **400 Bad Request**: Datos inválidos
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Encoder
+   - **404 Not Found**: Línea no encontrada
+
+   ## Test Cases
+   - [ ] Actualizar todos los campos opcionales (200)
+   - [ ] Actualizar solo un campo (200)
+   - [ ] Actualizar con datos inválidos (400)
+   - [ ] Actualizar línea inexistente (404)
+   - [ ] Actualizar sin token (401)
+   - [ ] Actualizar con token de Admin (403)

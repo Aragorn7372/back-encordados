@@ -1,0 +1,64 @@
+info:
+  name: Obtener todas las cuerdas
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{api-url}}/api/Cuerdas?page=0&size=10&sortBy=createdAt&direction=desc&tournamentId=01KS0Q28TEJ0SYA6JJ5H4W4CMP"
+  params:
+    - name: page
+      value: "0"
+      type: query
+    - name: size
+      value: "10"
+      type: query
+    - name: sortBy
+      value: createdAt
+      type: query
+    - name: direction
+      value: desc
+      type: query
+    - name: tournamentId
+      value: "01KS0Q28TEJ0SYA6JJ5H4W4CMP"
+      type: query
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Obtener Todas las Cuerdas
+
+  Lista cuerdas con soporte para búsqueda y paginación.
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `GET /api/Cuerdas`
+
+  ## Parameters (Query)
+  | Parámetro | Tipo | Default | Descripción |
+  |-----------|------|---------|-------------|
+  | `search` | string | "" | Búsqueda por nombre/modelo |
+  | `page` | int | 0 | Número de página |
+  | `size` | int | 10 | Tamaño de página |
+  | `sortBy` | string | "id" | Campo de ordenamiento |
+  | `direction` | string | "asc" | Dirección (asc/desc) |
+
+  ## Responses
+  - **200 OK**: `PageResponseDto<CuerdaResponseDto>`
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Admin
+
+  ## Test Cases
+  - [ ] Listar cuerdas con paginación por defecto
+  - [ ] Buscar cuerda por nombre/modelo
+  - [ ] Filtrar por marca
+  - [ ] Intentar sin permisos de Admin (403)

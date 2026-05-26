@@ -1,0 +1,27 @@
+info:
+  name: Pedidos
+  type: folder
+  seq: 3
+
+docs: |
+  # Pedidos
+
+  Gestión de pedidos de encordado de raquetas.
+
+  ## Descripción
+  Esta carpeta contiene los endpoints para:
+  - **GET /Purchased**: Listar pedidos (filtrado por rol)
+  - **GET /Purchased/{id}**: Obtener pedido por ID
+  - **POST /Purchased**: Crear nuevo pedido (Admin)
+  - **PUT /Purchased/{id}**: Actualizar pedido (Admin)
+  - **PATCH /Purchased/cancel/{id}**: Cancelar pedido (User)
+  - **PATCH /Purchased/change-status/{id}**: Cambiar estado (Encorder)
+  - **PATCH /Purchased/change-payment-status/{id}**: Cambiar estado de pago (Encorder)
+
+  ## Roles
+  - **Admin/Owner**: Acceso total a todos los pedidos
+  - **Encorder**: Puede ver y modificar pedidos de sus clientes
+  - **User**: Puede ver y cancelar sus propios pedidos
+
+request:
+  auth: inherit

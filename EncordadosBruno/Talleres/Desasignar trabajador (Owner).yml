@@ -1,0 +1,54 @@
+info:
+  name: Desasignar trabajador (Owner)
+  type: http
+  seq: 8
+
+docs: |
+  # Desasignar Trabajador de Torneo como Owner
+
+  Desasigna un trabajador (encordador) de un torneo.
+
+  ## Authorization
+  RequireOwnerRole
+
+  ## HTTP Method
+  `PATCH /api/Tournaments/remove-worker/{id}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | ULID | ID del torneo (formato ULID) |
+
+  ## Body (JSON)
+  ```json
+  "{{user_id_carlos}}"
+  ```
+
+  ## Responses
+  - **200 OK**: `TournamentResponseDto` con trabajador desasignado
+  - **400 Bad Request**: Datos inválidos
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Owner
+  - **404 Not Found**: Torneo o usuario no encontrado
+
+  ## Test Cases
+  - [ ] Desasignar trabajador de torneo como Owner
+  - [ ] Desasignar trabajador no asignado previamente
+  - [ ] Intentar desasignar de torneo inexistente (404)
+
+http:
+  method: PATCH
+  url: "{{api-url}}/api/Tournaments/remove-worker/01KS0Q28TEJ0SYA6JJ5H4W4CMP"
+  body:
+    type: json
+    data: |-
+      "{{user_id_carlos}}"
+  auth:
+    type: bearer
+    token: "{{token_owner}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

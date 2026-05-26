@@ -1,0 +1,55 @@
+info:
+  name: Añadir bonos a usuario
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{api-url}}/api/User/01KS0Q28TD6SAPN0GN0XKRPK5D/bonos"
+  body:
+    type: json
+    data: "50.0"
+  auth:
+    type: bearer
+    token: "{{token_owner}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Añadir Bonos a Usuario
+
+  Añade una cantidad de bonos al saldo de un usuario. Solo accesible para ADMIN y OWNER.
+
+  ## Authorization
+  RequireOwnerRole
+
+  ## HTTP Method
+  `POST /api/User/{id}/bonos`
+
+  ## Path Parameters
+  | Campo | Tipo | Descripción |
+  |-------|------|-------------|
+  | `id` | Ulid | ID del usuario al que añadir bonos |
+
+  ## Body
+  ```json
+  50.0
+  ```
+
+  ## Responses
+  - **200 OK**: `UserResponseDto` con el nuevo saldo de bonos
+  - **400 Bad Request**: La cantidad debe ser mayor a 0
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de ADMIN u OWNER
+  - **404 Not Found**: Usuario no encontrado
+
+  ## Test Cases
+  - [ ] Añadir bonos a un usuario con token de Owner
+  - [ ] Añadir bonos a un usuario con token de Admin
+  - [ ] Intentar añadir bonos con token de usuario regular (403)
+  - [ ] Intentar añadir cantidad negativa (400)
+  - [ ] Intentar añadir a usuario inexistente (404)

@@ -1,0 +1,35 @@
+info:
+  name: Crear encordador error
+  type: http
+  seq: 14
+
+http:
+  method: POST
+  url: "{{api-url}}/api/User/create-encoder"
+  body:
+    type: json
+    data: |
+      "01KS0Q28TD6SAPN0GN0XKRPK5D"
+  auth:
+    type: bearer
+    token: "{{token_owner}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Crear encordador - Usuario no encontrado
+
+  Intenta crear un encordador con un ID de usuario inexistente para verificar error 404.
+
+  ## Authorization
+  RequireOwnerRole
+
+  ## HTTP Method
+  `POST /api/User/create-encoder`
+
+  ## Test Cases
+  - [ ] Intentar crear encordador con ID de usuario inexistente (404)

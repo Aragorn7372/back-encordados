@@ -1,0 +1,61 @@
+info:
+  name: Cambiar estado de todas las líneas
+  type: http
+  seq: 16
+
+http:
+  method: PATCH
+  url: "{{api-url}}/api/Purchased/change-status/01KS0Q28TEW6AVWP9S8WVJ9Z5G"
+  body:
+    type: json
+    data: '"IN_PROGRESS"'
+  auth:
+    type: bearer
+    token: "{{token_encorder_carlos}}"
+
+settings:
+  encodeUrl: true
+  timeout: 60000
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Cambiar Estado de Todas las Líneas
+
+  Cambia el estado de todas las líneas del pedido (excepto las canceladas).
+
+  ## Lógica
+  - Para estados distintos de CANCELED: excluye líneas que ya están CANCELED
+  - Para estado CANCELED: excluye líneas COMPLETED y DELIVERED_TOpLAYER
+
+  ## Authorization
+  RequireEncorderRole (Admin, Owner, Encorder)
+
+  ## HTTP Method
+  `PATCH /api/Purchased/change-status/{id}`
+
+  ## Body (JSON)
+  ```json
+  "IN_PROGRESS"
+  ```
+
+  ## Estados Disponibles
+  - `PENDING`: Pendiente
+  - `IN_PROGRESS`: En progreso
+  - `COMPLETED`: Completado
+  - `CANCELED`: Cancelado
+  - `DELIVERED_TOpLAYER`: Entregado al jugador
+
+  ## Responses
+  - **200 OK**: `PurchasedResponseDto` con líneas actualizadas
+  - **400 Bad Request**: Estado inválido
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos
+  - **404 Not Found**: Pedido no encontrado
+
+  ## Test Cases
+  - [ ] Cambiar todas las líneas a IN_PROGRESS (excluye canceladas)
+  - [ ] Cambiar todas las líneas a CANCELED (excluye completadas)
+  - [ ] Estado inválido (400)
+  - [ ] Pedido inexistente (404)
+  - [ ] Intentar con token de usuario (403)

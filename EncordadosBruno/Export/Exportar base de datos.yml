@@ -1,0 +1,46 @@
+info:
+  name: Exportar base de datos
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{api-url}}/api/export"
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 60000
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Exportar Base de Datos
+
+  Exporta toda la base de datos a un archivo ZIP contendo:
+  - users.json
+  - tournaments.json
+  - materials.json
+  - cuerdas.json
+  - orders.json
+  - manifest.json
+
+  ## Authorization
+  Requiere rol ADMIN
+
+  ## HTTP Method
+  `GET /api/export`
+
+  ## Responses
+  - **200 OK**: Binary ZIP file
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos (no es Admin)
+  - **500 Internal Server Error**: Error al generar el export
+
+  ## Test Cases
+  - [ ] Exportar base de datos completa exitosamente
+  - [ ] Verificar que el ZIP contiene todos los JSON esperados
+  - [ ] Intentar exportar sin token (401)
+  - [ ] Intentar exportar sin rol Admin (403)

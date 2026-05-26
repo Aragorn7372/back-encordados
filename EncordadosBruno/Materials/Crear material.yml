@@ -1,0 +1,87 @@
+info:
+  name: Crear material
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{api-url}}/api/Materials"
+  body:
+    type: multipart-form
+    data:
+      - name: Marca
+        type: text
+        value: Head
+      - name: TournamentId
+        type: text
+        value: 01KS0Q28TEJ0SYA6JJ5H4W4CMP
+      - name: Modelo
+        type: text
+        value: Grip Pro
+      - name: Stock
+        type: text
+        value: "50"
+      - name: Precio
+        type: text
+        value: "12.99"
+      - name: Type
+        type: text
+        value: Grip
+      - name: Imagen
+        type: file
+        value:
+          - ../image/Captura de pantalla 2026-02-21 221125.png
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Crear Material
+
+  Crea un nuevo material/equipamiento en el sistema.
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `POST /api/Materials`
+
+  ## Body (JSON)
+  ```json
+  {
+    "Marca": "Head",
+    "TournamentId": 1,
+    "Modelo": "Grip Pro",
+    "Stock": 50,
+    "Precio": 12.99,
+    "Type": "Grip"
+  }
+  ```
+
+  ## Campos
+  | Campo | Tipo | Descripción |
+  |-------|------|-------------|
+  | `Marca` | string | Marca del material |
+  | `Modelo` | string | Modelo del material |
+  | `Type` | string | Tipo (Grip, Overgrip, etc.) |
+  | `Stock` | int | Cantidad en stock |
+  | `Precio` | decimal | Precio unitario |
+  | `TournamentId` | long | ID del torneo asociado (opcional) |
+
+  ## Responses
+  - **201 Created**: `MaterialResponseDto` con datos del material creado
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Admin
+  - **409 Conflict**: Ya existe un material con el mismo modelo
+
+  ## Test Cases
+  - [ ] Crear material con todos los campos
+  - [ ] Crear material con campos mínimos
+  - [ ] Crear material duplicado (409)
+  - [ ] Intentar sin permisos de Admin (403)

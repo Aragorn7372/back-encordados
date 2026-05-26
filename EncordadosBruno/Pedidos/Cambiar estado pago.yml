@@ -1,0 +1,56 @@
+info:
+  name: Cambiar estado de pago
+  type: http
+  seq: 11
+
+http:
+  method: PATCH
+  url: "{{api-url}}/api/Purchased/change-payment-status/01KR42ME5P1Q2BGWW1DY11Z4TJ"
+  body:
+    type: json
+    data: '"PAID"'
+  auth:
+    type: bearer
+    token: "{{token_encorder_carlos}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Cambiar Estado de Pago
+
+  Permite a un encordador cambiar el estado de pago de un pedido.
+
+  ## Authorization
+  RequireEncoderRole
+
+  ## HTTP Method
+  `PATCH /api/Purchased/change-payment-status/{id}?paymentStatus={paymentStatus}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | string (ULID) | ID único del pedido |
+
+  ## Parameters (Query)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `paymentStatus` | string | Nuevo estado de pago (PAID, PENDING_PAYMENT, OVERDUE, etc.) |
+
+  ## Responses
+  - **200 OK**: `PurchasedResponseDto` con estado de pago actualizado
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Encoder
+   - **404 Not Found**: Pedido no encontrado
+
+   ## Test Cases
+   - [ ] Cambiar estado a PAID (200)
+   - [ ] Cambiar estado a PENDING_PAYMENT (200)
+   - [ ] Cambiar estado a OVERDUE (200)
+   - [ ] Cambiar con estado inválido (400)
+   - [ ] Cambiar en pedido inexistente (404)
+   - [ ] Cambiar sin token (401)
+   - [ ] Cambiar con token de Admin (403)

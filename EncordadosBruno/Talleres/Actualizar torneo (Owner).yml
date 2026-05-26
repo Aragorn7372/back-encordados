@@ -1,0 +1,74 @@
+info:
+  name: Actualizar torneo (Owner)
+  type: http
+  seq: 5
+
+http:
+  method: PUT
+  url: "{{api-url}}/api/Tournaments/01KS0Q28TEJ0SYA6JJ5H4W4CMP"
+  body:
+    type: multipart-form
+    data:
+      - name: Name
+        type: text
+        value: Torneo Madrileño 2025 - Actualizado
+      - name: StartTournament
+        type: text
+        value: 2026-06-28T00:00:00Z
+      - name: EndTournament
+        type: text
+        value: 2026-07-20T00:00:00Z
+      - name: Logotype
+        type: file
+        value:
+          - ../image/Captura de pantalla 2026-02-21 221125.png
+  auth:
+    type: bearer
+    token: "{{token_owner}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Actualizar Torneo como Owner
+
+  Actualiza los datos de un torneo existente.
+
+  ## Authorization
+  RequireOwnerRole
+
+  ## HTTP Method
+  `PUT /api/Tournaments/{id}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | ULID | ID del torneo (formato ULID) |
+
+  ## Body (JSON)
+  ```json
+  {
+    "Name": "Torneo Madrileño 2025 - Actualizado",
+    "EndTournament": "2026-07-20T00:00:00Z",
+    "StartTournament": "2026-06-28T00:00:00Z",
+    "Logotype": "/logos/torneo-madrid-v2.jpg"
+  }
+  ```
+
+  ## Responses
+  - **200 OK**: `TournamentResponseDto` con datos actualizados
+  - **400 Bad Request**: Datos inválidos
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Owner
+   - **404 Not Found**: Torneo o usuario no encontrado
+
+   ## Test Cases
+   - [ ] Actualizar todos los campos del torneo (200)
+   - [ ] Actualizar solo el nombre (200)
+   - [ ] Actualizar con datos inválidos (400)
+   - [ ] Actualizar torneo inexistente (404)
+   - [ ] Actualizar sin token (401)
+   - [ ] Actualizar con token de Encoder (403)

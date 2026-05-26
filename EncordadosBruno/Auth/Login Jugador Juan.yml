@@ -1,0 +1,50 @@
+info:
+  name: Login Jugador Juan
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{api-url}}/api/Auth/signin"
+  body:
+    type: json
+    data: |-
+      {
+        "Username":"jugador_juan",
+        "Password":"user123"
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: api-url
+      value: http://localhost:5032
+  scripts:
+    - type: after-response
+      code: |-
+        const data = res.getBody();
+        bru.setEnvVar("token_juan", data.token);
+        bru.setEnvVar("user_id_juan", data.user.id || "01KR424NQJR7CEHQW4STCQ3GGE");
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Login Jugador Juan
+
+  Inicia sesión como jugador para obtener token JWT con rol USER.
+
+  ## HTTP Method
+  `POST /api/Auth/signin`
+
+  ## Responses
+  - **200 OK**: Retorna token JWT y datos del usuario
+  - **401 Unauthorized**: Credenciales inválidas
+
+  ## Test Cases
+  - [ ] Login exitoso con credenciales de jugador
+  - [ ] Token juan se guarda en variable {{token_juan}}
+  - [ ] Fallo con credenciales incorrectas

@@ -1,0 +1,84 @@
+info:
+  name: Actualizar línea de pedido (Encoder)
+  type: http
+  seq: 10
+
+http:
+  method: PUT
+  url: "{{api-url}}/api/Purchased/lineas/01KR42ME5P1Q2BGWW1DY11Z5AA"
+  body:
+    type: json
+    data: |-
+      {
+        "RaquetModel": "Wilson Pro Staff",
+        "Nudos": 3,
+        "DateString": "2026-06-25T00:00:00Z",
+        "Logotype": true,
+        "Color": "Negro",
+        "StringSetup": {
+          "StringV": "Luxilon ALU Power",
+          "TensionV": 28.0,
+          "PreStetchV": 2,
+          "StringH": "Luxilon Multi",
+          "TensionH": 27.0,
+          "PreStetchH": 1
+        }
+      }
+  auth:
+    type: bearer
+    token: "{{token_encoder}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  # Actualizar Línea de Pedido como Encoder
+
+  Actualiza los datos de una línea de pedido existente.
+
+  ## Authorization
+  RequireEncoderRole
+
+  ## HTTP Method
+  `PUT /api/Purchased/lineas/{lineaId}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `lineaId` | string | ID de la línea de pedido |
+
+  ## Body (JSON)
+  ```json
+  {
+    "RaquetModel": "Wilson Pro Staff",
+    "Nudos": 3,
+    "DateString": "2026-06-25T00:00:00Z",
+    "Logotype": true,
+    "Color": "Negro",
+    "StringSetup": {
+      "StringV": "Luxilon ALU Power",
+      "TensionV": 28.0,
+      "PreStetchV": 2,
+      "StringH": "Luxilon Multi",
+      "TensionH": 27.0,
+      "PreStetchH": 1
+    }
+  }
+  ```
+
+  ## Responses
+  - **200 OK**: `PedidoLineaResponseDto` con datos actualizados
+  - **400 Bad Request**: Datos inválidos
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Encoder
+   - **404 Not Found**: Línea no encontrada
+
+   ## Test Cases
+   - [ ] Actualizar línea con todos los campos (200)
+   - [ ] Actualizar línea con datos inválidos (400)
+   - [ ] Actualizar línea inexistente (404)
+   - [ ] Actualizar sin token (401)
+   - [ ] Actualizar con token de Admin (403)

@@ -1,0 +1,44 @@
+info:
+  name: Obtener cuerda por id
+  type: http
+  seq: 2
+
+docs: |
+  # Obtener Cuerda por ID
+
+  Obtiene los detalles de una cuerda específica por su ID.
+
+  ## Authorization
+  RequireAdminRole
+
+  ## HTTP Method
+  `GET /api/Cuerdas/{id}`
+
+  ## Parameters (Path)
+  | Parámetro | Tipo | Descripción |
+  |-----------|------|-------------|
+  | `id` | long | ID numérico de la cuerda |
+
+  ## Responses
+  - **200 OK**: `CuerdaResponseDto` con datos de la cuerda
+  - **401 Unauthorized**: Token inválido o expirado
+  - **403 Forbidden**: No tiene permisos de Admin
+  - **404 Not Found**: Cuerda no encontrada
+
+  ## Test Cases
+  - [ ] Obtener cuerda existente por ID válido
+  - [ ] Intentar obtener cuerda inexistente (404)
+  - [ ] Intentar sin permisos de Admin (403)
+
+http:
+  method: GET
+  url: "{{api-url}}/api/Cuerdas/1"
+  auth:
+    type: bearer
+    token: "{{token_admin}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
