@@ -21,7 +21,10 @@ public static class UserMapper
             user.Id.ToString(),
             user.Username,
             cloudinary.ResolveImageUrl(user.ImageUrl, CloudinaryConstants.FOLDER_USUARIOS),
-            user.Name
+            user.Name,
+            user.Email,
+            user.Role,
+            user.TournamentId?.ToString()
             );
     }
     public static User ToModel(this ContactoPostRequestDto request) {
