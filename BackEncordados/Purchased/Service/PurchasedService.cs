@@ -23,6 +23,58 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BackEncordados.Purchased.Service;
 
+/// <summary>
+/// Application service for the Purchased (pedidos) bounded context.
+/// Orchestrates the full lifecycle of purchase orders and their line items.
+/// </summary>
+/// <remarks>
+/// <para>
+/// <c>PurchasedService</c> co operates across multiple infrastructure concerns:
+/// </para>
+/// <list type="table">
+///   <listheader>
+///     <term>Dependency</term>
+///     <description>Purpose</description>
+///   </listheader>
+///   <item>
+///     <term><see cref="Repository.IPuchasedRepository"/></term>
+///     <description>Order and line item persistence.</description>
+///   </item>
+///   <item>
+///     <term><see cref="Usuarios.Repository.IUserRepository"/></term>
+///     <description>Player and encorder lookup, bonus deduction with concurrency retries.</description>
+///   </item>
+///   <item>
+///     <term><see cref="Common.Service.Cache.ICacheService"/></term>
+///     <description>L1/L2 hybrid caching for user data (10-min TTL) and purchased DTOs (5-min TTL).</description>
+///   </item>
+///   <item>
+///     <term><see cref="Common.Service.Cloudinary.ICloudinaryService"/></term>
+///     <description>User avatar URL resolution in response DTOs.</description>
+///   </item>
+///   <item>
+///     <term><see cref="Common.Service.Email.IEmailService"/></term>
+///     <description>Payment confirmation, cancellation, line completion/delivery emails via MailKit channel queue.</description>
+///   </item>
+///   <item>
+///     <term><see cref="Common.Service.WhatsApp.IWhatsAppService"/></term>
+///     <description>WhatsApp Graph API notifications for cancellations and status changes.</description>
+///   </item>
+///   <item>
+///     <term><c>IHubContext&lt;SignalHub&gt;</c></term>
+///     <description>Real-time SignalR notifications to tournament-specific and admin groups.</description>
+///   </item>
+/// </list>
+/// <para>
+/// Business logic highlights:
+/// </para>
+/// <list type="bullet">
+///   <item><description><b>Auto-payment</b> — if <c>player.Bonos >= Price</c>, the order is marked PAID and bonus is deducted with up to 3 retry attempts for concurrency conflicts.</description></item>
+///   <item><description><b>Partial bonus</b> — if <c>0 &lt; player.Bonos &lt; Price</c>, a shortfall comment is appended to the order.</description></item>
+///   <item><description><b>Cache invalidation</b> — any mutation on an order or line item invalidates the cached <c>PurchasedResponseDto</c> so the next read is fresh.</description></item>
+///   <item><description><b>Fire-and-forget notifications</b> — emails, WhatsApp, and SignalR broadcasts are dispatched on background tasks via <c>TapAsync</c> after the DB transaction succeeds.</description></item>
+/// </list>
+/// </remarks>
 public class PurchasedService(
     IPuchasedRepository repository,
     IUserRepository userRepository, 
@@ -34,6 +86,22 @@ public class PurchasedService(
     IHubContext<SignalHub> signal
     ) : IPurchasedService
 {
+    /// <summary>
+    /// Returns a paginated list of orders with player and encorder user data resolved from cache or DB.
+    /// </summary>
+    /// <remarks>
+    /// <para>Orchestration flow:</para>
+    /// <list type="number">
+    ///   <item><description>Call <see cref="Repository.IPuchasedRepository.FindAllAsync"/> to get the page of order headers and total count.</description></item>
+    ///   <item><description>Collect all unique <c>PlayerId</c> and <c>AssignedTo</c> values from the result set.</description></item>
+    ///   <item><description>Attempt to resolve each user ID from the L1/L2 cache using key <c>CacheKeys.UserDataKey + id</c> (set by <see cref="GetUserDtoCachedAsync"/>).</description></item>
+    ///   <item><description>For cache misses, batch-fetch from <see cref="Usuarios.Repository.IUserRepository.FindByIdsAsync"/>, map to <see cref="UserResponseDto"/> via <c>UserMapper.ToDto(cloudinary)</c>, and cache each for 10 minutes.</description></item>
+    ///   <item><description>Map each order through <see cref="Mapper.PurchasedMapper.ToDto(Pedidos, UserResponseDto, UserResponseDto)"/>.</description></item>
+    ///   <item><description>Skip orders whose player or encorder could not be resolved (logged as warning).</description></item>
+    /// </list>
+    /// </remarks>
+    /// <param name="filter">Pagination, sort, and filter parameters.</param>
+    /// <returns>A <see cref="PageResponseDto{PurchasedResponseDto}"/> with resolved user DTOs.</returns>
     public async Task<PageResponseDto<PurchasedResponseDto>> FindAllAsync(FilterPurchasedDto filter)
     {
         logger.LogInformation("Obteniendo todos los pedidos con filtro: Página {Page}, Tamaño {Size}", filter.Page, filter.Size);
@@ -93,6 +161,22 @@ public class PurchasedService(
         );
     }
 
+    /// <summary>
+    /// Retrieves a single order by its <see cref="Ulid"/> with cache-first strategy.
+    /// </summary>
+    /// <remarks>
+    /// <para>Processing flow:</para>
+    /// <list type="number">
+    ///   <item><description>Attempt cache lookup with key <c>CacheKeys.PurchasedCacheKey + id</c> (5-minute TTL).</description></item>
+    ///   <item><description>On hit: return the cached DTO immediately.</description></item>
+    ///   <item><description>On miss: load from repository, including all line items.</description></item>
+    ///   <item><description>Resolve player and encorder via <see cref="GetUserDtoCachedAsync"/> (cache-first user lookup).</description></item>
+    ///   <item><description>Assemble the full response DTO through <see cref="Mapper.PurchasedMapper.ToDto(Pedidos, UserResponseDto, UserResponseDto)"/>.</description></item>
+    ///   <item><description>Cache the assembled DTO for 5 minutes.</description></item>
+    /// </list>
+    /// </remarks>
+    /// <param name="id">The order <see cref="Ulid"/>.</param>
+    /// <returns>The order DTO on success, or a <see cref="PurchasedNotFoundError"/> / <see cref="Usuarios.Errors.UserNotFoundError"/> on failure.</returns>
     public async Task<Result<PurchasedResponseDto, DomainErrors>> FindByIdAsync(Ulid id)
     {
         logger.LogInformation("Buscando pedido con ID: {Id}", id);
@@ -116,6 +200,20 @@ public class PurchasedService(
         return response;
     }
 
+    /// <summary>
+    /// Resolves a user ID to a <see cref="UserResponseDto"/> using a cache-first strategy.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Cache key pattern: <c>CacheKeys.UserDataKey + userId</c> with 10-minute TTL.
+    /// On cache miss, loads from <see cref="Usuarios.Repository.IUserRepository.FindByIdAsync"/>,
+    /// verifies the user is not deleted, maps via <c>UserMapper.ToDto(cloudinary)</c>,
+    /// caches, and returns. Returns <see cref="Usuarios.Errors.UserNotFoundError"/> if the user
+    /// does not exist or has been soft-deleted.
+    /// </para>
+    /// </remarks>
+    /// <param name="userId">The user <see cref="Ulid"/> to resolve.</param>
+    /// <returns>The resolved <see cref="UserResponseDto"/> on success, or a <see cref="Usuarios.Errors.UserNotFoundError"/>.</returns>
     private async Task<Result<UserResponseDto, DomainErrors>> GetUserDtoCachedAsync(Ulid userId)
     {
         string key = CacheKeys.UserDataKey + userId;
@@ -132,6 +230,28 @@ public class PurchasedService(
             .Tap(() => logger.LogInformation("Usuario con ID {Id} obtenido de DB y guardado en caché", userId));
     }
 
+    /// <summary>
+    /// Creates a new purchase order with automatic bonus payment logic and notifications.
+    /// </summary>
+    /// <remarks>
+    /// <para>Detailed processing flow:</para>
+    /// <list type="number">
+    ///   <item><description><b>User resolution</b> — Lookup player and encorder by username (cache-first, then DB via <c>FindByUsernameAsync</c>). Cache resolved users using key <c>CacheKeys.UserKey + username</c>.</description></item>
+    ///   <item><description><b>Validation</b> — Both users must exist; otherwise returns <see cref="Usuarios.Errors.UserNotFoundError"/>.</description></item>
+    ///   <item><description><b>Entity mapping</b> — Map DTO to <see cref="Pedidos"/> aggregate via <see cref="Mapper.PurchasedMapper.ToEntity(PurchasedRequestDto, Ulid, Ulid)"/>.</description></item>
+    ///   <item><description><b>Auto-payment</b> — If <c>player.Bonos >= Price</c>: set <c>PayStatus = PAID</c>, deduct bonus, and persist user change with <see cref="UpdateUserWithRetryAsync"/> (up to 3 retries for <c>DbUpdateConcurrencyException</c>).</description></item>
+    ///   <item><description><b>Partial bonus</b> — If <c>0 &lt; player.Bonos &lt; Price</c>: append shortfall text to Comments ("Falta por pagar: ...").</description></item>
+    ///   <item><description><b>Persistence</b> — Save the order aggregate (header + line items) via repository.</description></item>
+    ///   <item><description><b>Caching</b> — Cache the resulting DTO (5-minute TTL).</description></item>
+    ///   <item><description><b>Notifications</b> — Fire-and-forget: SignalR <c>PEDIDO_CREADO</c> event to tournament group + admin group. If auto-paid, enqueue payment confirmation email.</description></item>
+    /// </list>
+    /// <para>
+    /// Requires <c>[Transactional(typeof(PedidosDbContext), typeof(UserDbContext))]</c> on the controller
+    /// for distributed atomicity across two DbContexts.
+    /// </para>
+    /// </remarks>
+    /// <param name="request">The order creation payload.</param>
+    /// <returns>The created order DTO or a <see cref="Usuarios.Errors.UserNotFoundError"/>.</returns>
     public async Task<Result<PurchasedResponseDto, DomainErrors>> CreatePurchasedAsync(PurchasedRequestDto request)
     {
         logger.LogInformation("Creando pedido para jugador {PlayerName} asignado a {AssignedToName}", request.PlayerName, request.AssignedToName);
@@ -190,6 +310,19 @@ public class PurchasedService(
             });
     }
 
+    /// <summary>
+    /// Partially updates an existing order's Machine, Comments, and PayStatus fields.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Loads the existing order, applies the patch via repository (merge-patch), invalidates
+    /// the old cache entry, re-caches the updated DTO (5-minute TTL), and sends a
+    /// <c>PEDIDO_ACTUALIZADO</c> SignalR notification to the tournament and admin groups.
+    /// </para>
+    /// </remarks>
+    /// <param name="id">The order <see cref="Ulid"/>.</param>
+    /// <param name="request">The patch payload with optional fields.</param>
+    /// <returns>The updated order DTO or a <see cref="PurchasedNotFoundError"/>.</returns>
     public async Task<Result<PurchasedResponseDto, DomainErrors>> UpdatePurchasedAsync(Ulid id, PurchasedPatchDto request)
     {
         logger.LogInformation("Actualizando pedido con ID {Id}", id);
@@ -231,6 +364,20 @@ public class PurchasedService(
         });
     }
 
+    /// <summary>
+    /// Cancels an order (sets PayStatus to CANCELED, all line statuses to CANCELED) with role-based ownership verification.
+    /// </summary>
+    /// <remarks>
+    /// <para>Flow:</para>
+    /// <list type="number">
+    ///   <item><description>Call <see cref="Repository.IPuchasedRepository.CancelPurchasedAsync"/> — idempotent, no-op if already canceled.</description></item>
+    ///   <item><description>If <paramref name="isUser"/> is <c>true</c> and <c>purchasedCanceled.PlayerId != parsed(idUser)</c>: return <see cref="Usuarios.Errors.UnauthorizedError"/> (403).</description></item>
+    ///   <item><description>Resolve player and encorder user data via <see cref="GetUserDtoCachedAsync"/>.</description></item>
+    ///   <item><description>Re-cache the updated DTO (5-minute TTL).</description></item>
+    ///   <item><description>Fire-and-forget: send cancellation email via <see cref="SendCancelEmailAsync"/>, WhatsApp cancellation via <see cref="Common.Service.WhatsApp.IWhatsAppService.SendPedidoCanceledMessageAsync"/>, and SignalR <c>PEDIDO_CANCELADO</c>.</description></item>
+    /// </list>
+    /// </remarks>
+    /// <inheritdoc />
     public async Task<Result<PurchasedResponseDto, DomainErrors>> CancelPurchasedAsync(Ulid id, bool isUser, string? idUser)
     {
         logger.LogInformation("Cancelando pedido con ID {Id}", id);
@@ -276,6 +423,11 @@ public class PurchasedService(
             });
     }
     
+    /// <summary>
+    /// Enqueues a cancellation email via the email service.
+    /// </summary>
+    /// <param name="orderId">The order ULID string for the email template.</param>
+    /// <param name="email">The recipient email address.</param>
     private async Task SendCancelEmailAsync(string orderId, string email) {
         var message = new EmailMessage {
             To = email,
@@ -285,6 +437,22 @@ public class PurchasedService(
         };
         await emailService.EnqueueEmailAsync(message);
     }
+
+    /// <summary>
+    /// Retrieves a valid email address for a given username, with validation checks.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Validates that:
+    /// </para>
+    /// <list type="bullet">
+    ///   <item><description>The user exists in the database.</description></item>
+    ///   <item><description>The user has not been soft-deleted (<c>IsDeleted == false</c>).</description></item>
+    ///   <item><description>The user's email is not null or whitespace and contains an '@' character (basic format check).</description></item>
+    /// </list>
+    /// </remarks>
+    /// <param name="username">The username to look up.</param>
+    /// <returns>The validated email string, or a <see cref="Usuarios.Errors.UserNotFoundError"/> / <see cref="Usuarios.Errors.ValidationError"/>.</returns>
     private async Task<Result<string ,DomainErrors>> GetValidUserWithEmailAsync(string username)
     {
         var user = await userRepository.FindByUsernameAsync(username);
@@ -304,6 +472,18 @@ public class PurchasedService(
     
         return Result.Success<string , DomainErrors>((user.Email));
     }
+
+    /// <summary>
+    /// Changes the payment status of an existing order and optionally sends a confirmation email.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Validates the status string against <see cref="PaymentStatus"/> enum values.
+    /// If the new status is <c>PAID</c>, enqueues a payment confirmation email to the player
+    /// (via <see cref="SendPaidEmailAsync"/>).
+    /// </para>
+    /// </remarks>
+    /// <inheritdoc />
     public async Task<Result<PurchasedResponseDto, DomainErrors>> ChangePaymentStatusPurchasedAsync(Ulid id, string payStatus)
     {
         logger.LogInformation("Cambiando el estatus de pago al pedido con ID {Id}", id);
@@ -334,6 +514,13 @@ public class PurchasedService(
             }
         });
     }
+
+    /// <summary>
+    /// Enqueues a payment confirmation email via the email service.
+    /// </summary>
+    /// <param name="orderId">The order ULID string for the template.</param>
+    /// <param name="price">The order total price.</param>
+    /// <param name="email">The recipient email address.</param>
     private Task SendPaidEmailAsync(string orderId,double price, string email) {
         var message = new EmailMessage {
             To = email,
@@ -346,6 +533,17 @@ public class PurchasedService(
     
     
 
+    /// <summary>
+    /// Applies a partial patch to a single line item and invalidates the parent order's cache.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Loads the existing line, applies the merge-patch via <see cref="Mapper.PurchasedMapper.ToEntity(PedidoLineaPatchDto, PedidoLinea)"/>,
+    /// persists via repository, invalidates the parent order cache key, and sends a <c>LINEA_PEDIDO_ACTUALIZADA</c>
+    /// SignalR notification.
+    /// </para>
+    /// </remarks>
+    /// <inheritdoc />
     public async Task<Result<PedidoLineaResponseDto, DomainErrors>> UpdateLineaAsync(Ulid lineaId, PedidoLineaPatchDto request)
     {
         logger.LogInformation("Actualizando línea con ID {LineaId}", lineaId);
@@ -369,6 +567,20 @@ public class PurchasedService(
             });
     }
 
+    /// <summary>
+    /// Cancels a single line item with role-based protection and WhatsApp notification.
+    /// </summary>
+    /// <remarks>
+    /// <para>Flow:</para>
+    /// <list type="number">
+    ///   <item><description>Load the existing line from repository.</description></item>
+    ///   <item><description>If the caller has <c>USER</c> role and the line is <c>COMPLETED</c> or <c>DELIVERED_TOpLAYER</c>, block with <see cref="InvalidStatusError"/>.</description></item>
+    ///   <item><description>Persist status change to <c>CANCELED</c>.</description></item>
+    ///   <item><description>Invalidate the parent order cache.</description></item>
+    ///   <item><description>Fire-and-forget: send WhatsApp cancellation to the player and <c>ESTATUS_LINEA_PEDIDO_ACTUALIZADA</c> SignalR notification.</description></item>
+    /// </list>
+    /// </remarks>
+    /// <inheritdoc />
     public async Task<Result<PedidoLineaResponseDto, DomainErrors>> CancelLineaAsync(Ulid lineaId, string? userId, string? userRole)
     {
         logger.LogInformation("Cancelando línea con ID {LineaId}", lineaId);
@@ -415,6 +627,27 @@ public class PurchasedService(
             });
     }
 
+    /// <summary>
+    /// Changes a single line item's status with full notification dispatch.
+    /// </summary>
+    /// <remarks>
+    /// <para>Flow:</para>
+    /// <list type="number">
+    ///   <item><description>Parse and validate the status string against <see cref="Status"/> enum.</description></item>
+    ///   <item><description>Load the existing line from repository.</description></item>
+    ///   <item><description>Persist the status change.</description></item>
+    ///   <item><description>Invalidate the parent order cache.</description></item>
+    ///   <item><description>Depending on the new status, send appropriate notifications:
+    ///     <list type="bullet">
+    ///       <item><description><c>COMPLETED</c> — completion email (<see cref="SendLineaCompletedEmailAsync"/>) + WhatsApp + SignalR.</description></item>
+    ///       <item><description><c>DELIVERED_TOpLAYER</c> — delivery email (<see cref="SendLineaDeliveredEmailAsync"/>) + WhatsApp + SignalR.</description></item>
+    ///       <item><description><c>CANCELED</c> — WhatsApp cancellation + SignalR.</description></item>
+    ///       <item><description>Other statuses — SignalR only.</description></item>
+    ///     </list>
+    ///   </description></item>
+    /// </list>
+    /// </remarks>
+    /// <inheritdoc />
     public async Task<Result<PedidoLineaResponseDto, DomainErrors>> ChangeLineaStatusAsync(Ulid lineaId, string status)
     {
         logger.LogInformation("Cambiando estado de línea con ID {LineaId} a {Status}", lineaId, status);
@@ -475,6 +708,22 @@ public class PurchasedService(
             });
     }
 
+    /// <summary>
+    /// Changes the status of every non-conflicting line item in an order at once.
+    /// </summary>
+    /// <remarks>
+    /// <para>Conflict rules:</para>
+    /// <list type="bullet">
+    ///   <item><description>When target is <c>CANCELED</c>: lines already <c>COMPLETED</c> or <c>DELIVERED_TOpLAYER</c> are skipped (cannot cancel completed work).</description></item>
+    ///   <item><description>When target is any non-canceled status (e.g. <c>COMPLETED</c>): lines already <c>CANCELED</c> are skipped (cannot revive a canceled line).</description></item>
+    /// </list>
+    /// <para>
+    /// After filtering eligible lines and persisting changes, the parent order cache is invalidated.
+    /// No email or WhatsApp notifications are sent for bulk operations
+    /// (individual line notifications are handled by <see cref="ChangeLineaStatusAsync"/>).
+    /// </para>
+    /// </remarks>
+    /// <inheritdoc />
     public async Task<Result<PurchasedResponseDto, DomainErrors>> ChangeAllLineasStatusAsync(Ulid purchasedId, string status)
     {
         logger.LogInformation("Cambiando estado de todas las líneas del pedido {PurchasedId} a {Status}", purchasedId, status);
@@ -529,6 +778,13 @@ public class PurchasedService(
         return purchased.ToDto(playerResultFinal.Value, encorderResultFinal.Value);
     }
 
+    /// <summary>
+    /// Enqueues a line-completed email notification to the player.
+    /// </summary>
+    /// <param name="lineaId">The line ULID string.</param>
+    /// <param name="pedidoId">The parent order ULID string.</param>
+    /// <param name="email">The recipient email address.</param>
+    /// <param name="productName">The raquet model name for the email template.</param>
     private async Task SendLineaCompletedEmailAsync(string lineaId, string pedidoId, string email,string productName)
     {
         var message = new EmailMessage
@@ -541,6 +797,13 @@ public class PurchasedService(
         await emailService.EnqueueEmailAsync(message);
     }
 
+    /// <summary>
+    /// Enqueues a line-delivered email notification to the player.
+    /// </summary>
+    /// <param name="lineaId">The line ULID string.</param>
+    /// <param name="pedidoId">The parent order ULID string.</param>
+    /// <param name="email">The recipient email address.</param>
+    /// <param name="productName">The raquet model name for the email template.</param>
     private async Task SendLineaDeliveredEmailAsync(string lineaId, string pedidoId, string email,string productName)
     {
         var message = new EmailMessage
@@ -554,9 +817,26 @@ public class PurchasedService(
     }
 
     /// <summary>
-    /// Actualiza el usuario con reintentos en caso de conflicto de concurrencia.
-    /// Intenta hasta 3 veces; si falla después, retorna error.
+    /// Updates the player's user record with retry logic for concurrency conflicts.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This method is used when auto-paying an order with player bonuses.
+    /// The bonus deduction can fail with <see cref="DbUpdateConcurrencyException"/> if another
+    /// concurrent request modifies the same user record. The retry strategy:
+    /// </para>
+    /// <list type="number">
+    ///   <item><description>Attempt to save the updated player (with deducted bonus).</description></item>
+    ///   <item><description>If <c>DbUpdateConcurrencyException</c> is thrown and retries remain, reload the player entity from DB.</description></item>
+    ///   <item><description>Re-apply the bonus deduction on the fresh entity.</description></item>
+    ///   <item><description>Retry the save (up to <paramref name="maxRetries"/> attempts).</description></item>
+    ///   <item><description>If all retries are exhausted, return <see cref="ConcurrencyError"/>.</description></item>
+    /// </list>
+    /// <para>If the player is not found after a concurrency conflict, return <see cref="UserNotFoundError"/>.</para>
+    /// </remarks>
+    /// <param name="player">The player entity with bonus already deducted.</param>
+    /// <param name="maxRetries">Maximum number of retry attempts (default 3).</param>
+    /// <returns><see cref="Unit"/> on success, or a <see cref="ConcurrencyError"/> / <see cref="UserNotFoundError"/>.</returns>
     private async Task<Result<Unit, DomainErrors>> UpdateUserWithRetryAsync(
         User player, 
         int maxRetries = 3)
@@ -603,6 +883,20 @@ public class PurchasedService(
             new ConcurrencyError("No se pudo actualizar el usuario después de varios intentos."));
     }
 
+    /// <summary>
+    /// Sends a SignalR <c>PEDIDO_CREADO</c> notification to the tournament group and admin group.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Dispatched as fire-and-forget via <c>Task.Run</c>. In case of exception, it is logged
+    /// and re-thrown. The payload includes tournamentId, pedidoId, tipo, total, numberOfLines,
+    /// the full purchased DTO, and a UTC timestamp.
+    /// </para>
+    /// <para>Target SignalR groups: <c>Tournament_{tournamentId}</c> and <c>Tournament_All_Admin</c>.</para>
+    /// </remarks>
+    /// <param name="purchasedId">The new order ID.</param>
+    /// <param name="tournamentId">The tournament ID for group targeting.</param>
+    /// <param name="response">The full order response DTO.</param>
     private void SendCreatePurchased(Ulid purchasedId, Ulid tournamentId, PurchasedResponseDto response) {
         _ = Task.Run(async () => {
             try {
@@ -630,6 +924,17 @@ public class PurchasedService(
             }
         });
     }
+
+    /// <summary>
+    /// Sends a SignalR <c>PEDIDO_ACTUALIZADO</c> notification to the tournament group and admin group.
+    /// </summary>
+    /// <remarks>
+    /// <para>Dispatched as fire-and-forget via <c>Task.Run</c>.</para>
+    /// <para>Target SignalR groups: <c>Tournament_{tournamentId}</c> and <c>Tournament_All_Admin</c>.</para>
+    /// </remarks>
+    /// <param name="purchasedId">The updated order ID.</param>
+    /// <param name="tournamentId">The tournament ID for group targeting.</param>
+    /// <param name="response">The full order response DTO after the update.</param>
     private void SendUpdatedPurchased(Ulid purchasedId, Ulid tournamentId, PurchasedResponseDto response) {
         _ = Task.Run(async () => {
             try {
@@ -657,6 +962,17 @@ public class PurchasedService(
             }
         });
     }
+
+    /// <summary>
+    /// Sends a SignalR <c>PEDIDO_CANCELADO</c> notification to the tournament group and admin group.
+    /// </summary>
+    /// <remarks>
+    /// <para>Dispatched as fire-and-forget via <c>Task.Run</c>.</para>
+    /// <para>Target SignalR groups: <c>Tournament_{tournamentId}</c> and <c>Tournament_All_Admin</c>.</para>
+    /// </remarks>
+    /// <param name="purchasedId">The canceled order ID.</param>
+    /// <param name="tournamentId">The tournament ID for group targeting.</param>
+    /// <param name="response">The full order response DTO after cancellation.</param>
     private void SendCancelPurchased(Ulid purchasedId, Ulid tournamentId, PurchasedResponseDto response) {
         _ = Task.Run(async () => {
             try {
@@ -684,6 +1000,18 @@ public class PurchasedService(
             }
         });
     }
+
+    /// <summary>
+    /// Sends a SignalR <c>ESTATUS_LINEA_PEDIDO_ACTUALIZADA</c> notification (for status changes on a line).
+    /// </summary>
+    /// <remarks>
+    /// <para>Dispatched as fire-and-forget via <c>Task.Run</c>.</para>
+    /// <para>Target SignalR groups: <c>Tournament_{tournamentId}</c> and <c>Tournament_All_Admin</c>.</para>
+    /// </remarks>
+    /// <param name="lineaId">The line ID whose status changed.</param>
+    /// <param name="pedidoId">The parent order ID.</param>
+    /// <param name="tournamentId">The tournament ID for group targeting.</param>
+    /// <param name="response">The line item response DTO after the change.</param>
     private void SendChangeStatusPurchasedLine(Ulid lineaId, Ulid pedidoId, Ulid tournamentId, PedidoLineaResponseDto response) {
         _ = Task.Run(async () => {
             try {
@@ -711,6 +1039,18 @@ public class PurchasedService(
             }
         });
     }
+
+    /// <summary>
+    /// Sends a SignalR <c>LINEA_PEDIDO_ACTUALIZADA</c> notification (for partial patch updates to a line).
+    /// </summary>
+    /// <remarks>
+    /// <para>Dispatched as fire-and-forget via <c>Task.Run</c>.</para>
+    /// <para>Target SignalR groups: <c>Tournament_{tournamentId}</c> and <c>Tournament_All_Admin</c>.</para>
+    /// </remarks>
+    /// <param name="lineaId">The line ID that was updated.</param>
+    /// <param name="pedidoId">The parent order ID.</param>
+    /// <param name="tournamentId">The tournament ID for group targeting.</param>
+    /// <param name="response">The line item response DTO after the update.</param>
     private void SendUpdatePurchasedLine(Ulid lineaId, Ulid pedidoId, Ulid tournamentId, PedidoLineaResponseDto response) {
         _ = Task.Run(async () => {
             try {
