@@ -4,8 +4,22 @@ using FluentValidation;
 
 namespace BackEncordados.Materials.Validator.Materials;
 
+/// <summary>
+/// Validador FluentValidation para <see cref="MaterialPatchDto"/>.
+/// </summary>
+/// <remarks>
+/// <para>Reglas de validación (solo aplican cuando el campo es proporcionado):</para>
+/// <list type="bullet">
+///   <item><description><c>Stock</c> — si >= 0, debe ser un número positivo.</description></item>
+///   <item><description><c>Precio</c> — si >= 0, debe ser mayor que 0.</description></item>
+///   <item><description><c>Type</c> — si no está vacío, debe ser un valor válido de <see cref="MaterialType"/>.</description></item>
+/// </list>
+/// </remarks>
 public class MaterialPatchValidator : AbstractValidator<MaterialPatchDto>
 {
+    /// <summary>
+    /// Inicializa el validador con reglas condicionales para actualización de materiales.
+    /// </summary>
     public MaterialPatchValidator()
     {
         RuleFor(x => x.Stock)
