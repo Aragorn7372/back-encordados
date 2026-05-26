@@ -51,7 +51,10 @@ public class UserControllerTests
         Ulid.NewUlid().ToString(),
         "testuser",
         "https://example.com/avatar.jpg",
-        "Test User"
+        "Test User",
+        "test@example.com",
+        "player",
+        null
     );
 
     private static PageResponseDto<UserWithIdDto> CreatePageResponse() => new(
