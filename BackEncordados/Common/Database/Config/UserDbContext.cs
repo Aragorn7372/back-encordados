@@ -154,12 +154,12 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
     /// <param name="modelBuilder">Instancia de <see cref="ModelBuilder"/> usada para configurar los datos iniciales mediante <c>HasData()</c>.</param>
     private void SeedData(ModelBuilder modelBuilder)
     {
-        // Generar hashes de contraseñas para los datos de prueba
-        var adminPasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123", workFactor: 11);
-        var userPasswordHash = BCrypt.Net.BCrypt.HashPassword("user123", workFactor: 11);
-        var encorderPasswordHash = BCrypt.Net.BCrypt.HashPassword("encorder123", workFactor: 11);
-        var ownerPasswordHash = BCrypt.Net.BCrypt.HashPassword("owner123", workFactor: 11);
-        var supervisorPasswordHash = BCrypt.Net.BCrypt.HashPassword("supervisor123", workFactor: 11);
+        // Hashes estáticos pre-computados (coinciden con la migración)
+        var adminPasswordHash = "$2a$11$qxEUeoXVUOqGr/HlrrDUZeRsMDcQwoiclUJZOsqEiGI/iCwx1TQDm";
+        var userPasswordHash = "$2a$11$vm89IAT3Kz8i95DTqRg6nuXd8EsUIRdgdFhHvezM7TBvMoidExpt.";
+        var encorderPasswordHash = "$2a$11$h4sq7OQFn9BItSjblbZwYe7O.aNbp40eM5A2tXZyLlXhK2WALoI7.";
+        var ownerPasswordHash = "$2a$11$8fZDZSSFPWUG7wP8PKVGpecehuSNofLupnr6o9eG.9rggszddiUEO";
+        var supervisorPasswordHash = "$2a$11$xl2gKmt6XzEkFpdjbHVpEOHw2sbCo2kFZZhVG38lqst9PxxmR1Dda";
         var juan = Ulid.Parse("01KS0Q28TD6SAPN0GN0XKRPK5D");
         var ana = Ulid.Parse("01KS0Q28TE3RJTW6W35NJRMTZ4");
         var pedro = Ulid.Parse("01KS0Q28TED4PWJPT7DMJ46WBN");
@@ -187,8 +187,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 IsDeleted = false,
                 ImageUrl = CloudinaryConstants.DEFAULT_IMAGE_USUARIOS,
                 CloudinaryPublicId = null,
-                CreatedAt = DateTime.UtcNow.AddMonths(-6),
-                UpdatedAt = DateTime.UtcNow.AddMonths(-6),
+                CreatedAt = new DateTime(2024, 12, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 12, 1, 0, 0, 0, DateTimeKind.Utc),
                 TournamentId = null,
                 
             },
@@ -205,8 +205,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 IsDeleted = false,
                 ImageUrl = CloudinaryConstants.DEFAULT_IMAGE_USUARIOS,
                 CloudinaryPublicId = null,
-                CreatedAt = DateTime.UtcNow.AddMonths(-5),
-                UpdatedAt = DateTime.UtcNow.AddMonths(-5),
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 TournamentId = null,
                 
             },
@@ -224,8 +224,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 IsDeleted = false,
                 ImageUrl = CloudinaryConstants.DEFAULT_IMAGE_USUARIOS,
                 CloudinaryPublicId = null,
-                CreatedAt = DateTime.UtcNow.AddMonths(-4),
-                UpdatedAt = DateTime.UtcNow.AddMonths(-4),
+                CreatedAt = new DateTime(2025, 2, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 2, 1, 0, 0, 0, DateTimeKind.Utc),
                 TournamentId = null,
                 
             },
@@ -242,8 +242,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 IsDeleted = false,
                 ImageUrl = CloudinaryConstants.DEFAULT_IMAGE_USUARIOS,
                 CloudinaryPublicId = null,
-                CreatedAt = DateTime.UtcNow.AddMonths(-3),
-                UpdatedAt = DateTime.UtcNow.AddMonths(-3),
+                CreatedAt = new DateTime(2025, 3, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 3, 1, 0, 0, 0, DateTimeKind.Utc),
                 TournamentId = null,
                 
             },
@@ -260,8 +260,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 IsDeleted = false,
                 ImageUrl = CloudinaryConstants.DEFAULT_IMAGE_USUARIOS,
                 CloudinaryPublicId = null,
-                CreatedAt = DateTime.UtcNow.AddMonths(-2),
-                UpdatedAt = DateTime.UtcNow.AddMonths(-2),
+                CreatedAt = new DateTime(2025, 4, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 4, 1, 0, 0, 0, DateTimeKind.Utc),
                 TournamentId = t1,
                 Bonos = 100.0,
                 
@@ -279,8 +279,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 IsDeleted = false,
                 ImageUrl = CloudinaryConstants.DEFAULT_IMAGE_USUARIOS,
                 CloudinaryPublicId = null,
-                CreatedAt = DateTime.UtcNow.AddMonths(-1),
-                UpdatedAt = DateTime.UtcNow.AddMonths(-1),
+                CreatedAt = new DateTime(2025, 5, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 5, 1, 0, 0, 0, DateTimeKind.Utc),
                 TournamentId = t1,
                 Bonos = 25.0,
                 
@@ -298,8 +298,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 IsDeleted = false,
                 ImageUrl = CloudinaryConstants.DEFAULT_IMAGE_USUARIOS,
                 CloudinaryPublicId = null,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
+                CreatedAt = new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc),
                 TournamentId = t2,
                 Bonos = 0,
                 
@@ -317,8 +317,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 IsDeleted = false,
                 ImageUrl = CloudinaryConstants.DEFAULT_IMAGE_USUARIOS,
                 CloudinaryPublicId = null,
-                CreatedAt = DateTime.UtcNow.AddMonths(-3),
-                UpdatedAt = DateTime.UtcNow.AddMonths(-3),
+                CreatedAt = new DateTime(2025, 3, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 3, 1, 0, 0, 0, DateTimeKind.Utc),
                 TournamentId = null,
                 
             },
@@ -335,8 +335,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 IsDeleted = false,
                 ImageUrl = CloudinaryConstants.DEFAULT_IMAGE_USUARIOS,
                 CloudinaryPublicId = null,
-                CreatedAt = DateTime.UtcNow.AddMonths(-2),
-                UpdatedAt = DateTime.UtcNow.AddMonths(-2),
+                CreatedAt = new DateTime(2025, 4, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 4, 1, 0, 0, 0, DateTimeKind.Utc),
                 TournamentId = null,
                 
             },
@@ -351,8 +351,8 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(
                 IsDeleted = false,
                 ImageUrl = CloudinaryConstants.DEFAULT_IMAGE_USUARIOS,
                 CloudinaryPublicId = null,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
+                CreatedAt = new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc),
                 TournamentId = null,
             }
         };
