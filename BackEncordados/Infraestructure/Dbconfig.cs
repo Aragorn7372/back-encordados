@@ -105,13 +105,14 @@ public static class DbConfig
               options.AddInterceptors(new VersionInterceptor());
              
              if(isDevelopment) options.UseInMemoryDatabase("UserDatabase");
-             else
-             {
-                 Log.Information("Modo producción activado - Conectando a PostgreSQL (Usuarios)");
-                 var connectionString = configuration["DATABASE_URL_USER"] 
-                                        ?? configuration.GetConnectionString("DefaultConnection") 
-                                        ?? throw new InvalidOperationException("No se encontró DATABASE_URL_USER o DefaultConnection");
-                 options.UseNpgsql(connectionString);
+              else
+              {
+                  Log.Information("Modo producción activado - Conectando a PostgreSQL (Usuarios)");
+                  var connectionString = configuration["DATABASE_URL_USER"] 
+                                         ?? configuration.GetConnectionString("DefaultConnection") 
+                                         ?? throw new InvalidOperationException("No se encontró DATABASE_URL_USER o DefaultConnection");
+                  connectionString += ";Pooling=false;Maximum Pool Size=5;Command Timeout=60";
+                  options.UseNpgsql(connectionString);
                  options.EnableSensitiveDataLogging(); 
                  options.EnableDetailedErrors(); 
              }
@@ -123,13 +124,14 @@ public static class DbConfig
              options.AddInterceptors(new TimestampInterceptor());
              
              if(isDevelopment) options.UseInMemoryDatabase("MaterialsDatabase");
-             else
-             {
-                 Log.Information("Modo producción activado - Conectando a PostgreSQL (Materials)");
-                 var connectionString = configuration["DATABASE_URL_MATERIALS"] 
-                                        ?? configuration.GetConnectionString("DefaultConnection") 
-                                        ?? throw new InvalidOperationException("No se encontró DATABASE_URL_MATERIALS o DefaultConnection");
-                 options.UseNpgsql(connectionString);
+              else
+              {
+                  Log.Information("Modo producción activado - Conectando a PostgreSQL (Materials)");
+                  var connectionString = configuration["DATABASE_URL_MATERIALS"] 
+                                         ?? configuration.GetConnectionString("DefaultConnection") 
+                                         ?? throw new InvalidOperationException("No se encontró DATABASE_URL_MATERIALS o DefaultConnection");
+                  connectionString += ";Pooling=false;Maximum Pool Size=5;Command Timeout=60";
+                  options.UseNpgsql(connectionString);
                  options.EnableSensitiveDataLogging(); 
                  options.EnableDetailedErrors(); 
              }
