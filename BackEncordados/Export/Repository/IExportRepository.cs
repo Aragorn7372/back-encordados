@@ -111,15 +111,4 @@ public interface IExportRepository
     /// </remarks>
     /// <param name="data">DTO con todas las listas de entidades a importar.</param>
     Task ImportDataAsync(ExportDataDto data);
-
-    /// <summary>
-    /// Limpia el ChangeTracker de los cuatro DbContexts para eliminar cualquier
-    /// referencia residual a entidades previamente trackeadas.
-    /// </summary>
-    /// <remarks>
-    /// <para>Debe llamarse entre <see cref="ClearAllDataAsync"/> e <see cref="ImportDataAsync"/>
-    /// para evitar conflictos de keys duplicadas en el change tracker de EF Core
-    /// al reinsertar entidades con los mismos IDs que las recién eliminadas.</para>
-    /// </remarks>
-    void ClearChangeTrackers();
 }
