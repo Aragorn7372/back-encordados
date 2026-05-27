@@ -137,6 +137,7 @@ public class ExportService(
 
         var data = await archiveManager.ExtractZipAsync(zipStream);
         await repository.ClearAllDataAsync();
+        repository.ClearChangeTrackers();
         await repository.ImportDataAsync(data);
 
         logger.LogInformation("Import completed successfully");

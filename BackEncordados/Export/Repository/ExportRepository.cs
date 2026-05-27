@@ -357,4 +357,12 @@ public class ExportRepository(
 
         logger.LogInformation("Data import completed");
     }
+
+    public void ClearChangeTrackers()
+    {
+        userDbContext.ChangeTracker.Clear();
+        materialsDbContext.ChangeTracker.Clear();
+        pedidosDbContext.ChangeTracker.Clear();
+        talleresDbContext.ChangeTracker.Clear();
+    }
 }
