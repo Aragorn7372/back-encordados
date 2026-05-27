@@ -201,7 +201,7 @@ public class MaterialsDbContext(DbContextOptions<MaterialsDbContext> options): D
     /// </param>
     private void SeedData(ModelBuilder modelBuilder)
     {
-        var now = DateTime.UtcNow;
+        var now = new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc);
         var t1 = Ulid.Parse("01KS0Q28TEJ0SYA6JJ5H4W4CMP");
         var t2 = Ulid.Parse("01KS0Q28TE9N7TG55K98TCB4X0");
         var t3= Ulid.Parse("01KS0Q28TEVEYS4303TXP202N4");
