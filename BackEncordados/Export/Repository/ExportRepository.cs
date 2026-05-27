@@ -228,7 +228,7 @@ public class ExportRepository(
     /// </remarks>
     private async Task ClearAllDataProductionAsync()
     {
-        logger.LogInformation("Using production delete strategy (ExecuteDeleteAsync for PostgreSQL, RemoveRange for MongoDB)");
+        logger.LogInformation("Using production delete strategy");
 
         var pedidoLineas = await pedidosDbContext.PedidoLineas.ToListAsync();
         pedidosDbContext.PedidoLineas.RemoveRange(pedidoLineas);
@@ -239,8 +239,13 @@ public class ExportRepository(
         await pedidosDbContext.SaveChangesAsync();
         logger.LogInformation("Cleared pedidos");
 
-        await materialsDbContext.Cuerdas.ExecuteDeleteAsync();
-        await materialsDbContext.Materiales.ExecuteDeleteAsync();
+        var cuerdas = await materialsDbContext.Cuerdas.ToListAsync();
+        materialsDbContext.Cuerdas.RemoveRange(cuerdas);
+
+        var materiales = await materialsDbContext.Materiales.ToListAsync();
+        materialsDbContext.Materiales.RemoveRange(materiales);
+
+        await materialsDbContext.SaveChangesAsync();
         logger.LogInformation("Cleared materials");
 
         await userDbContext.Users.ExecuteDeleteAsync();
