@@ -54,7 +54,8 @@ public static class RateLimitConfig
             };
         });
 
-        services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+        services.AddInMemoryRateLimiting();
+        services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
         
         return services;
     }

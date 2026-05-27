@@ -53,7 +53,7 @@ app.UseCorsPolicy();
 app.UseRateLimiting();
 app.UseHttpsRedirection();
 
-// archivos estaticos ANTES de routing (blazor.server.js, etc.)
+// archivos estaticos ANTES de routing 
 app.UseStaticFiles();
 app.UseRouting();
 // lo que tiene relacion con usuarios
