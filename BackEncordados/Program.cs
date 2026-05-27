@@ -21,7 +21,7 @@ services.AddValidatorsFromAssemblyContaining<Program>();
 // añado la base de datos
 services.AddDatabase(configuration);
 // politicas de corps
-services.AddCorsPolicy(configuration,true);
+services.AddCorsPolicy(configuration,environment.IsDevelopment());
 // limite de peticiones 
 services.AddRateLimitingPolicy();
 // añade autorizacion
@@ -50,7 +50,7 @@ var app = builder.Build();
 app.UseGlobalExceptionHandler();
 // politicas de corps (ANTES de routing para que las pre-flights pasen)
 app.UseCorsPolicy();
-
+app.UseRateLimiting();
 app.UseHttpsRedirection();
 
 // archivos estaticos ANTES de routing (blazor.server.js, etc.)
