@@ -239,13 +239,8 @@ public class ExportRepository(
         await pedidosDbContext.SaveChangesAsync();
         logger.LogInformation("Cleared pedidos");
 
-        var cuerdas = await materialsDbContext.Cuerdas.ToListAsync();
-        materialsDbContext.Cuerdas.RemoveRange(cuerdas);
-
-        var materiales = await materialsDbContext.Materiales.ToListAsync();
-        materialsDbContext.Materiales.RemoveRange(materiales);
-
-        await materialsDbContext.SaveChangesAsync();
+        await materialsDbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"Cuerdas\" RESTART IDENTITY");
+        await materialsDbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"Materiales\" RESTART IDENTITY");
         logger.LogInformation("Cleared materials");
 
         await userDbContext.Users.ExecuteDeleteAsync();
@@ -358,11 +353,4 @@ public class ExportRepository(
         logger.LogInformation("Data import completed");
     }
 
-    public void ClearChangeTrackers()
-    {
-        userDbContext.ChangeTracker.Clear();
-        materialsDbContext.ChangeTracker.Clear();
-        pedidosDbContext.ChangeTracker.Clear();
-        talleresDbContext.ChangeTracker.Clear();
-    }
 }
