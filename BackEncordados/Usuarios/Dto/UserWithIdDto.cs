@@ -18,5 +18,6 @@ public record UserWithIdDto(
     string Name,
     string Email,
     string Role,
-    string? TournamentId
+    string? TournamentId,
+    double Bonos = 0
 );

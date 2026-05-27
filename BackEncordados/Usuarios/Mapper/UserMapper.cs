@@ -66,7 +66,8 @@ public static class UserMapper
             user.Name,
             user.Email,
             user.Role,
-            user.TournamentId?.ToString()
+            user.TournamentId?.ToString(),
+            user.Bonos
             );
     }
     /// <summary>
