@@ -350,7 +350,25 @@ public class ExportRepository(
             logger.LogInformation("Imported {Count} pedidos", data.Pedidos.Count);
         }
 
+        await ResyncSequencesAsync();
+
         logger.LogInformation("Data import completed");
     }
 
+    private async Task ResyncSequencesAsync()
+    {
+        if (userDbContext.Database.IsInMemory())
+        {
+            logger.LogInformation("Skipping sequence resync for in-memory database");
+            return;
+        }
+
+        logger.LogInformation("Resynchronizing identity sequences");
+
+        await materialsDbContext.Database.ExecuteSqlRawAsync(
+            "SELECT setval('\"Cuerdas_Id_seq\"', COALESCE((SELECT MAX(\"Id\") FROM \"Cuerdas\"), 0) + 1, false), " +
+            "setval('\"Materiales_Id_seq\"', COALESCE((SELECT MAX(\"Id\") FROM \"Materiales\"), 0) + 1, false)");
+
+        logger.LogInformation("Identity sequences resynchronized");
+    }
 }
