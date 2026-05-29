@@ -7,6 +7,8 @@ using BackEncordados.Talleres.Model;
 using BackEncordados.Usuarios.Model;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Moq;
 using NUnit.Framework;
 using Testcontainers.PostgreSql;
 using Cuerda = BackEncordados.Materials.Model.Cuerdas;
@@ -22,6 +24,11 @@ public class ExcelRepositoryTests
     private TalleresDbContext _talleresContext = null!;
     private MaterialsDbContext _materialsContext = null!;
     private ExcelRepository _repository = null!;
+    private Mock<ILogger<MaterialsExcelRepository>> _materialsLoggerMock = null!;
+    private Mock<ILogger<UserExcelRepository>> _userLoggerMock = null!;
+    private Mock<ILogger<TalleresExcelRepository>> _talleresLoggerMock = null!;
+    private Mock<ILogger<PedidosExcelRepository>> _pedidosLoggerMock = null!;
+    private Mock<ILogger<ExcelRepository>> _excelLoggerMock = null!;
 
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
@@ -63,11 +70,23 @@ public class ExcelRepositoryTests
         _materialsContext = new MaterialsDbContext(materialsOptions);
         await _materialsContext.Database.EnsureCreatedAsync();
 
+        _materialsLoggerMock = new Mock<ILogger<MaterialsExcelRepository>>();
+        _userLoggerMock = new Mock<ILogger<UserExcelRepository>>();
+        _talleresLoggerMock = new Mock<ILogger<TalleresExcelRepository>>();
+        _pedidosLoggerMock = new Mock<ILogger<PedidosExcelRepository>>();
+        _excelLoggerMock = new Mock<ILogger<ExcelRepository>>();
+
+        var materialsRepo = new MaterialsExcelRepository(_materialsContext, _materialsLoggerMock.Object);
+        var userRepo = new UserExcelRepository(_userContext, _userLoggerMock.Object);
+        var talleresRepo = new TalleresExcelRepository(_talleresContext, _talleresLoggerMock.Object);
+        var pedidosRepo = new PedidosExcelRepository(_pedidosContext, _pedidosLoggerMock.Object);
+
         _repository = new ExcelRepository(
-            _pedidosContext,
-            _userContext,
-            _talleresContext,
-            _materialsContext
+            pedidosRepo,
+            userRepo,
+            talleresRepo,
+            materialsRepo,
+            _excelLoggerMock.Object
         );
     }
 
@@ -129,179 +148,239 @@ public class ExcelRepositoryTests
         await _postgresContainer.DisposeAsync();
     }
 
-    #region GetTournamentDataAsync Tests
+    #region GetPedidosByTournamentAsync Tests
 
     [Test]
-    public async Task GetTournamentDataAsync_WithNoPedidos_ReturnsEmptyList()
+    public async Task GetPedidosByTournamentAsync_WithNoPedidos_ReturnsEmptyList()
     {
         var tournamentId = Ulid.NewUlid();
 
-        var result = await _repository.GetTournamentDataAsync(tournamentId);
+        var result = await _repository.GetPedidosByTournamentAsync(tournamentId);
 
         result.Should().BeEmpty();
     }
 
     [Test]
-    public async Task GetTournamentDataAsync_WithSinglePedido_ReturnsTournamentRow()
+    public async Task GetPedidosByTournamentAsync_WithPedidos_ReturnsMatching()
     {
         var tournamentId = Ulid.NewUlid();
-        var playerId = Ulid.NewUlid();
-        var userId = Ulid.NewUlid();
+        var otherTournamentId = Ulid.NewUlid();
 
-        // Create user
-        var user = new User
-        {
-            Id = userId,
-            Username = "player_test",
-            Email = "player@test.com",
-            PasswordHash = "hash",
-            Name = "Player Test",
-            IsDeleted = false
-        };
-        _userContext.Users.Add(user);
-        await _userContext.SaveChangesAsync();
-
-        // Create pedido
         var pedido = new Pedidos
         {
             TournamentId = tournamentId,
-            PlayerId = playerId,
+            PlayerId = Ulid.NewUlid(),
             AssignedTo = Ulid.NewUlid(),
             Price = 50.0,
             Machine = "Machine1"
         };
         _pedidosContext.Pedidos.Add(pedido);
+
+        var otherPedido = new Pedidos
+        {
+            TournamentId = otherTournamentId,
+            PlayerId = Ulid.NewUlid(),
+            AssignedTo = Ulid.NewUlid(),
+            Price = 30.0,
+            Machine = "Machine2"
+        };
+        _pedidosContext.Pedidos.Add(otherPedido);
         await _pedidosContext.SaveChangesAsync();
 
-        var result = await _repository.GetTournamentDataAsync(tournamentId);
+        var result = await _repository.GetPedidosByTournamentAsync(tournamentId);
 
         result.Should().ContainSingle();
-        var row = result.First();
-        row.RacketCount.Should().Be(1);
-        row.TotalPrice.Should().Be(50.0m);
-        row.Username.Should().Be("Unknown"); // PlayerId doesn't match userId
+        result.First().Price.Should().Be(50.0);
+    }
+
+    #endregion
+
+    #region GetUsersByIdsAsync Tests
+
+    [Test]
+    public async Task GetUsersByIdsAsync_WithNoIds_ReturnsEmpty()
+    {
+        var result = await _repository.GetUsersByIdsAsync(new List<Ulid>());
+
+        result.Should().BeEmpty();
     }
 
     [Test]
-    public async Task GetTournamentDataAsync_WithMultiplePedidosSamePlayer_CountsAllRackets()
+    public async Task GetUsersByIdsAsync_WithExistingIds_ReturnsLookup()
     {
-        var tournamentId = Ulid.NewUlid();
-        var playerId = Ulid.NewUlid();
         var userId = Ulid.NewUlid();
-
-        // Create user
         var user = new User
         {
             Id = userId,
-            Username = "player_multi",
-            Email = "player_multi@test.com",
+            Username = "test_user",
+            Email = "test@test.com",
             PasswordHash = "hash",
-            Name = "Multi Player",
+            Name = "Test User",
             IsDeleted = false
         };
         _userContext.Users.Add(user);
         await _userContext.SaveChangesAsync();
 
-        // Create multiple pedidos for same player but use userId as playerId
-        for (int i = 0; i < 3; i++)
-        {
-            var pedido = new Pedidos
-            {
-                TournamentId = tournamentId,
-                PlayerId = userId,
-                AssignedTo = Ulid.NewUlid(),
-                Price = 50.0 + i,
-                Machine = $"Machine{i}"
-            };
-            _pedidosContext.Pedidos.Add(pedido);
-        }
-        await _pedidosContext.SaveChangesAsync();
+        var result = await _repository.GetUsersByIdsAsync(new List<Ulid> { userId });
 
-        var result = await _repository.GetTournamentDataAsync(tournamentId);
-
-        result.Should().ContainSingle();
-        var row = result.First();
-        row.RacketCount.Should().Be(3);
-        row.TotalPrice.Should().Be(153.0m); // 50 + 51 + 52
-        row.Username.Should().Be("player_multi");
+        result.Should().ContainKey(userId);
+        result[userId].Username.Should().Be("test_user");
+        result[userId].Name.Should().Be("Test User");
     }
 
+    #endregion
+
+    #region GetUsersByTournamentAsync Tests
+
     [Test]
-    public async Task GetTournamentDataAsync_WithMultiplePlayersAndPedidos_AggregatesAndSortsCorrectly()
+    public async Task GetUsersByTournamentAsync_WithUsers_ReturnsMatching()
     {
         var tournamentId = Ulid.NewUlid();
-        var playerId1 = Ulid.NewUlid();
-        var playerId2 = Ulid.NewUlid();
-
-        // Create users
-        var user1 = new User
+        var user = new User
         {
-            Id = playerId1,
-            Username = "zebra_player",
-            Email = "zebra@test.com",
+            Username = "tournament_user",
+            Email = "tuser@test.com",
             PasswordHash = "hash",
-            Name = "Zebra Player",
+            Name = "Tournament User",
+            TournamentId = tournamentId,
             IsDeleted = false
         };
-        var user2 = new User
-        {
-            Id = playerId2,
-            Username = "alpha_player",
-            Email = "alpha@test.com",
-            PasswordHash = "hash",
-            Name = "Alpha Player",
-            IsDeleted = false
-        };
-        _userContext.Users.AddRange(user1, user2);
+        _userContext.Users.Add(user);
         await _userContext.SaveChangesAsync();
 
-        // Create pedidos for both players
-        var pedidos = new[]
+        var result = await _repository.GetUsersByTournamentAsync(tournamentId);
+
+        result.Should().ContainSingle();
+        result.First().Username.Should().Be("tournament_user");
+    }
+
+    #endregion
+
+    #region GetMaterialsByTournamentAsync Tests
+
+    [Test]
+    public async Task GetMaterialsByTournamentAsync_WithMaterials_ReturnsMatching()
+    {
+        var tournamentId = Ulid.NewUlid();
+        var material = new Material
         {
-            new Pedidos { TournamentId = tournamentId, PlayerId = playerId1, AssignedTo = Ulid.NewUlid(), Price = 50.0, Machine = "M1" },
-            new Pedidos { TournamentId = tournamentId, PlayerId = playerId1, AssignedTo = Ulid.NewUlid(), Price = 60.0, Machine = "M2" },
-            new Pedidos { TournamentId = tournamentId, PlayerId = playerId2, AssignedTo = Ulid.NewUlid(), Price = 70.0, Machine = "M3" },
+            TournamentId = tournamentId,
+            Marca = "Wilson",
+            Modelo = "Pro Staff",
+            Stock = 5,
+            Precio = 199.99,
+            Type = MaterialType.Grip,
+            IsDeleted = false
         };
-        _pedidosContext.Pedidos.AddRange(pedidos);
-        await _pedidosContext.SaveChangesAsync();
+        _materialsContext.Materiales.Add(material);
+        await _materialsContext.SaveChangesAsync();
 
-        var result = await _repository.GetTournamentDataAsync(tournamentId);
+        var result = await _repository.GetMaterialsByTournamentAsync(tournamentId);
 
-        result.Should().HaveCount(2);
-        var resultList = result.ToList();
-        // Should be sorted by username: alpha_player, zebra_player
-        resultList[0].Username.Should().Be("alpha_player");
-        resultList[0].RacketCount.Should().Be(1);
-        resultList[0].TotalPrice.Should().Be(70.0m);
-        
-        resultList[1].Username.Should().Be("zebra_player");
-        resultList[1].RacketCount.Should().Be(2);
-        resultList[1].TotalPrice.Should().Be(110.0m);
+        result.Should().ContainSingle();
+        result.First().Marca.Should().Be("Wilson");
+    }
+
+    #endregion
+
+    #region GetCuerdasByTournamentAsync Tests
+
+    [Test]
+    public async Task GetCuerdasByTournamentAsync_WithCuerdas_ReturnsMatching()
+    {
+        var tournamentId = Ulid.NewUlid();
+        var cuerda = new Cuerda
+        {
+            TournamentId = tournamentId,
+            Marca = "Babolat",
+            Modelo = "Pure Strike",
+            Stock = 10,
+            Precio = 12.50,
+            Calibre = 1.25,
+            StringFormat = StringFormat.Reel,
+            StringsType = StringsType.NaturalGut,
+            IsDeleted = false
+        };
+        _materialsContext.Cuerdas.Add(cuerda);
+        await _materialsContext.SaveChangesAsync();
+
+        var result = await _repository.GetCuerdasByTournamentAsync(tournamentId);
+
+        result.Should().ContainSingle();
+        result.First().Marca.Should().Be("Babolat");
+    }
+
+    #endregion
+
+    #region GetTournamentByIdAsync Tests
+
+    [Test]
+    public async Task GetTournamentByIdAsync_WithExisting_ReturnsTournament()
+    {
+        var tournamentId = Ulid.NewUlid();
+        var tournament = new Tournaments
+        {
+            Id = tournamentId,
+            Owner = Ulid.NewUlid(),
+            Title = "Test Tournament",
+            StartTournament = DateTime.UtcNow,
+            EndTournament = DateTime.UtcNow.AddDays(1),
+            IsDeleted = false
+        };
+        _talleresContext.Partidos.Add(tournament);
+        await _talleresContext.SaveChangesAsync();
+
+        var result = await _repository.GetTournamentByIdAsync(tournamentId);
+
+        result.Should().NotBeNull();
+        result!.Title.Should().Be("Test Tournament");
     }
 
     [Test]
-    public async Task GetTournamentDataAsync_WithUnknownPlayerId_ReturnsSafeDefaults()
+    public async Task GetTournamentByIdAsync_WithNonExistent_ReturnsNull()
+    {
+        var result = await _repository.GetTournamentByIdAsync(Ulid.NewUlid());
+
+        result.Should().BeNull();
+    }
+
+    #endregion
+
+    #region GetPedidoLineasByPedidoIdsAsync Tests
+
+    [Test]
+    public async Task GetPedidoLineasByPedidoIdsAsync_WithLineas_ReturnsMatching()
     {
         var tournamentId = Ulid.NewUlid();
-        var unknownPlayerId = Ulid.NewUlid();
-
         var pedido = new Pedidos
         {
             TournamentId = tournamentId,
-            PlayerId = unknownPlayerId,
+            PlayerId = Ulid.NewUlid(),
             AssignedTo = Ulid.NewUlid(),
-            Price = 50.0,
+            Price = 100.0,
             Machine = "M1"
         };
         _pedidosContext.Pedidos.Add(pedido);
         await _pedidosContext.SaveChangesAsync();
 
-        var result = await _repository.GetTournamentDataAsync(tournamentId);
+        var linea = new PedidoLinea
+        {
+            PedidoId = pedido.Id,
+            RaquetModel = "Pro Staff",
+            Nudos = 16,
+            DateString = DateTime.UtcNow,
+            Logotype = true,
+            Color = "Red",
+            StringSetup = new StringSetup { StringV = "Babolat", TensionV = 50 },
+            Status = Status.PENDING
+        };
+        _pedidosContext.PedidoLineas.Add(linea);
+        await _pedidosContext.SaveChangesAsync();
+
+        var result = await _repository.GetPedidoLineasByPedidoIdsAsync(new List<Ulid> { pedido.Id });
 
         result.Should().ContainSingle();
-        var row = result.First();
-        row.Username.Should().Be("Unknown");
-        row.Name.Should().Be("Unknown");
+        result.First().RaquetModel.Should().Be("Pro Staff");
     }
 
     #endregion
@@ -485,462 +564,6 @@ public class ExcelRepositoryTests
         var result = await _repository.IsUserOwnerOfTournamentAsync(userId, tournamentId);
 
         result.Should().BeFalse();
-    }
-
-    #endregion
-
-    #region GetAdvancedDataAsync Tests
-
-    [Test]
-    public async Task GetAdvancedDataAsync_WithEmptyTypes_ReturnsEmptyData()
-    {
-        var tournamentId = Ulid.NewUlid();
-
-        var result = await _repository.GetAdvancedDataAsync(tournamentId, new List<string>());
-
-        result.Users.Should().BeEmpty();
-        result.Materials.Should().BeEmpty();
-        result.Cuerdas.Should().BeEmpty();
-        result.Tournament.Should().BeEmpty();
-        result.Pedidos.Should().BeEmpty();
-        result.PedidoLineas.Should().BeEmpty();
-    }
-
-    [Test]
-    public async Task GetAdvancedDataAsync_WithUsersType_ReturnsUsers()
-    {
-        var tournamentId = Ulid.NewUlid();
-        var userId = Ulid.NewUlid();
-
-        var user = new User
-        {
-            Id = userId,
-            Username = "excel_user",
-            Email = "excel@test.com",
-            PasswordHash = "hash",
-            Name = "Excel User",
-            Phone = "+34123456789",
-            TournamentId = tournamentId,
-            IsDeleted = false
-        };
-        _userContext.Users.Add(user);
-        await _userContext.SaveChangesAsync();
-
-        var result = await _repository.GetAdvancedDataAsync(tournamentId, new List<string> { "users" });
-
-        result.Users.Should().ContainSingle();
-        var userDto = result.Users.First();
-        userDto.Username.Should().Be("excel_user");
-        userDto.Email.Should().Be("excel@test.com");
-        userDto.Name.Should().Be("Excel User");
-        userDto.Phone.Should().Be("+34123456789");
-        userDto.TournamentId.Should().Be(tournamentId.ToString());
-    }
-
-    [Test]
-    public async Task GetAdvancedDataAsync_WithMaterialsType_ReturnsMaterials()
-    {
-        var tournamentId = Ulid.NewUlid();
-
-        var material = new Material
-        {
-            TournamentId = tournamentId,
-            Marca = "Wilson",
-            Modelo = "Pro Staff 97",
-            Stock = 10,
-            Precio = 199.99,
-            Type = MaterialType.Overgrip,
-            IsDeleted = false
-        };
-        _materialsContext.Materiales.Add(material);
-        await _materialsContext.SaveChangesAsync();
-
-        var result = await _repository.GetAdvancedDataAsync(tournamentId, new List<string> { "materials" });
-
-        result.Materials.Should().ContainSingle();
-        var materialDto = result.Materials.First();
-        materialDto.Marca.Should().Be("Wilson");
-        materialDto.Modelo.Should().Be("Pro Staff 97");
-        materialDto.Stock.Should().Be(10);
-        materialDto.Precio.Should().Be(199.99);
-        materialDto.Type.Should().Be("Overgrip");
-    }
-
-    [Test]
-    public async Task GetAdvancedDataAsync_WithCuerdasType_ReturnsCuerdas()
-    {
-        var tournamentId = Ulid.NewUlid();
-
-        var cuerda = new Cuerda
-        {
-            TournamentId = tournamentId,
-            Marca = "Babolat",
-            Modelo = "Pure Strike",
-            Stock = 20,
-            Precio = 12.50,
-            Calibre = 1.25,
-            StringFormat = StringFormat.Reel,
-            StringsType = StringsType.NaturalGut,
-            IsDeleted = false
-        };
-        _materialsContext.Cuerdas.Add(cuerda);
-        await _materialsContext.SaveChangesAsync();
-
-        var result = await _repository.GetAdvancedDataAsync(tournamentId, new List<string> { "cuerdas" });
-
-        result.Cuerdas.Should().ContainSingle();
-        var cuerdasDto = result.Cuerdas.First();
-        cuerdasDto.Marca.Should().Be("Babolat");
-        cuerdasDto.Modelo.Should().Be("Pure Strike");
-        cuerdasDto.Stock.Should().Be(20);
-        cuerdasDto.Precio.Should().Be(12.50);
-        cuerdasDto.StringFormat.Should().Be("Reel");
-        cuerdasDto.StringsType.Should().Be("NaturalGut");
-    }
-
-    [Test]
-    public async Task GetAdvancedDataAsync_WithTournamentType_ReturnsTournament()
-    {
-        var tournamentId = Ulid.NewUlid();
-        var ownerId = Ulid.NewUlid();
-        var supervisor1 = Ulid.NewUlid();
-        var supervisor2 = Ulid.NewUlid();
-        var worker1 = Ulid.NewUlid();
-
-        var tournament = new Tournaments
-        {
-            Id = tournamentId,
-            Owner = ownerId,
-            Title = "My Tournament",
-            StartTournament = DateTime.UtcNow,
-            EndTournament = DateTime.UtcNow.AddDays(30),
-            Logotype = "image.jpg",
-            WorkersList = new List<Ulid> { worker1 },
-            SupervisorList = new List<Ulid> { supervisor1, supervisor2 },
-            IsDeleted = false
-        };
-        _talleresContext.Partidos.Add(tournament);
-        await _talleresContext.SaveChangesAsync();
-
-        var result = await _repository.GetAdvancedDataAsync(tournamentId, new List<string> { "tournament" });
-
-        result.Tournament.Should().ContainSingle();
-        var tournamentDto = result.Tournament.First();
-        tournamentDto.Title.Should().Be("My Tournament");
-        tournamentDto.Owner.Should().Be(ownerId.ToString());
-        tournamentDto.Logotype.Should().Be("image.jpg");
-        tournamentDto.WorkersList.Should().Contain(worker1.ToString());
-        tournamentDto.SupervisorList.Should().Contain(supervisor1.ToString());
-        tournamentDto.SupervisorList.Should().Contain(supervisor2.ToString());
-    }
-
-    [Test]
-    public async Task GetAdvancedDataAsync_WithPedidosType_ReturnsPedidosAndLineas()
-    {
-        var tournamentId = Ulid.NewUlid();
-        var playerId = Ulid.NewUlid();
-        var assignedTo = Ulid.NewUlid();
-
-        var pedido = new Pedidos
-        {
-            TournamentId = tournamentId,
-            PlayerId = playerId,
-            AssignedTo = assignedTo,
-            Machine = "Machine1",
-            Comments = "Test comments",
-            Price = 150.0,
-            PayStatus = PaymentStatus.PENDING_PAYMENT
-        };
-        _pedidosContext.Pedidos.Add(pedido);
-        await _pedidosContext.SaveChangesAsync();
-
-        var result = await _repository.GetAdvancedDataAsync(tournamentId, new List<string> { "pedidos" });
-
-        result.Pedidos.Should().ContainSingle();
-        var pedidoDto = result.Pedidos.First();
-        pedidoDto.PlayerId.Should().Be(playerId.ToString());
-        pedidoDto.AssignedTo.Should().Be(assignedTo.ToString());
-        pedidoDto.Machine.Should().Be("Machine1");
-        pedidoDto.Comments.Should().Be("Test comments");
-        pedidoDto.Price.Should().Be(150.0);
-        pedidoDto.PayStatus.Should().Be("PENDING_PAYMENT");
-    }
-
-    [Test]
-    public async Task GetAdvancedDataAsync_WithPedidosAndLineas_ReturnsBothCorrectly()
-    {
-        var tournamentId = Ulid.NewUlid();
-        var playerId = Ulid.NewUlid();
-        var assignedTo = Ulid.NewUlid();
-
-        var pedido = new Pedidos
-        {
-            TournamentId = tournamentId,
-            PlayerId = playerId,
-            AssignedTo = assignedTo,
-            Machine = "Machine1",
-            Comments = "Test",
-            Price = 100.0,
-            PayStatus = PaymentStatus.PAID
-        };
-        _pedidosContext.Pedidos.Add(pedido);
-        await _pedidosContext.SaveChangesAsync();
-
-        var stringSetup = new StringSetup
-        {
-            StringV = "Babolat",
-            TensionV = 50,
-            PreStetchV = 2,
-            StringH = "Wilson",
-            TensionH = 48,
-            PreStetchH = (short)1.5
-        };
-
-        var linea = new PedidoLinea
-        {
-            PedidoId = pedido.Id,
-            RaquetModel = "Pro Staff",
-            Nudos = 16,
-            DateString = DateTime.UtcNow,
-            Logotype = true,
-            Color = "Red",
-            StringSetup = stringSetup,
-            Status = Status.COMPLETED
-        };
-        _pedidosContext.PedidoLineas.Add(linea);
-        await _pedidosContext.SaveChangesAsync();
-
-        var result = await _repository.GetAdvancedDataAsync(tournamentId, new List<string> { "pedidos" });
-
-        result.Pedidos.Should().ContainSingle();
-        result.PedidoLineas.Should().ContainSingle();
-
-        var lineaDto = result.PedidoLineas.First();
-        lineaDto.RaquetModel.Should().Be("Pro Staff");
-        lineaDto.Nudos.Should().Be(16);
-        lineaDto.StringV.Should().Be("Babolat");
-        lineaDto.TensionV.Should().Be(50);
-        lineaDto.PreStetchV.Should().Be(2);
-        lineaDto.StringH.Should().Be("Wilson");
-        lineaDto.TensionH.Should().Be(48);
-        lineaDto.PreStetchH.Should().Be((short)1.5);
-        lineaDto.Status.Should().Be("COMPLETED");
-    }
-
-    [Test]
-    public async Task GetAdvancedDataAsync_WithPedidoLineasNullStringSetup_ReturnsSafeDefaults()
-    {
-        var tournamentId = Ulid.NewUlid();
-        var playerId = Ulid.NewUlid();
-        var assignedTo = Ulid.NewUlid();
-
-        var pedido = new Pedidos
-        {
-            TournamentId = tournamentId,
-            PlayerId = playerId,
-            AssignedTo = assignedTo,
-            Machine = "Machine1",
-            Price = 100.0,
-            PayStatus = PaymentStatus.PENDING_PAYMENT
-        };
-        _pedidosContext.Pedidos.Add(pedido);
-        await _pedidosContext.SaveChangesAsync();
-
-        var linea = new PedidoLinea
-        {
-            PedidoId = pedido.Id,
-            RaquetModel = "Pro Staff",
-            Nudos = 16,
-            DateString = DateTime.UtcNow,
-            Logotype = true,
-            Color = "Red",
-            StringSetup = null!,
-            Status = Status.IN_PROGRESS
-        };
-        _pedidosContext.PedidoLineas.Add(linea);
-        await _pedidosContext.SaveChangesAsync();
-
-        var result = await _repository.GetAdvancedDataAsync(tournamentId, new List<string> { "pedidos" });
-
-        result.PedidoLineas.Should().ContainSingle();
-        var lineaDto = result.PedidoLineas.First();
-        lineaDto.StringV.Should().Be("");
-        lineaDto.TensionV.Should().Be(0);
-        lineaDto.PreStetchV.Should().Be(0);
-        lineaDto.StringH.Should().Be("");
-        lineaDto.TensionH.Should().Be(0);
-        lineaDto.PreStetchH.Should().Be(0);
-    }
-
-    [Test]
-    public async Task GetAdvancedDataAsync_WithAllTypes_ReturnsAllData()
-    {
-        var tournamentId = Ulid.NewUlid();
-        var ownerId = Ulid.NewUlid();
-        var userId = Ulid.NewUlid();
-        var playerId = Ulid.NewUlid();
-
-        // Add user
-        var user = new User
-        {
-            Id = userId,
-            Username = "user1",
-            Email = "user1@test.com",
-            PasswordHash = "hash",
-            TournamentId = tournamentId,
-            IsDeleted = false
-        };
-        _userContext.Users.Add(user);
-        await _userContext.SaveChangesAsync();
-
-        // Add material
-        var material = new Material
-        {
-            TournamentId = tournamentId,
-            Marca = "Wilson",
-            Modelo = "Pro",
-            Stock = 5,
-            Precio = 100,
-            Type = MaterialType.Grip,
-            IsDeleted = false
-        };
-        _materialsContext.Materiales.Add(material);
-        await _materialsContext.SaveChangesAsync();
-
-        // Add cuerda
-        var cuerda = new Cuerda
-        {
-            TournamentId = tournamentId,
-            Marca = "Babolat",
-            Modelo = "Hybrid",
-            Stock = 10,
-            Precio = 15,
-            StringFormat = StringFormat.Reel,
-            StringsType = StringsType.Hybrid,
-            IsDeleted = false
-        };
-        _materialsContext.Cuerdas.Add(cuerda);
-        await _materialsContext.SaveChangesAsync();
-
-        // Add tournament
-        var tournament = new Tournaments
-        {
-            Id = tournamentId,
-            Owner = ownerId,
-            Title = "Complete Tournament",
-            StartTournament = DateTime.UtcNow,
-            EndTournament = DateTime.UtcNow.AddDays(7),
-            SupervisorList = new List<Ulid> { userId },
-            IsDeleted = false
-        };
-        _talleresContext.Partidos.Add(tournament);
-        await _talleresContext.SaveChangesAsync();
-
-        // Add pedido
-        var pedido = new Pedidos
-        {
-            TournamentId = tournamentId,
-            PlayerId = playerId,
-            AssignedTo = ownerId,
-            Price = 100,
-            PayStatus = PaymentStatus.PAID
-        };
-        _pedidosContext.Pedidos.Add(pedido);
-        await _pedidosContext.SaveChangesAsync();
-
-        var result = await _repository.GetAdvancedDataAsync(tournamentId,
-            new List<string> { "users", "materials", "cuerdas", "tournament", "pedidos" });
-
-        result.Users.Should().ContainSingle();
-        result.Materials.Should().ContainSingle();
-        result.Cuerdas.Should().ContainSingle();
-        result.Tournament.Should().ContainSingle();
-        result.Pedidos.Should().ContainSingle();
-    }
-
-    [Test]
-    public async Task GetAdvancedDataAsync_WithSpecificTypes_OnlyReturnsRequested()
-    {
-        var tournamentId = Ulid.NewUlid();
-        var ownerId = Ulid.NewUlid();
-
-        // Add material
-        var material = new Material
-        {
-            TournamentId = tournamentId,
-            Marca = "Wilson",
-            Modelo = "Pro",
-            Stock = 5,
-            Precio = 100,
-            Type = MaterialType.Grip,
-            IsDeleted = false
-        };
-        _materialsContext.Materiales.Add(material);
-
-        // Add cuerda
-        var cuerda = new Cuerda
-        {
-            TournamentId = tournamentId,
-            Marca = "Babolat",
-            Modelo = "Hybrid",
-            Stock = 10,
-            Precio = 15,
-            StringFormat = StringFormat.Reel,
-            StringsType = StringsType.Hybrid,
-            IsDeleted = false
-        };
-        _materialsContext.Cuerdas.Add(cuerda);
-        await _materialsContext.SaveChangesAsync();
-
-        var result = await _repository.GetAdvancedDataAsync(tournamentId, new List<string> { "materials" });
-
-        result.Materials.Should().ContainSingle();
-        result.Cuerdas.Should().BeEmpty();
-        result.Users.Should().BeEmpty();
-        result.Tournament.Should().BeEmpty();
-        result.Pedidos.Should().BeEmpty();
-    }
-
-    [Test]
-    public async Task GetAdvancedDataAsync_WithNonExistentTournamentInTournamentType_ReturnsEmptyTournamentList()
-    {
-        var tournamentId = Ulid.NewUlid();
-
-        var result = await _repository.GetAdvancedDataAsync(tournamentId, new List<string> { "tournament" });
-
-        result.Tournament.Should().BeEmpty();
-    }
-
-    [Test]
-    public async Task GetAdvancedDataAsync_WithMultiplePedidos_ReturnsAll()
-    {
-        var tournamentId = Ulid.NewUlid();
-        var player1 = Ulid.NewUlid();
-        var player2 = Ulid.NewUlid();
-
-        var pedido1 = new Pedidos
-        {
-            TournamentId = tournamentId,
-            PlayerId = player1,
-            AssignedTo = Ulid.NewUlid(),
-            Price = 50,
-            PayStatus = PaymentStatus.PENDING_PAYMENT
-        };
-        var pedido2 = new Pedidos
-        {
-            TournamentId = tournamentId,
-            PlayerId = player2,
-            AssignedTo = Ulid.NewUlid(),
-            Price = 75,
-            PayStatus = PaymentStatus.PAID
-        };
-        _pedidosContext.Pedidos.AddRange(pedido1, pedido2);
-        await _pedidosContext.SaveChangesAsync();
-
-        var result = await _repository.GetAdvancedDataAsync(tournamentId, new List<string> { "pedidos" });
-
-        result.Pedidos.Should().HaveCount(2);
-        result.Pedidos.Select(p => p.Price).Should().Contain(new[] { 50.0, 75.0 });
     }
 
     #endregion
