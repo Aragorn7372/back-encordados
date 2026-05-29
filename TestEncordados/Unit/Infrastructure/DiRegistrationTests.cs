@@ -75,7 +75,15 @@ public class DiRegistrationTests
             typeof(ITournamentRepository),
             typeof(IMaterialsRepository),
             typeof(ICuerdasRepository),
+            typeof(IMaterialsExportRepository),
+            typeof(IUserExportRepository),
+            typeof(ITalleresExportRepository),
+            typeof(IPedidosExportRepository),
             typeof(IExportRepository),
+            typeof(IMaterialsExcelRepository),
+            typeof(IUserExcelRepository),
+            typeof(ITalleresExcelRepository),
+            typeof(IPedidosExcelRepository),
             typeof(IExcelRepository),
         };
 

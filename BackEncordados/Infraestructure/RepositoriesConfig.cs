@@ -92,7 +92,15 @@ public static class RepositoriesConfig
         services.AddScoped<ITournamentRepository, TournamentRepository>();
         services.AddScoped<IMaterialsRepository, MaterialsRepository>();
         services.AddScoped<ICuerdasRepository, CuerdasRepository>();
-services.AddScoped<IExportRepository, ExportRepository>();
+        services.AddScoped<IMaterialsExportRepository, MaterialsExportRepository>();
+        services.AddScoped<IUserExportRepository, UserExportRepository>();
+        services.AddScoped<ITalleresExportRepository, TalleresExportRepository>();
+        services.AddScoped<IPedidosExportRepository, PedidosExportRepository>();
+        services.AddScoped<IExportRepository, ExportRepository>();
+        services.AddScoped<IMaterialsExcelRepository, MaterialsExcelRepository>();
+        services.AddScoped<IUserExcelRepository, UserExcelRepository>();
+        services.AddScoped<ITalleresExcelRepository, TalleresExcelRepository>();
+        services.AddScoped<IPedidosExcelRepository, PedidosExcelRepository>();
         services.AddScoped<IExcelRepository, ExcelRepository>();
 
         return services;

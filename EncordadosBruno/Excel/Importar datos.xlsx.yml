@@ -16,7 +16,7 @@ http:
       - name: file
         type: file
         value:
-          - ../image/torneo_advanced_01KR42E3NRTHEKKH1VHSNZK74E_2026-05-19.xlsx
+          - C:\Users\Aragorn\Desktop\docker-enviroment\back-encordados\EncordadosBruno\Excel\torneo_advanced_01KS0Q28TE9N7TG55K98TCB4X0_2026-05-29.xlsx
   auth:
     type: bearer
     token: "{{token_admin}}"
