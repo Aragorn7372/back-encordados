@@ -7,9 +7,11 @@ using BackEncordados.Excel.Service;
 using BackEncordados.Materials.Dto.Materials;
 using BackEncordados.Materials.Dto.Strings;
 using BackEncordados.Materials.Errors;
+using BackEncordados.Materials.Model;
 using BackEncordados.Materials.Service.Cuerdas;
 using BackEncordados.Materials.Service.Materials;
 using BackEncordados.Purchased.Dto;
+using BackEncordados.Purchased.Model;
 using BackEncordados.Purchased.Service;
 using BackEncordados.Talleres.Dto;
 using BackEncordados.Talleres.Error;
@@ -17,6 +19,7 @@ using BackEncordados.Talleres.Model;
 using BackEncordados.Talleres.Service;
 using BackEncordados.Usuarios.Dto;
 using BackEncordados.Usuarios.Errors;
+using BackEncordados.Usuarios.Model;
 using BackEncordados.Usuarios.Service.CrudService;
 using CSharpFunctionalExtensions;
 using FluentAssertions;
@@ -30,7 +33,6 @@ public class ExcelServiceTests
 {
     private Mock<IExcelRepository> _mockRepo = null!;
     private Mock<IExcelArchiveManager> _mockArchive = null!;
-    private TalleresDbContext _dbContext = null!;
     private Mock<IUserService> _mockUserService = null!;
     private Mock<IPurchasedService> _mockPurchasedService = null!;
     private Mock<ITournamentService> _mockTournamentService = null!;
@@ -42,8 +44,27 @@ public class ExcelServiceTests
     private static readonly Ulid TournamentId = Ulid.NewUlid();
     private const string TournamentName = "Test Tournament";
     private static readonly byte[] SampleExcelBytes = [0x50, 0x4B, 0x03, 0x04];
-    private static readonly TournamentExcelRowDto SampleRow = new();
-    private static readonly IEnumerable<TournamentExcelRowDto> SampleRows = [SampleRow];
+    private static readonly Pedidos SamplePedido = new()
+    {
+        TournamentId = TournamentId,
+        PlayerId = UserId,
+        AssignedTo = Ulid.NewUlid(),
+        Price = 50.0,
+        Machine = "Machine1"
+    };
+    private static readonly List<Pedidos> SamplePedidos = [SamplePedido];
+    private static readonly Dictionary<Ulid, (string Username, string Name)> SampleUsersLookup = new()
+    {
+        [UserId] = ("player1", "Player One")
+    };
+    private static readonly Tournaments SampleTournament = new()
+    {
+        Id = TournamentId,
+        Owner = UserId,
+        Title = TournamentName,
+        StartTournament = DateTime.UtcNow,
+        EndTournament = DateTime.UtcNow.AddDays(7)
+    };
 
     [SetUp]
     public void SetUp()
@@ -56,24 +77,9 @@ public class ExcelServiceTests
         _mockMaterialsService = new Mock<IMaterialsService>();
         _mockCuerdasService = new Mock<ICuerdasService>();
 
-        var options = new DbContextOptionsBuilder<TalleresDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-        _dbContext = new TalleresDbContext(options);
-        _dbContext.Partidos.Add(new Tournaments
-        {
-            Id = TournamentId,
-            Owner = UserId,
-            Title = TournamentName,
-            StartTournament = DateTime.UtcNow,
-            EndTournament = DateTime.UtcNow.AddDays(7)
-        });
-        _dbContext.SaveChanges();
-
         _service = new ExcelService(
             _mockRepo.Object,
             _mockArchive.Object,
-            _dbContext,
             _mockUserService.Object,
             _mockTournamentService.Object,
             _mockMaterialsService.Object,
@@ -86,7 +92,6 @@ public class ExcelServiceTests
     [TearDown]
     public void TearDown()
     {
-        _dbContext.Dispose();
     }
 
     #region ExportTournamentAsync
@@ -96,9 +101,13 @@ public class ExcelServiceTests
     {
         _mockRepo.Setup(r => r.IsUserSupervisorOfTournamentAsync(UserId, TournamentId))
             .ReturnsAsync(true);
-        _mockRepo.Setup(r => r.GetTournamentDataAsync(TournamentId))
-            .ReturnsAsync(SampleRows);
-        _mockArchive.Setup(a => a.CreateExcelAsync(SampleRows, TournamentName))
+        _mockRepo.Setup(r => r.GetPedidosByTournamentAsync(TournamentId))
+            .ReturnsAsync(SamplePedidos);
+        _mockRepo.Setup(r => r.GetUsersByIdsAsync(It.IsAny<List<Ulid>>()))
+            .ReturnsAsync(SampleUsersLookup);
+        _mockRepo.Setup(r => r.GetTournamentByIdAsync(TournamentId))
+            .ReturnsAsync(SampleTournament);
+        _mockArchive.Setup(a => a.CreateExcelAsync(It.IsAny<IEnumerable<TournamentExcelRowDto>>(), TournamentName))
             .ReturnsAsync(SampleExcelBytes);
 
         var result = await _service.ExportTournamentAsync(UserId, TournamentId);
@@ -124,9 +133,13 @@ public class ExcelServiceTests
         var unknownId = Ulid.NewUlid();
         _mockRepo.Setup(r => r.IsUserSupervisorOfTournamentAsync(UserId, unknownId))
             .ReturnsAsync(true);
-        _mockRepo.Setup(r => r.GetTournamentDataAsync(unknownId))
-            .ReturnsAsync(SampleRows);
-        _mockArchive.Setup(a => a.CreateExcelAsync(SampleRows, $"Torneo {unknownId}"))
+        _mockRepo.Setup(r => r.GetPedidosByTournamentAsync(unknownId))
+            .ReturnsAsync(new List<Pedidos>());
+        _mockRepo.Setup(r => r.GetUsersByIdsAsync(It.IsAny<List<Ulid>>()))
+            .ReturnsAsync(new Dictionary<Ulid, (string, string)>());
+        _mockRepo.Setup(r => r.GetTournamentByIdAsync(unknownId))
+            .ReturnsAsync((Tournaments?)null);
+        _mockArchive.Setup(a => a.CreateExcelAsync(It.IsAny<IEnumerable<TournamentExcelRowDto>>(), $"Torneo {unknownId}"))
             .ReturnsAsync(SampleExcelBytes);
 
         var result = await _service.ExportTournamentAsync(UserId, unknownId);
@@ -141,8 +154,18 @@ public class ExcelServiceTests
     [Test]
     public async Task ExportAdvancedAsync_WhenAdmin_BypassesOwnerCheck()
     {
-        _mockRepo.Setup(r => r.GetAdvancedDataAsync(TournamentId, It.IsAny<List<string>>()))
-            .ReturnsAsync(new ExcelAdvancedDataDto());
+        _mockRepo.Setup(r => r.GetUsersByTournamentAsync(TournamentId))
+            .ReturnsAsync(new List<User>());
+        _mockRepo.Setup(r => r.GetMaterialsByTournamentAsync(TournamentId))
+            .ReturnsAsync(new List<Material>());
+        _mockRepo.Setup(r => r.GetCuerdasByTournamentAsync(TournamentId))
+            .ReturnsAsync(new List<Cuerdas>());
+        _mockRepo.Setup(r => r.GetTournamentByIdAsync(TournamentId))
+            .ReturnsAsync(SampleTournament);
+        _mockRepo.Setup(r => r.GetPedidosByTournamentAsync(TournamentId))
+            .ReturnsAsync(new List<Pedidos>());
+        _mockRepo.Setup(r => r.GetPedidoLineasByPedidoIdsAsync(It.IsAny<List<Ulid>>()))
+            .ReturnsAsync(new List<PedidoLinea>());
         _mockArchive.Setup(a => a.CreateAdvancedExcelAsync(
                 It.IsAny<ExcelAdvancedDataDto>(), It.IsAny<List<string>>(), TournamentName))
             .ReturnsAsync(SampleExcelBytes);
@@ -158,8 +181,18 @@ public class ExcelServiceTests
     {
         _mockRepo.Setup(r => r.IsUserOwnerOfTournamentAsync(UserId, TournamentId))
             .ReturnsAsync(true);
-        _mockRepo.Setup(r => r.GetAdvancedDataAsync(TournamentId, It.IsAny<List<string>>()))
-            .ReturnsAsync(new ExcelAdvancedDataDto());
+        _mockRepo.Setup(r => r.GetUsersByTournamentAsync(TournamentId))
+            .ReturnsAsync(new List<User>());
+        _mockRepo.Setup(r => r.GetMaterialsByTournamentAsync(TournamentId))
+            .ReturnsAsync(new List<Material>());
+        _mockRepo.Setup(r => r.GetCuerdasByTournamentAsync(TournamentId))
+            .ReturnsAsync(new List<Cuerdas>());
+        _mockRepo.Setup(r => r.GetTournamentByIdAsync(TournamentId))
+            .ReturnsAsync(SampleTournament);
+        _mockRepo.Setup(r => r.GetPedidosByTournamentAsync(TournamentId))
+            .ReturnsAsync(new List<Pedidos>());
+        _mockRepo.Setup(r => r.GetPedidoLineasByPedidoIdsAsync(It.IsAny<List<Ulid>>()))
+            .ReturnsAsync(new List<PedidoLinea>());
         _mockArchive.Setup(a => a.CreateAdvancedExcelAsync(
                 It.IsAny<ExcelAdvancedDataDto>(), It.IsAny<List<string>>(), TournamentName))
             .ReturnsAsync(SampleExcelBytes);
@@ -183,6 +216,14 @@ public class ExcelServiceTests
     {
         _mockRepo.Setup(r => r.IsUserOwnerOfTournamentAsync(UserId, TournamentId))
             .ReturnsAsync(true);
+        _mockRepo.Setup(r => r.GetUsersByTournamentAsync(TournamentId))
+            .ReturnsAsync(new List<User>());
+        _mockRepo.Setup(r => r.GetPedidosByTournamentAsync(TournamentId))
+            .ReturnsAsync(new List<Pedidos>());
+        _mockRepo.Setup(r => r.GetPedidoLineasByPedidoIdsAsync(It.IsAny<List<Ulid>>()))
+            .ReturnsAsync(new List<PedidoLinea>());
+        _mockRepo.Setup(r => r.GetTournamentByIdAsync(TournamentId))
+            .ReturnsAsync(SampleTournament);
         _mockArchive.Setup(a => a.CreateAdvancedExcelAsync(
                 It.IsAny<ExcelAdvancedDataDto>(),
                 It.Is<List<string>>(types => types.Count == 2 && types.Contains("users") && types.Contains("pedidos")),
@@ -191,8 +232,10 @@ public class ExcelServiceTests
 
         await _service.ExportAdvancedAsync(UserId, TournamentId, ["users", "invalid_type", "pedidos"], "OWNER");
 
-        _mockRepo.Verify(r => r.GetAdvancedDataAsync(TournamentId,
-            It.Is<List<string>>(types => types.Count == 2 && types.Contains("users") && types.Contains("pedidos"))), Times.Once);
+        _mockRepo.Verify(r => r.GetUsersByTournamentAsync(TournamentId), Times.Once);
+        _mockRepo.Verify(r => r.GetPedidosByTournamentAsync(TournamentId), Times.Once);
+        _mockRepo.Verify(r => r.GetMaterialsByTournamentAsync(It.IsAny<Ulid>()), Times.Never);
+        _mockRepo.Verify(r => r.GetCuerdasByTournamentAsync(It.IsAny<Ulid>()), Times.Never);
     }
 
     #endregion

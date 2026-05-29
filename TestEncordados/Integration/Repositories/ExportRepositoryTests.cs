@@ -23,6 +23,10 @@ public class ExportRepositoryTests
 
     private IExportRepository _repository = null!;
     private Mock<ILogger<ExportRepository>> _loggerMock = null!;
+    private Mock<ILogger<MaterialsExportRepository>> _materialsLoggerMock = null!;
+    private Mock<ILogger<UserExportRepository>> _userLoggerMock = null!;
+    private Mock<ILogger<TalleresExportRepository>> _talleresLoggerMock = null!;
+    private Mock<ILogger<PedidosExportRepository>> _pedidosLoggerMock = null!;
 
     [SetUp]
     public async Task SetUp()
@@ -49,7 +53,17 @@ public class ExportRepositoryTests
         _talleresContext = new TalleresDbContext(talleresOptions);
 
         _loggerMock = new Mock<ILogger<ExportRepository>>();
-        _repository = new ExportRepository(_userContext, _materialsContext, _pedidosContext, _talleresContext, _loggerMock.Object);
+        _materialsLoggerMock = new Mock<ILogger<MaterialsExportRepository>>();
+        _userLoggerMock = new Mock<ILogger<UserExportRepository>>();
+        _talleresLoggerMock = new Mock<ILogger<TalleresExportRepository>>();
+        _pedidosLoggerMock = new Mock<ILogger<PedidosExportRepository>>();
+
+        var materialsRepo = new MaterialsExportRepository(_materialsContext, _materialsLoggerMock.Object);
+        var userRepo = new UserExportRepository(_userContext, _userLoggerMock.Object);
+        var talleresRepo = new TalleresExportRepository(_talleresContext, _talleresLoggerMock.Object);
+        var pedidosRepo = new PedidosExportRepository(_pedidosContext, _pedidosLoggerMock.Object);
+
+        _repository = new ExportRepository(materialsRepo, userRepo, talleresRepo, pedidosRepo, _userContext, _loggerMock.Object);
     }
 
     [TearDown]
