@@ -11,6 +11,7 @@ using BackEncordados.Usuarios.Mapper;
 using BackEncordados.Usuarios.Model;
 using BackEncordados.Usuarios.Repository;
 using CSharpFunctionalExtensions;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace BackEncordados.Usuarios.Service.CrudService;
 
@@ -136,7 +137,10 @@ public class UserService(
         var user = await repository.FindByIdAsync(id);
         if (user is null)
             return Result.Failure<bool, AuthError>(new UserNotFoundError("User not found"));
-
+        if (user.TournamentId != null) {
+            return Result.Failure<bool, AuthError>(new ValidationError("That user is already associated with a tournament") );
+        }
+        if(user.Role!= User.UserRoles.USER) return Result.Failure<bool, AuthError>(new ValidationError("That user already has a role"));
         if (user.Role == role)
             return Result.Failure<bool, AuthError>(new ConflictError("User already has that role"));
 
@@ -290,7 +294,9 @@ public class UserService(
         var user = await repository.FindByIdAsync(userId);
         if (user is null)
             return Result.Failure<Unit, AuthError>(new UserNotFoundError("User not found"));
-        
+        if(user.TournamentId!= null)
+            return Result.Failure<Unit, AuthError>(new ValidationError("User is already associated with a tournament"));
+                
         if (user.Role == User.UserRoles.ENCORDER)
             return Result.Failure<Unit, AuthError>(new ConflictError("User already is an encorder"));
         
