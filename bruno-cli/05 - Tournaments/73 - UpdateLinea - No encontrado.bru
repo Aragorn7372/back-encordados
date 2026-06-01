@@ -1,0 +1,27 @@
+meta {
+  name: 73 - UpdateLinea - No encontrado
+  type: http
+  seq: 73
+}
+
+put {
+  url: {{api-url}}/api/Purchased/lineas/99999
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_encorder}}
+}
+
+body:json {
+  {
+    "RaquetModel": "No existe"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 404", function() { expect(res.getStatus()).to.equal(404); });
+  test("Mensaje de error", function() { expect(data).to.have.property("error"); });
+}

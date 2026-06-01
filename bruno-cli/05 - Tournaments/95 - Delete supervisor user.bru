@@ -1,0 +1,23 @@
+meta {
+  name: 95 - Delete supervisor user
+  type: http
+  seq: 95
+}
+
+delete {
+  url: {{api-url}}/api/User/{{sup_t_user_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_admin}}
+}
+
+script:post-response {
+  test("Status 204", function() { expect(res.getStatus()).to.equal(204); });
+  bru.deleteEnvVar("sup_t_user_id");
+  bru.deleteEnvVar("sup_t_username");
+  bru.deleteEnvVar("sup_t_password");
+  bru.deleteEnvVar("token_supervisor");
+}

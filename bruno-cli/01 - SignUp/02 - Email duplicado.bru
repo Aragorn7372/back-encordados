@@ -1,0 +1,26 @@
+meta {
+  name: 02 - Email duplicado
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{api-url}}/api/Auth/signup
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "Username": "otro_usuario_cualquiera",
+    "Email": "{{test_email}}",
+    "Password": "Test123456!"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 409 Conflict", function() { expect(res.getStatus()).to.equal(409); });
+  test("Mensaje de conflicto", function() { expect(data).to.have.property("message"); });
+  test("Menciona email en uso", function() { expect(data.message).to.include("email"); });
+}

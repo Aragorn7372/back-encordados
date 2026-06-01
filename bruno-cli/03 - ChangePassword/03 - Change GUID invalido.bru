@@ -1,0 +1,25 @@
+meta {
+  name: 03 - Change GUID invalido
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{api-url}}/api/Auth/change-password/00000000-0000-0000-0000-000000000000
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "NewPassword": "NuevaPass123!",
+    "ConfirmPassword": "NuevaPass123!"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 400 Bad Request", function() { expect(res.getStatus()).to.equal(400); });
+  test("Mensaje de error", function() { expect(data).to.have.property("message"); });
+  test("Menciona contraseña expiró", function() { expect(data.message).to.include("contraseña"); });
+}

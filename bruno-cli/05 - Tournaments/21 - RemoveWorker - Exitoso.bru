@@ -1,0 +1,26 @@
+meta {
+  name: 18 - RemoveWorker - Exitoso
+  type: http
+  seq: 21
+}
+
+patch {
+  url: {{api-url}}/api/Tournaments/remove-worker/{{tournament_id}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_t_owner}}
+}
+
+body:json {
+  "{{enc_t_user_id}}"
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Worker removido", function() { expect(data).to.have.property("user"); });
+  bru.deleteEnvVar("worker_user_id");
+}

@@ -1,0 +1,29 @@
+meta {
+  name: 07 - Create Tournament
+  type: http
+  seq: 10
+}
+
+script:pre-request {
+  req.setBody("Name=Test+Tournament&StartTournament=2026-06-01T00:00:00&EndTournament=2026-12-31T00:00:00");
+  req.setHeader("Content-Type", "application/x-www-form-urlencoded");
+}
+
+post {
+  url: {{api-url}}/api/Tournaments/owner-create
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_t_owner}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 201", function() { expect(res.getStatus()).to.equal(201); });
+  test("ID del torneo", function() { expect(data).to.have.property("id"); });
+  test("Nombre correcto", function() { expect(data.name).to.equal("Test Tournament"); });
+  if (data && data.id) bru.setEnvVar("tournament_id", data.id);
+  if (data && data.name) bru.setEnvVar("tournament_name", data.name);
+}

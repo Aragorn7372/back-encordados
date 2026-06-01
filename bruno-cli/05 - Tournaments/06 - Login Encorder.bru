@@ -1,0 +1,26 @@
+meta {
+  name: 06 - Login Encorder
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{api-url}}/api/Auth/signin
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "Username": "{{enc_t_username}}",
+    "Password": "{{enc_t_password}}"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Token recibido", function() { expect(data).to.have.property("token"); });
+  test("Rol ENCORDER", function() { expect(data.user.role).to.equal("ENCORDER"); });
+  if (data.token) bru.setEnvVar("token_encorder", data.token);
+}

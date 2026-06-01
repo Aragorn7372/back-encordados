@@ -1,0 +1,25 @@
+meta {
+  name: 15 - CreateEncoder - Ya es encoder
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{api-url}}/api/User/create-encoder
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_owner}}
+}
+
+body:json {
+  "{{tmp2_user_id}}"
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 409", function() { expect(res.getStatus()).to.equal(409); });
+  test("Mensaje de error", function() { expect(data).to.have.property("message"); });
+}
