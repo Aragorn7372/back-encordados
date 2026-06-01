@@ -1,0 +1,25 @@
+meta {
+  name: 12 - GiveRole - Ya tiene rol
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{api-url}}/api/User/{{tmp1_user_id}}/roles
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_admin}}
+}
+
+body:json {
+  "ENCORDER"
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 400", function() { expect(res.getStatus()).to.equal(400); });
+  test("Mensaje de error", function() { expect(data).to.have.property("message"); });
+}

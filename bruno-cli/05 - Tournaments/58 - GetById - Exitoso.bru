@@ -1,0 +1,23 @@
+meta {
+  name: 58 - GetById - Exitoso
+  type: http
+  seq: 58
+}
+
+get {
+  url: {{api-url}}/api/Purchased/{{pedido_a_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_encorder}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Tiene id", function() { expect(data).to.have.property("id"); });
+  test("Tiene lineas", function() { expect(data.lineas).to.have.lengthOf(1); });
+  test("PayStatus es PENDING_PAYMENT", function() { expect(data.payStatus).to.equal("PENDING_PAYMENT"); });
+}

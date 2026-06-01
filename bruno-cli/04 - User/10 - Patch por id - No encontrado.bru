@@ -1,0 +1,25 @@
+meta {
+  name: 10 - Patch por id - No encontrado
+  type: http
+  seq: 10
+}
+
+patch {
+  url: {{api-url}}/api/User/01ARZ3NDEKTSV4RRFFQ69G5FAV
+  body: multipart-form
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_admin}}
+}
+
+body:multipart-form {
+  Name: Should Not Work
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 404", function() { expect(res.getStatus()).to.equal(404); });
+  test("Mensaje de error", function() { expect(data).to.have.property("message"); });
+}

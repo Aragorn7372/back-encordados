@@ -1,0 +1,20 @@
+meta {
+  name: 09 - Patch por id - Exitoso
+  type: http
+  seq: 9
+}
+
+patch {
+  url: {{api-url}}/api/User/{{tmp1_user_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_admin}}
+}
+
+script:post-response {
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Tiene datos", function() { expect(res.getBody()).to.have.property("username"); });
+}

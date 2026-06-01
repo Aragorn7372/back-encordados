@@ -1,0 +1,53 @@
+meta {
+  name: 66 - Create - Validacion fallida
+  type: http
+  seq: 66
+}
+
+script:pre-request {
+  const body = JSON.stringify({
+    TournamentId: bru.getEnvVar("tournament_id"),
+    PlayerName: bru.getEnvVar("test_username"),
+    AssignedToName: bru.getEnvVar("enc_t_username"),
+    Machine: "Test",
+    Comments: "Invalid payment status",
+    PayStatus: "INVALID_STATUS",
+    Price: 10.00,
+    Lineas: [
+      {
+        RaquetModel: "Test",
+        Nudos: 2,
+        DateString: "2026-06-15T00:00:00Z",
+        Logotype: false,
+        Color: "White",
+        StringSetup: {
+          StringV: "Test",
+          TensionV: 25.0,
+          PreStetchV: 0,
+          StringH: "Test",
+          TensionH: 25.0,
+          PreStetchH: 0
+        }
+      }
+    ]
+  });
+  req.setBody(body);
+  req.setHeader("Content-Type", "application/json");
+}
+
+post {
+  url: {{api-url}}/api/Purchased
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_encorder}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 400", function() { expect(res.getStatus()).to.equal(400); });
+  test("Es array de errores", function() { expect(data).to.be.an("array"); });
+  test("Error en PayStatus", function() { expect(data[0]).to.have.property("propertyName"); });
+}

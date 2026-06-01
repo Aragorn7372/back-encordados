@@ -1,0 +1,15 @@
+meta {
+  name: 07 - GetMe - Sin autenticacion
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{api-url}}/api/User/me
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status 401", function() { expect(res.getStatus()).to.equal(401); });
+}

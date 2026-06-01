@@ -1,0 +1,21 @@
+meta {
+  name: 86 - Export - Exitoso
+  type: http
+  seq: 86
+}
+
+get {
+  url: {{api-url}}/api/export
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_admin}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Archivo ZIP", function() { expect(data).to.not.be.empty; });
+}

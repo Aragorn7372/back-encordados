@@ -1,0 +1,26 @@
+meta {
+  name: 01 - GetAll - Exitoso
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{api-url}}/api/User
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_owner}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Es pagina", function() { expect(data).to.have.property("content"); });
+  test("Tiene elementos", function() { expect(data.totalElements).to.be.at.least(1); });
+  test("Contiene array", function() { expect(Array.isArray(data.content)).to.be.true; });
+  test("Elemento con UserId", function() {
+    if (data.content.length > 0) expect(data.content[0]).to.have.property("userId");
+  });
+}

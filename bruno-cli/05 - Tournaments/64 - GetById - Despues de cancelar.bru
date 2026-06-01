@@ -1,0 +1,21 @@
+meta {
+  name: 64 - GetById - Despues de cancelar
+  type: http
+  seq: 64
+}
+
+get {
+  url: {{api-url}}/api/Purchased/{{pedido_a_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_encorder}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("PayStatus CANCELED", function() { expect(data.payStatus).to.equal("CANCELED"); });
+}

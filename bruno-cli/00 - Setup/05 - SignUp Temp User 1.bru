@@ -1,0 +1,37 @@
+meta {
+  name: 05 - SignUp Temp User 1
+  type: http
+  seq: 5
+}
+
+script:pre-request {
+  const rand = Math.random().toString(36).substring(2, 10);
+  bru.setVar("tmp1_username", "t1_" + rand);
+  bru.setVar("tmp1_email", "t1_" + rand + "@test.com");
+}
+
+post {
+  url: {{api-url}}/api/Auth/signup
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "Username": "{{tmp1_username}}",
+    "Password": "TempPass123!",
+    "Email": "{{tmp1_email}}"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 201", function() { expect(res.getStatus()).to.equal(201); });
+  test("Token recibido", function() { expect(data).to.have.property("token"); });
+  test("ID de usuario", function() { expect(data.user).to.have.property("id"); });
+  test("Rol USER", function() { expect(data.user.role).to.equal("USER"); });
+  if (data.token) bru.setEnvVar("tmp1_token", data.token);
+  if (data.user && data.user.id) bru.setEnvVar("tmp1_user_id", data.user.id);
+  if (data.user && data.user.username) bru.setEnvVar("tmp1_username", data.user.username);
+  bru.setEnvVar("tmp1_password", "TempPass123!");
+}

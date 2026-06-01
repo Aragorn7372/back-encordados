@@ -1,0 +1,19 @@
+meta {
+  name: 95 - Manifest - Sin archivo
+  type: http
+  seq: 92
+}
+
+post {
+  url: {{api-url}}/api/export/manifest
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_admin}}
+}
+
+script:post-response {
+  test("Status 400", function() { expect(res.getStatus()).to.equal(400); });
+}

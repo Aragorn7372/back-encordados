@@ -1,0 +1,29 @@
+meta {
+  name: 61 - Update - Exitoso
+  type: http
+  seq: 61
+}
+
+put {
+  url: {{api-url}}/api/Purchased/{{pedido_a_id}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_encorder}}
+}
+
+body:json {
+  {
+    "Machine": "BabolaStar-5",
+    "Comments": "Updated machine and comments"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Machine actualizada", function() { expect(data.machine).to.equal("BabolaStar-5"); });
+  test("Comments actualizados", function() { expect(data.comments).to.equal("Updated machine and comments"); });
+}

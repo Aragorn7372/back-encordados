@@ -1,0 +1,23 @@
+meta {
+  name: 05 - Email invalido
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{api-url}}/api/Auth/signup
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "Username": "test_email_invalido",
+    "Email": "esto-no-es-un-email",
+    "Password": "Test123456!"
+  }
+}
+
+script:post-response {
+  test("Status 400 Bad Request", function() { expect(res.getStatus()).to.equal(400); });
+}
