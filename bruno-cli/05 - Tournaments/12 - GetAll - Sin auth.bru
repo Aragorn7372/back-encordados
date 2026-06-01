@@ -1,0 +1,15 @@
+meta {
+  name: 09 - GetAll - Sin auth
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{api-url}}/api/Tournaments
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status 401", function() { expect(res.getStatus()).to.equal(401); });
+}

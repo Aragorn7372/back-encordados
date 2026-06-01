@@ -1,0 +1,41 @@
+meta {
+  name: 65 - Create - Sin auth
+  type: http
+  seq: 65
+}
+
+post {
+  url: {{api-url}}/api/Purchased
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "TournamentId": "{{tournament_id}}",
+    "PlayerName": "{{test_username}}",
+    "AssignedToName": "{{enc_t_username}}",
+    "Machine": "Test",
+    "Comments": "No auth test",
+    "PayStatus": "PENDING_PAYMENT",
+    "Price": 10.00,
+    "Lineas": [
+      {
+        "RaquetModel": "Test Raquet",
+        "Nudos": 2,
+        "DateString": "2026-06-15T00:00:00Z",
+        "Logotype": false,
+        "Color": "White",
+        "StringSetup": {
+          "StringV": "Test String",
+          "TensionV": 25.0,
+          "PreStetchV": 0
+        }
+      }
+    ]
+  }
+}
+
+script:post-response {
+  test("Status 401", function() { expect(res.getStatus()).to.equal(401); });
+}

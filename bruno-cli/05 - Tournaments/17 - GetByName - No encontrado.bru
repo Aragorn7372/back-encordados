@@ -1,0 +1,20 @@
+meta {
+  name: 14 - GetByName - No encontrado
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{api-url}}/api/Tournaments/name/TorneoQueNoExisteXYZ
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_encorder}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 404", function() { expect(res.getStatus()).to.equal(404); });
+}

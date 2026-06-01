@@ -1,0 +1,19 @@
+meta {
+  name: 94 - Manifest - Sin permisos
+  type: http
+  seq: 94
+}
+
+post {
+  url: {{api-url}}/api/export/manifest
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_encorder}}
+}
+
+script:post-response {
+  test("Status 403", function() { expect(res.getStatus()).to.equal(403); });
+}

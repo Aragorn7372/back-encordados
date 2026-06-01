@@ -1,0 +1,15 @@
+meta {
+  name: 46 - GetAll - Sin auth
+  type: http
+  seq: 46
+}
+
+get {
+  url: {{api-url}}/api/Cuerdas
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status 401", function() { expect(res.getStatus()).to.equal(401); });
+}

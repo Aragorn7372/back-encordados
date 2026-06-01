@@ -1,0 +1,22 @@
+meta {
+  name: 33 - GetAll - Exitoso
+  type: http
+  seq: 32
+}
+
+get {
+  url: {{api-url}}/api/Materials
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_encorder}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Es pagina", function() { expect(data).to.have.property("content"); });
+  test("Tiene elementos", function() { expect(data.totalElements).to.be.at.least(1); });
+}

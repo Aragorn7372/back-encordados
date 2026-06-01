@@ -1,0 +1,28 @@
+meta {
+  name: 20 - AssignSupervisor - Exitoso
+  type: http
+  seq: 23
+}
+
+patch {
+  url: {{api-url}}/api/Tournaments/assign-supervisor
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_t_owner}}
+}
+
+body:json {
+  {
+    "TournamentId": "{{tournament_id}}",
+    "SupervisorId": "{{sup_t_user_id}}"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Supervisor asignado", function() { expect(data).to.have.property("supevisors"); });
+}

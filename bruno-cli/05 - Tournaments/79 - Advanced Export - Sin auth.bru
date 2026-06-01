@@ -1,0 +1,15 @@
+meta {
+  name: 79 - Advanced Export - Sin auth
+  type: http
+  seq: 79
+}
+
+get {
+  url: {{api-url}}/api/excel/advanced/export?tournamentId={{tournament_id}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status 401", function() { expect(res.getStatus()).to.equal(401); });
+}
