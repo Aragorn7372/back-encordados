@@ -1,0 +1,21 @@
+meta {
+  name: 75 - Export - Exitoso
+  type: http
+  seq: 75
+}
+
+get {
+  url: {{api-url}}/api/excel/export/{{tournament_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_supervisor}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Archivo binario", function() { expect(data).to.not.be.empty; });
+}

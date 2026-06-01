@@ -1,0 +1,21 @@
+meta {
+  name: 84 - Delete Tournament - Exitoso
+  type: http
+  seq: 84
+}
+
+delete {
+  url: {{api-url}}/api/Tournaments/{{tournament_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_admin}}
+}
+
+script:post-response {
+  test("Status 204", function() { expect(res.getStatus()).to.equal(204); });
+  bru.deleteEnvVar("tournament_id");
+  bru.deleteEnvVar("tournament_name");
+}

@@ -1,0 +1,21 @@
+meta {
+  name: 63 - Cancel - Exitoso
+  type: http
+  seq: 63
+}
+
+patch {
+  url: {{api-url}}/api/Purchased/cancel/{{pedido_a_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_encorder}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("PayStatus CANCELED", function() { expect(data.payStatus).to.equal("CANCELED"); });
+}

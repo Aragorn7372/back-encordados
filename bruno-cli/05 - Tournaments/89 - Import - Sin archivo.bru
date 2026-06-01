@@ -1,0 +1,19 @@
+meta {
+  name: 92 - Import - Sin archivo
+  type: http
+  seq: 89
+}
+
+post {
+  url: {{api-url}}/api/export/import
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_admin}}
+}
+
+script:post-response {
+  test("Status 400", function() { expect(res.getStatus()).to.equal(400); });
+}

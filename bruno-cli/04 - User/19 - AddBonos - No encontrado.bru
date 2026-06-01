@@ -1,0 +1,25 @@
+meta {
+  name: 19 - AddBonos - No encontrado
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{api-url}}/api/User/01ARZ3NDEKTSV4RRFFQ69G5FAV/bonos
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_owner}}
+}
+
+body:json {
+  50.0
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 404", function() { expect(res.getStatus()).to.equal(404); });
+  test("Mensaje de error", function() { expect(data).to.have.property("message"); });
+}

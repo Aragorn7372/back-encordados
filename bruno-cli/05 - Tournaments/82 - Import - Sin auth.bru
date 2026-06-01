@@ -1,0 +1,15 @@
+meta {
+  name: 82 - Import - Sin auth
+  type: http
+  seq: 82
+}
+
+post {
+  url: {{api-url}}/api/excel/advanced/import?tournamentId={{tournament_id}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status 401", function() { expect(res.getStatus()).to.equal(401); });
+}

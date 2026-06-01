@@ -1,0 +1,27 @@
+meta {
+  name: 15 - Update - Exitoso
+  type: http
+  seq: 18
+}
+
+script:pre-request {
+  req.setBody("Name=Test+Tournament+Updated");
+  req.setHeader("Content-Type", "application/x-www-form-urlencoded");
+}
+
+put {
+  url: {{api-url}}/api/Tournaments/{{tournament_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_t_owner}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Nombre actualizado", function() { expect(data.name).to.equal("Test Tournament Updated"); });
+  if (data && data.name) bru.setEnvVar("tournament_name", data.name);
+}

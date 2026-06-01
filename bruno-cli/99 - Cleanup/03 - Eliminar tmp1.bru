@@ -1,0 +1,23 @@
+meta {
+  name: 03 - Eliminar tmp1
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{api-url}}/api/User/{{tmp1_user_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_admin}}
+}
+
+script:post-response {
+  test("Status 204", function() { expect(res.getStatus()).to.equal(204); });
+  bru.deleteEnvVar("tmp1_user_id");
+  bru.deleteEnvVar("tmp1_token");
+  bru.deleteEnvVar("tmp1_username");
+  bru.deleteEnvVar("tmp1_password");
+}

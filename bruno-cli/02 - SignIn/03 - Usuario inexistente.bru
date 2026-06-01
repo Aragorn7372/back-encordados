@@ -1,0 +1,24 @@
+meta {
+  name: 03 - Usuario inexistente
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{api-url}}/api/Auth/signin
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "Username": "usuario_que_no_existe_987654321",
+    "Password": "Test123456!"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 401 Unauthorized", function() { expect(res.getStatus()).to.equal(401); });
+  test("Mensaje credenciales invalidas", function() { expect(data.message).to.equal("credenciales invalidas"); });
+}

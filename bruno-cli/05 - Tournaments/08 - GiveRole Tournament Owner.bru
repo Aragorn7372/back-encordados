@@ -1,0 +1,23 @@
+meta {
+  name: 08 - GiveRole Tournament Owner
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{api-url}}/api/User/{{t_own_user_id}}/roles
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_admin}}
+}
+
+body:json {
+  "OWNER"
+}
+
+script:post-response {
+  test("Status 204", function() { expect(res.getStatus()).to.equal(204); });
+}

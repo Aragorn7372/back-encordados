@@ -1,0 +1,21 @@
+meta {
+  name: 36 - GetById - No encontrado
+  type: http
+  seq: 35
+}
+
+get {
+  url: {{api-url}}/api/Materials/99999
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_t_owner}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 404", function() { expect(res.getStatus()).to.equal(404); });
+  test("Mensaje de error", function() { expect(data).to.have.property("message"); });
+}
