@@ -9,6 +9,7 @@ using BackEncordados.Usuarios.Dto;
 using BackEncordados.Usuarios.Errors;
 using BackEncordados.Usuarios.Model;
 using BackEncordados.Usuarios.Repository;
+using DomainErrors = BackEncordados.Common.Errors.DomainErrors;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -464,5 +465,126 @@ public class TournamentServiceTests
 
         result.IsFailure.Should().BeTrue();
         result.Error.Should().BeOfType<TournamentNotFoundError>();
+    }
+
+    [Test]
+    public async Task UpdateTournament_WithEndDate_UpdatesEndDate()
+    {
+        var tournamentId = Ulid.NewUlid();
+        var endDate = DateTime.UtcNow.AddDays(14);
+        var tournament = TournamentBuilder.Create(id: tournamentId);
+        tournament.EndTournament = DateTime.UtcNow.AddDays(7);
+        var dto = new TournamentPatchDto { EndTournament = endDate };
+        var updated = TournamentBuilder.Create(id: tournamentId);
+        updated.EndTournament = endDate;
+
+        _mockRepo.Setup(r => r.FindByIdAsync(tournamentId)).ReturnsAsync(tournament);
+        _mockRepo.Setup(r => r.UpdateAsync(tournamentId, It.IsAny<Tournaments>())).ReturnsAsync(updated);
+
+        var result = await _service.UpdateTournament(tournamentId, dto);
+
+        result.IsSuccess.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task UpdateTournament_WithStartDate_UpdatesStartDate()
+    {
+        var tournamentId = Ulid.NewUlid();
+        var startDate = DateTime.UtcNow.AddDays(-1);
+        var tournament = TournamentBuilder.Create(id: tournamentId);
+        tournament.StartTournament = DateTime.UtcNow;
+        var dto = new TournamentPatchDto { StartTournament = startDate };
+        var updated = TournamentBuilder.Create(id: tournamentId);
+        updated.StartTournament = startDate;
+
+        _mockRepo.Setup(r => r.FindByIdAsync(tournamentId)).ReturnsAsync(tournament);
+        _mockRepo.Setup(r => r.UpdateAsync(tournamentId, It.IsAny<Tournaments>())).ReturnsAsync(updated);
+
+        var result = await _service.UpdateTournament(tournamentId, dto);
+
+        result.IsSuccess.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task UpdateTournament_RepositoryFailure_ReturnsConflictError()
+    {
+        var tournamentId = Ulid.NewUlid();
+        var tournament = TournamentBuilder.Create(id: tournamentId);
+        var dto = new TournamentPatchDto { Name = "Updated Name" };
+
+        _mockRepo.Setup(r => r.FindByIdAsync(tournamentId)).ReturnsAsync(tournament);
+        _mockRepo.Setup(r => r.UpdateAsync(tournamentId, It.IsAny<Tournaments>())).ReturnsAsync((Tournaments?)null);
+
+        var result = await _service.UpdateTournament(tournamentId, dto);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<BackEncordados.Talleres.Error.ConflictError>();
+    }
+
+    [Test]
+    public async Task UnassignWorkerMachine_TournamentNotFound_ReturnsNotFoundError()
+    {
+        var tournamentId = Ulid.NewUlid();
+        var workerId = Ulid.NewUlid();
+
+        _mockRepo.Setup(r => r.RemoveWorker(tournamentId, workerId)).ReturnsAsync((Tournaments?)null);
+
+        var result = await _service.UnassignWorkerMachine(tournamentId, workerId.ToString());
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<TournamentNotFoundError>();
+    }
+
+    [Test]
+    public async Task AssingSupervisor_TournamentNotFound_ReturnsNotFoundError()
+    {
+        var tournamentId = Ulid.NewUlid();
+        var supervisorId = Ulid.NewUlid();
+        var request = new SupervisorAsignmentRequestDto
+        {
+            TournamentId = tournamentId,
+            SupervisorId = supervisorId.ToString()
+        };
+
+        _mockRepo.Setup(r => r.AsignSupervisor(tournamentId, supervisorId)).ReturnsAsync((Tournaments?)null);
+
+        var result = await _service.AssingSupervisor(request);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<TournamentNotFoundError>();
+    }
+
+    [Test]
+    public async Task GetTournament_OwnerLoadedIndividually_ReturnsSuccess()
+    {
+        var tournamentId = Ulid.NewUlid();
+        var ownerId = Ulid.NewUlid();
+        var owner = UserBuilder.OwnerUser(ownerId);
+        var tournament = TournamentBuilder.Create(id: tournamentId, owner: ownerId);
+
+        _mockRepo.Setup(r => r.FindByIdAsync(tournamentId)).ReturnsAsync(tournament);
+        _mockUserRepo.Setup(r => r.FindByIdsAsync(It.IsAny<IEnumerable<Ulid>>())).ReturnsAsync(new List<User>());
+        _mockUserRepo.Setup(r => r.FindByIdAsync(ownerId)).ReturnsAsync(owner);
+
+        var result = await _service.GetTournament(tournamentId);
+
+        result.IsSuccess.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task GetTournament_OwnerNotFoundAtAll_ReturnsError()
+    {
+        var tournamentId = Ulid.NewUlid();
+        var ownerId = Ulid.NewUlid();
+        var tournament = TournamentBuilder.Create(id: tournamentId, owner: ownerId);
+
+        _mockRepo.Setup(r => r.FindByIdAsync(tournamentId)).ReturnsAsync(tournament);
+        _mockUserRepo.Setup(r => r.FindByIdsAsync(It.IsAny<IEnumerable<Ulid>>())).ReturnsAsync(new List<User>());
+        _mockUserRepo.Setup(r => r.FindByIdAsync(ownerId)).ReturnsAsync((User?)null);
+
+        var result = await _service.GetTournament(tournamentId);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<UserNotFoundError>();
     }
 }
