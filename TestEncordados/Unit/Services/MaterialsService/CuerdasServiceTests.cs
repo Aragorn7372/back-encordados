@@ -283,4 +283,20 @@ private readonly Mock<ICuerdasRepositoryType> _mockRepo;
         result.IsFailure.Should().BeTrue();
         result.Error.Should().BeOfType<CuerdaNotFoundError>();
     }
+
+    [Test]
+    public async Task DeleteAsync_RepositoryFailure_ReturnsNotFoundError()
+    {
+        var id = 1L;
+        var cuerda = CuerdasBuilder.Create(id: id);
+        cuerda.ImageUrl = CloudinaryConstants.DEFAULT_IMAGE_MATERIALES;
+
+        _mockRepo.Setup(r => r.FindByIdAsync(id)).ReturnsAsync(cuerda);
+        _mockRepo.Setup(r => r.DeleteAsync(id)).ReturnsAsync(false);
+
+        var result = await _service.DeleteAsync(id);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<CuerdaNotFoundError>();
+    }
 }
