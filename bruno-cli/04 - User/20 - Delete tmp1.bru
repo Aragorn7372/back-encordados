@@ -1,0 +1,19 @@
+meta {
+  name: 20 - Delete tmp1
+  type: http
+  seq: 20
+}
+
+delete {
+  url: {{api-url}}/api/User/{{tmp1_user_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_admin}}
+}
+
+script:post-response {
+  test("Status 204", function() { expect(res.getStatus()).to.equal(204); });
+}

@@ -1,0 +1,25 @@
+meta {
+  name: 62 - ChangePaymentStatus - Exitoso
+  type: http
+  seq: 62
+}
+
+patch {
+  url: {{api-url}}/api/Purchased/change-payment-status/{{pedido_a_id}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_encorder}}
+}
+
+body:json {
+  "PAID"
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("PayStatus PAID", function() { expect(data.payStatus).to.equal("PAID"); });
+}

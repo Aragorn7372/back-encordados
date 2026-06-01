@@ -1,0 +1,23 @@
+meta {
+  name: 02 - GiveRole Supervisor
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{api-url}}/api/User/{{sup_t_user_id}}/roles
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_admin}}
+}
+
+body:json {
+  "SUPERVISOR"
+}
+
+script:post-response {
+  test("Status 204", function() { expect(res.getStatus()).to.equal(204); });
+}

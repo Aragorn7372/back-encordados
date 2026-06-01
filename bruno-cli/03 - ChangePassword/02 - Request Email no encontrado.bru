@@ -1,0 +1,22 @@
+meta {
+  name: 02 - Request Email no encontrado
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{api-url}}/api/Auth/change-password-request
+  body: json
+  auth: inherit
+}
+
+body:json {
+  "email_que_no_existe_987654321@test.com"
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 404 Not Found", function() { expect(res.getStatus()).to.equal(404); });
+  test("Mensaje de error", function() { expect(data).to.have.property("message"); });
+  test("Menciona email no existe", function() { expect(data.message).to.include("email"); });
+}

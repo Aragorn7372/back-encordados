@@ -1,0 +1,22 @@
+meta {
+  name: 37 - GetByName - Exitoso
+  type: http
+  seq: 36
+}
+
+get {
+  url: {{api-url}}/api/Materials/name/{{material_a_modelo}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_t_owner}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Tiene id", function() { expect(data).to.have.property("id"); });
+  test("Modelo coincide", function() { expect(data.modelo).to.equal(bru.getEnvVar("material_a_modelo")); });
+}

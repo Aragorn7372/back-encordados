@@ -1,0 +1,31 @@
+meta {
+  name: 17 - AddWorker - Exitoso
+  type: http
+  seq: 20
+}
+
+patch {
+  url: {{api-url}}/api/Tournaments/add-worker/{{tournament_id}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_t_owner}}
+}
+
+body:json {
+  {
+    "UserId": "{{enc_t_user_id}}",
+    "MachineName": "Maquina 1"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Tiene workers", function() { expect(data).to.have.property("user"); });
+  if (data && data.user && data.user.length > 0) {
+    bru.setEnvVar("worker_user_id", data.user[0].id);
+  }
+}

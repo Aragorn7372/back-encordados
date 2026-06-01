@@ -1,0 +1,30 @@
+meta {
+  name: 30 - Create Material - Exitoso
+  type: http
+  seq: 30
+}
+
+script:pre-request {
+  var tid = bru.getEnvVar("tournament_id");
+  req.setBody("Marca=Wilson&Modelo=Pro+Overgrip+1&Stock=10&Precio=5.99&Type=Overgrip&TournamentId=" + tid);
+  req.setHeader("Content-Type", "application/x-www-form-urlencoded");
+}
+
+post {
+  url: {{api-url}}/api/Materials
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_t_owner}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 201", function() { expect(res.getStatus()).to.equal(201); });
+  test("ID del material", function() { expect(data).to.have.property("id"); });
+  test("Modelo correcto", function() { expect(data.modelo).to.equal("Pro Overgrip 1"); });
+  if (data && data.id) bru.setEnvVar("material_a_id", data.id.toString());
+  if (data && data.modelo) bru.setEnvVar("material_a_modelo", data.modelo);
+}

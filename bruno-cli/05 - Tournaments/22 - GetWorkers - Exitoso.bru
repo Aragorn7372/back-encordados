@@ -1,0 +1,21 @@
+meta {
+  name: 19 - GetWorkers - Exitoso
+  type: http
+  seq: 22
+}
+
+get {
+  url: {{api-url}}/api/Tournaments/{{tournament_id}}/workers
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_t_owner}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Es array", function() { expect(data).to.be.an("array"); });
+}

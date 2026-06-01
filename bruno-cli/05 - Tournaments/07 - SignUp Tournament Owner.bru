@@ -1,0 +1,35 @@
+meta {
+  name: 07 - SignUp Tournament Owner
+  type: http
+  seq: 7
+}
+
+script:pre-request {
+  const rand = Math.random().toString(36).substring(2, 10);
+  bru.setVar("t_own_username", "town_" + rand);
+  bru.setVar("t_own_email", "town_" + rand + "@test.com");
+}
+
+post {
+  url: {{api-url}}/api/Auth/signup
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "Username": "{{t_own_username}}",
+    "Password": "TournOwner1!",
+    "Email": "{{t_own_email}}"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 201", function() { expect(res.getStatus()).to.equal(201); });
+  test("Token recibido", function() { expect(data).to.have.property("token"); });
+  test("ID de usuario", function() { expect(data.user).to.have.property("id"); });
+  if (data.user && data.user.id) bru.setEnvVar("t_own_user_id", data.user.id);
+  if (data.user && data.user.username) bru.setEnvVar("t_own_username", data.user.username);
+  bru.setEnvVar("t_own_password", "TournOwner1!");
+}

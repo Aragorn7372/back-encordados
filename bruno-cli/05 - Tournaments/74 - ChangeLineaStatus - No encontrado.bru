@@ -1,0 +1,25 @@
+meta {
+  name: 74 - ChangeLineaStatus - No encontrado
+  type: http
+  seq: 74
+}
+
+patch {
+  url: {{api-url}}/api/Purchased/lineas/99999/status
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_encorder}}
+}
+
+body:json {
+  "PENDING"
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 404", function() { expect(res.getStatus()).to.equal(404); });
+  test("Mensaje de error", function() { expect(data).to.have.property("error"); });
+}

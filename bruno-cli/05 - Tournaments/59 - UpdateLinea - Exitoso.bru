@@ -1,0 +1,31 @@
+meta {
+  name: 59 - UpdateLinea - Exitoso
+  type: http
+  seq: 59
+}
+
+put {
+  url: {{api-url}}/api/Purchased/lineas/{{linea_a_id}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_encorder}}
+}
+
+body:json {
+  {
+    "RaquetModel": "Head Prestige MP",
+    "Color": "Red",
+    "Status": "IN_PROGRESS"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Modelo actualizado", function() { expect(data.raquetModel).to.equal("Head Prestige MP"); });
+  test("Color actualizado", function() { expect(data.color).to.equal("Red"); });
+  test("Status actualizado", function() { expect(data.status).to.equal("IN_PROGRESS"); });
+}

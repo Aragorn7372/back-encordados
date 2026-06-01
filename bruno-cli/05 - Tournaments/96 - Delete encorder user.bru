@@ -1,0 +1,23 @@
+meta {
+  name: 96 - Delete encorder user
+  type: http
+  seq: 96
+}
+
+delete {
+  url: {{api-url}}/api/User/{{enc_t_user_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_admin}}
+}
+
+script:post-response {
+  test("Status 204", function() { expect(res.getStatus()).to.equal(204); });
+  bru.deleteEnvVar("enc_t_user_id");
+  bru.deleteEnvVar("enc_t_username");
+  bru.deleteEnvVar("enc_t_password");
+  bru.deleteEnvVar("token_encorder");
+}

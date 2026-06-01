@@ -1,0 +1,22 @@
+meta {
+  name: 13 - GetByName - Exitoso
+  type: http
+  seq: 16
+}
+
+get {
+  url: {{api-url}}/api/Tournaments/name/{{tournament_name}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_encorder}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Tiene id", function() { expect(data).to.have.property("id"); });
+  test("Nombre coincide", function() { expect(data.name).to.equal(bru.getEnvVar("tournament_name")); });
+}

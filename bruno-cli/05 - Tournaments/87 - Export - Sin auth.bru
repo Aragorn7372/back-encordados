@@ -1,0 +1,15 @@
+meta {
+  name: 87 - Export - Sin auth
+  type: http
+  seq: 87
+}
+
+get {
+  url: {{api-url}}/api/export
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status 401", function() { expect(res.getStatus()).to.equal(401); });
+}
