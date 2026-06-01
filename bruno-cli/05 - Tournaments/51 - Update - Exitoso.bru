@@ -1,0 +1,28 @@
+meta {
+  name: 51 - Update - Exitoso
+  type: http
+  seq: 51
+}
+
+script:pre-request {
+  req.setBody("Marca=Babolat&Modelo=RPMBlast&Stock=15&Precio=19.50&StringFormat=Set&StringsType=Polyester&Calibre=1.30");
+  req.setHeader("Content-Type", "application/x-www-form-urlencoded");
+}
+
+put {
+  url: {{api-url}}/api/Cuerdas/{{cuerda_a_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_t_owner}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Modelo actualizado", function() { expect(data.modelo).to.equal("RPMBlast"); });
+  test("StringFormat actualizado", function() { expect(data.stringFormat).to.equal("Set"); });
+  test("Calibre actualizado", function() { expect(data.calibre).to.equal(1.30); });
+}

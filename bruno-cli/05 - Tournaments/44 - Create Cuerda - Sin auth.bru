@@ -1,0 +1,21 @@
+meta {
+  name: 44 - Create Cuerda - Sin auth
+  type: http
+  seq: 44
+}
+
+script:pre-request {
+  var tid = bru.getEnvVar("tournament_id");
+  req.setBody("Marca=Test&Modelo=SinAuth&Stock=1&Precio=1.00&StringFormat=Set&StringsType=SyntheticGut&Calibre=1.20&TournamentId=" + tid);
+  req.setHeader("Content-Type", "application/x-www-form-urlencoded");
+}
+
+post {
+  url: {{api-url}}/api/Cuerdas
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status 401", function() { expect(res.getStatus()).to.equal(401); });
+}

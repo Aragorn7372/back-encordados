@@ -1,0 +1,20 @@
+meta {
+  name: 08 - PatchMe - Exitoso
+  type: http
+  seq: 8
+}
+
+patch {
+  url: {{api-url}}/api/User/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tmp1_token}}
+}
+
+script:post-response {
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Tiene datos", function() { expect(res.getBody()).to.have.property("username"); });
+}

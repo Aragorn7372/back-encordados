@@ -1,0 +1,22 @@
+meta {
+  name: 35 - GetById - Exitoso
+  type: http
+  seq: 34
+}
+
+get {
+  url: {{api-url}}/api/Materials/{{material_a_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_t_owner}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Tiene id", function() { expect(data).to.have.property("id"); });
+  test("Modelo coincide", function() { expect(data.modelo).to.equal("Pro Overgrip 1"); });
+}

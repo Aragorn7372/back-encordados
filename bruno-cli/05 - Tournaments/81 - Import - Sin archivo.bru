@@ -1,0 +1,19 @@
+meta {
+  name: 81 - Import - Sin archivo
+  type: http
+  seq: 81
+}
+
+post {
+  url: {{api-url}}/api/excel/advanced/import?tournamentId={{tournament_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_t_owner}}
+}
+
+script:post-response {
+  test("Status 400", function() { expect(res.getStatus()).to.equal(400); });
+}

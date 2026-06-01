@@ -1,0 +1,19 @@
+meta {
+  name: 22 - Delete owner
+  type: http
+  seq: 22
+}
+
+delete {
+  url: {{api-url}}/api/User/{{owner_user_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_admin}}
+}
+
+script:post-response {
+  test("Status 204", function() { expect(res.getStatus()).to.equal(204); });
+}

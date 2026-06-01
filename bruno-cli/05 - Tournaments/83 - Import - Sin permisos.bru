@@ -1,0 +1,19 @@
+meta {
+  name: 83 - Import - Sin permisos
+  type: http
+  seq: 83
+}
+
+post {
+  url: {{api-url}}/api/excel/advanced/import?tournamentId={{tournament_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_encorder}}
+}
+
+script:post-response {
+  test("Status 403", function() { expect(res.getStatus()).to.equal(403); });
+}

@@ -1,0 +1,32 @@
+meta {
+  name: 43 - Create Cuerda - Exitoso
+  type: http
+  seq: 43
+}
+
+script:pre-request {
+  var tid = bru.getEnvVar("tournament_id");
+  req.setBody("Marca=Luxilon&Modelo=AluPower125&Stock=20&Precio=16.00&StringFormat=Reel&StringsType=Polyester&Calibre=1.25&TournamentId=" + tid);
+  req.setHeader("Content-Type", "application/x-www-form-urlencoded");
+}
+
+post {
+  url: {{api-url}}/api/Cuerdas
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_t_owner}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 201", function() { expect(res.getStatus()).to.equal(201); });
+  test("ID de la cuerda", function() { expect(data).to.have.property("id"); });
+  test("Modelo correcto", function() { expect(data.modelo).to.equal("AluPower125"); });
+  test("StringFormat correcto", function() { expect(data.stringFormat).to.equal("Reel"); });
+  test("StringsType correcto", function() { expect(data.stringsType).to.equal("Polyester"); });
+  if (data && data.id) bru.setEnvVar("cuerda_a_id", data.id.toString());
+  if (data && data.modelo) bru.setEnvVar("cuerda_a_modelo", data.modelo);
+}
