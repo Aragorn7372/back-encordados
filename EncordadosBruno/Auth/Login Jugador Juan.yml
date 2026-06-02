@@ -18,7 +18,7 @@ http:
 runtime:
   variables:
     - name: api-url
-      value: https://back-encordados.onrender.com
+      value: https://localhost
   scripts:
     - type: after-response
       code: |-
