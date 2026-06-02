@@ -94,9 +94,6 @@ public static class DbConfig
     /// <returns>La misma colección de servicios para encadenamiento fluido.</returns>
     public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
-//BBDD de Usuarios
-        Log.Information("MONGODB_URI_TALLERES: {value}", configuration["MONGODB_URI_TALLERES"]);
-        Log.Information("MONGODB_URI_PEDIDOS: {value}", configuration["MONGODB_URI_PEDIDOS"]);
           services.AddDbContext<UserDbContext>(options =>
           {
               var isDevelopment = configuration.GetValue<bool?>("Development") ?? true;

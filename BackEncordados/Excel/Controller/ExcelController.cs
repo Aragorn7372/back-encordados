@@ -218,6 +218,17 @@ public class ExcelController(
         [FromQuery] Ulid tournamentId,
         [FromQuery] string? types = null)
     {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var roleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
+
+        if (string.IsNullOrEmpty(userIdClaim))
+            return Unauthorized(new { message = "User ID not found in token" });
+
+        if (string.IsNullOrEmpty(roleClaim))
+            return Unauthorized(new { message = "Role not found in token" });
+
+        var userId = Ulid.Parse(userIdClaim);
+
         if (file == null || file.Length == 0)
             return BadRequest(new { message = "No file provided" });
 
@@ -228,16 +239,6 @@ public class ExcelController(
 
         try
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var roleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
-
-            if (string.IsNullOrEmpty(userIdClaim))
-                return Unauthorized(new { message = "User ID not found in token" });
-
-            if (string.IsNullOrEmpty(roleClaim))
-                return Unauthorized(new { message = "Role not found in token" });
-
-            var userId = Ulid.Parse(userIdClaim);
             var typeList = string.IsNullOrEmpty(types) 
                 ? new List<string>() 
                 : types.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
