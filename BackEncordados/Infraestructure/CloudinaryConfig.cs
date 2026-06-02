@@ -170,8 +170,6 @@ public static class CloudinaryConfig {
         services.TryAddScoped<ICloudinaryService, CloudinaryService>();
 
         Log.Information("Servicio Cloudinary configurado exitosamente.");
-        Log.Information("Cloud: {CloudName}, Transformaciones: {Width}x{Height} ({Crop})",
-            options.CloudName, options.Transformations.Width, options.Transformations.Height, options.Transformations.Crop);
 
         return services;
     }
