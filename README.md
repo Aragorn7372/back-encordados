@@ -61,7 +61,7 @@
 | **Auth** | JWT Bearer + BCrypt |
 | **IDs** | ULID (ordenables por tiempo) |
 | **Rate limiting** | AspNetCoreRateLimit |
-| **Testing** | xUnit · Testcontainers · Coverlet · ReportGenerator |
+| **Testing** | nUnit · Testcontainers · Coverlet · ReportGenerator |
 
 ---
 
