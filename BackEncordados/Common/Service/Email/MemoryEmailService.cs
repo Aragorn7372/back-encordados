@@ -15,7 +15,6 @@
 ///   <item><description><c>Para: {destinatario}</c></description></item>
 ///   <item><description><c>Asunto: {subject}</c></description></item>
 ///   <item><description><c>Tipo: HTML | Texto plano</c></description></item>
-///   <item><description><c>Cuerpo: {body}</c> (solo en nivel Debug)</description></item>
 ///   <item><description><c>======================</c></description></item>
 /// </list>
 ///
@@ -55,10 +54,6 @@ public class MemoryEmailService : IEmailService
     /// <summary>
     /// Registra los detalles completos de un mensaje de correo en el log.
     /// </summary>
-    /// <remarks>
-    /// <para>El cuerpo del mensaje se registra en nivel <c>Debug</c> para evitar
-    /// exponer contenido sensible en logs de producción por accidente.</para>
-    /// </remarks>
     /// <param name="message">Mensaje de correo a loggear.</param>
     /// <param name="status">Estado del mensaje: <c>"SENT"</c> o <c>"ENQUEUED"</c>.</param>
     private void LogEmail(EmailMessage message, string status)
@@ -67,7 +62,6 @@ public class MemoryEmailService : IEmailService
         _logger.LogInformation("Para: {To}", message.To);
         _logger.LogInformation("Asunto: {Subject}", message.Subject);
         _logger.LogInformation("Tipo: {Type}", message.IsHtml ? "HTML" : "Texto plano");
-        _logger.LogDebug("Cuerpo: {Body}", message.Body);
         _logger.LogInformation("======================");
     }
 }
