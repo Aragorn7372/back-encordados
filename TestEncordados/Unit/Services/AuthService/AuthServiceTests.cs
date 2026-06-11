@@ -152,6 +152,37 @@ public class AuthServiceTests
     }
 
     [Test]
+    public async Task SignInAsync_WithEmail_ValidCredentials_ReturnsSuccess()
+    {
+        var email = "aragorn5846@gmail.com";
+        var dto = CreateLoginDto(username: email);
+        var passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password, 11);
+        var user = CreateUser(username: "aragorn5846", email: email, passwordHash: passwordHash);
+
+        _mockUserRepo.Setup(r => r.FindByEmailAsync(email)).ReturnsAsync(user);
+        _mockJwtService.Setup(j => j.GenerateToken(user)).Returns("jwt_token");
+
+        var result = await _service.SignInAsync(dto);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Token.Should().Be("jwt_token");
+    }
+
+    [Test]
+    public async Task SignInAsync_WithEmail_UserNotFound_ReturnsUnauthorized()
+    {
+        var email = "unknown@example.com";
+        var dto = CreateLoginDto(username: email);
+
+        _mockUserRepo.Setup(r => r.FindByEmailAsync(email)).ReturnsAsync((User?)null);
+
+        var result = await _service.SignInAsync(dto);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<UnauthorizedError>();
+    }
+
+    [Test]
     public async Task GetEmailAsync_ExistingEmail_ReturnsSuccess()
     {
         var email = "test@example.com";
