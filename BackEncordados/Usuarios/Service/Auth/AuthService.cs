@@ -151,7 +151,12 @@ public class AuthService(
         logger.LogInformation("SignIn request for username: {Username}", sanitizedUsername);
         
 
-        var user = await userRepository.FindByUsernameAsync(dto.Username);
+        User? user;
+        if (dto.Username.Contains('@'))
+            user = await userRepository.FindByEmailAsync(dto.Username);
+        else
+            user = await userRepository.FindByUsernameAsync(dto.Username);
+
         if (user is null)
         {
             logger.LogWarning("SignIn fallido: Usuario no encontrado - {Username}", sanitizedUsername);
