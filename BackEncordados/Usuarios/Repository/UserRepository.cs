@@ -148,6 +148,8 @@ public class UserRepository(
             user.IsDeleted = true;
             // Reemplazar username con UUID para liberar el username único
             user.Username = $"deleted_{Ulid.NewUlid().ToString()[..8]}";
+            // Reemplazar email para liberar el email único
+            user.Email = $"deleted_{Ulid.NewUlid().ToString()[..8]}@deleted.com";
             await context.SaveChangesAsync();
             logger.LogInformation("Usuario eliminado con ID: {Id}. Username reemplazado con: {NewUsername}", id, user.Username);
         }
