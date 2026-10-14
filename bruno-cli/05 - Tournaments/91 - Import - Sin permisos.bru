@@ -1,0 +1,19 @@
+meta {
+  name: 91 - Import - Sin permisos
+  type: http
+  seq: 91
+}
+
+post {
+  url: {{api-url}}/api/export/import
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_encorder}}
+}
+
+script:post-response {
+  test("Status 403", function() { expect(res.getStatus()).to.equal(403); });
+}

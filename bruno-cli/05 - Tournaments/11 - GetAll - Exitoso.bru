@@ -1,0 +1,22 @@
+meta {
+  name: 08 - GetAll - Exitoso
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{api-url}}/api/Tournaments
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_supervisor}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Es pagina", function() { expect(data).to.have.property("content"); });
+  test("Tiene totalElements", function() { expect(data).to.have.property("totalElements"); });
+}

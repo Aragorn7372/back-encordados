@@ -1,0 +1,21 @@
+meta {
+  name: 05 - GetById - No encontrado
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{api-url}}/api/User/01ARZ3NDEKTSV4RRFFQ69G5FAV
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_admin}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 404", function() { expect(res.getStatus()).to.equal(404); });
+  test("Mensaje de error", function() { expect(data).to.have.property("message"); });
+}

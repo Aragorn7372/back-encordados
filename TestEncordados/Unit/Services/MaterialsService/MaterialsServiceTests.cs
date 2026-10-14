@@ -220,4 +220,91 @@ private readonly Mock<IMaterialsRepositoryType> _mockRepo;
         result.IsFailure.Should().BeTrue();
         result.Error.Should().BeOfType<MaterialNotFoundError>();
     }
+
+    [Test]
+    public async Task FindAllAsync_WithSizeZero_DoesNotThrowDivideByZero()
+    {
+        var filter = CreateFilter(size: 0);
+        var materials = new List<Material>();
+        var pagedResult = (Items: materials.AsEnumerable(), TotalCount: 0);
+
+        _mockRepo.Setup(r => r.FindAllAsync(It.IsAny<MaterialFilterDto>()))
+            .ReturnsAsync(pagedResult);
+
+        var result = await _service.FindAllAsync(filter);
+
+        result.TotalPages.Should().Be(0);
+        result.Content.Should().BeEmpty();
+    }
+
+    [Test]
+    public async Task UpdateAsync_WithNegativePricesAndStock_DoesNotUpdateThoseFields()
+    {
+        var id = 1L;
+        var existing = MaterialBuilder.Create(id: id);
+        existing.Precio = 50.0;
+        existing.Stock = 20;
+
+        var patch = new MaterialPatchDto { Precio = -5.0, Stock = -10 };
+
+        _mockRepo.Setup(r => r.FindByIdAsync(id)).ReturnsAsync(existing);
+        _mockRepo.Setup(r => r.UpdateAsync(It.IsAny<Material>(), id)).ReturnsAsync(existing);
+
+        var result = await _service.UpdateAsync(id, patch);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Precio.Should().Be(50.0);
+        result.Value.Stock.Should().Be(20);
+    }
+
+    [Test]
+    public async Task UpdateAsync_WithTypeUpdate_UpdatesType()
+    {
+        var id = 1L;
+        var existing = MaterialBuilder.Create(id: id);
+
+        var patch = new MaterialPatchDto { Type = "Overgrip" };
+        var updated = MaterialBuilder.Create(id: id);
+        updated.Type = MaterialType.Overgrip;
+
+        _mockRepo.Setup(r => r.FindByIdAsync(id)).ReturnsAsync(existing);
+        _mockRepo.Setup(r => r.UpdateAsync(It.IsAny<Material>(), id)).ReturnsAsync(updated);
+
+        var result = await _service.UpdateAsync(id, patch);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.MaterialType.Should().Be("Overgrip");
+    }
+
+    [Test]
+    public async Task UpdateAsync_RepositoryFails_ReturnsConflictError()
+    {
+        var id = 1L;
+        var existing = MaterialBuilder.Create(id: id);
+        var patch = new MaterialPatchDto { Modelo = "New" };
+
+        _mockRepo.Setup(r => r.FindByIdAsync(id)).ReturnsAsync(existing);
+        _mockRepo.Setup(r => r.UpdateAsync(It.IsAny<Material>(), id)).ReturnsAsync((Material?)null);
+
+        var result = await _service.UpdateAsync(id, patch);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<MaterialConflictError>();
+    }
+
+    [Test]
+    public async Task DeleteAsync_RepositoryFailure_ReturnsNotFoundError()
+    {
+        var id = 1L;
+        var material = MaterialBuilder.Create(id: id);
+        material.ImageUrl = CloudinaryConstants.DEFAULT_IMAGE_MATERIALES;
+
+        _mockRepo.Setup(r => r.FindByIdAsync(id)).ReturnsAsync(material);
+        _mockRepo.Setup(r => r.DeleteAsync(id)).ReturnsAsync(false);
+
+        var result = await _service.DeleteAsync(id);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<MaterialNotFoundError>();
+    }
 }

@@ -1,0 +1,35 @@
+meta {
+  name: 01 - SignUp Supervisor
+  type: http
+  seq: 1
+}
+
+script:pre-request {
+  const rand = Math.random().toString(36).substring(2, 10);
+  bru.setVar("sup_t_username", "sup_" + rand);
+  bru.setVar("sup_t_email", "sup_" + rand + "@test.com");
+}
+
+post {
+  url: {{api-url}}/api/Auth/signup
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "Username": "{{sup_t_username}}",
+    "Password": "SupervisorT1!",
+    "Email": "{{sup_t_email}}"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 201", function() { expect(res.getStatus()).to.equal(201); });
+  test("Token recibido", function() { expect(data).to.have.property("token"); });
+  test("ID de usuario", function() { expect(data.user).to.have.property("id"); });
+  if (data.user && data.user.id) bru.setEnvVar("sup_t_user_id", data.user.id);
+  if (data.user && data.user.username) bru.setEnvVar("sup_t_username", data.user.username);
+  bru.setEnvVar("sup_t_password", "SupervisorT1!");
+}

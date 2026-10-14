@@ -1,0 +1,20 @@
+meta {
+  name: 11 - GetById - No encontrado
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{api-url}}/api/Tournaments/01ARZ3NDEKTSV4RRFFQ69G5FAV
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_encorder}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 404", function() { expect(res.getStatus()).to.equal(404); });
+}

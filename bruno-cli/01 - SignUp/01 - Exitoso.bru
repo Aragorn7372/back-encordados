@@ -1,0 +1,40 @@
+meta {
+  name: 01 - Exitoso
+  type: http
+  seq: 1
+}
+
+script:pre-request {
+  const rand = Math.random().toString(36).substring(2, 10);
+  bru.setVar("signup_username", "su_" + rand);
+  bru.setVar("signup_email", "su_" + rand + "@test.com");
+}
+
+post {
+  url: {{api-url}}/api/Auth/signup
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "Username": "{{signup_username}}",
+    "Password": "Test123456!",
+    "Email": "{{signup_email}}"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 201", function() { expect(res.getStatus()).to.equal(201); });
+  test("Token JWT recibido", function() { expect(data).to.have.property("token"); });
+  test("ID de usuario recibido", function() { expect(data.user).to.have.property("id"); });
+  test("Username recibido", function() { expect(data.user).to.have.property("username"); });
+  test("Rol USER asignado", function() { expect(data.user.role).to.equal("USER"); });
+
+  if (data.token) bru.setEnvVar("test_token", data.token);
+  if (data.user && data.user.id) bru.setEnvVar("test_user_id", data.user.id);
+  if (data.user && data.user.username) bru.setEnvVar("test_username", data.user.username);
+  if (data.user && data.user.email) bru.setEnvVar("test_email", data.user.email);
+  bru.setEnvVar("test_password", "Test123456!");
+}

@@ -1,0 +1,77 @@
+meta {
+  name: 56 - Create - Exitoso
+  type: http
+  seq: 56
+}
+
+script:pre-request {
+  const body = JSON.stringify({
+    TournamentId: bru.getEnvVar("tournament_id"),
+    PlayerName: bru.getEnvVar("test_username"),
+    AssignedToName: bru.getEnvVar("enc_t_username"),
+    Machine: "Alpha-1",
+    Comments: "Test pedido",
+    PayStatus: "PENDING_PAYMENT",
+    Price: 30.00,
+    Lineas: [
+      {
+        RaquetModel: "Wilson Blade 98",
+        Nudos: 2,
+        DateString: "2026-06-15T00:00:00Z",
+        Logotype: false,
+        Color: "Black",
+        StringSetup: {
+          StringV: "Babolat RPM Blast",
+          TensionV: 26.0,
+          PreStetchV: 2,
+          StringH: "Babolat Pro",
+          TensionH: 25.5,
+          PreStetchH: 1
+        }
+      }
+    ]
+  });
+  req.setBody(body);
+  req.setHeader("Content-Type", "application/json");
+}
+
+post {
+  url: {{api-url}}/api/Purchased
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_encorder}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 201", function() { expect(res.getStatus()).to.equal(201); });
+  if (res.getStatus() === 201) {
+    test("ID del pedido", function() { expect(data).to.have.property("id"); });
+    test("Tiene lineas", function() { expect(data.lineas).to.have.lengthOf(1); });
+    if (data && data.id) bru.setEnvVar("pedido_a_id", data.id);
+    if (data && data.lineas && data.lineas.length > 0) {
+      bru.setEnvVar("linea_a_id", data.lineas[0].id);
+    }
+  }
+}
+
+auth:bearer {
+  token: {{token_encorder}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  console.log(typeof data === 'object' ? JSON.stringify(data, null, 2) : data);
+  test("Status 201", function() { expect(res.getStatus()).to.equal(201); });
+  if (res.getStatus() === 201) {
+    test("ID del pedido", function() { expect(data).to.have.property("id"); });
+    test("Tiene lineas", function() { expect(data.lineas).to.have.lengthOf(1); });
+    if (data && data.id) bru.setEnvVar("pedido_a_id", data.id);
+    if (data && data.lineas && data.lineas.length > 0) {
+      bru.setEnvVar("linea_a_id", data.lineas[0].id);
+    }
+  }
+}

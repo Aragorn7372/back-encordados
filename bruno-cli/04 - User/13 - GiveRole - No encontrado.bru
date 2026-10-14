@@ -1,0 +1,25 @@
+meta {
+  name: 13 - GiveRole - No encontrado
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{api-url}}/api/User/01ARZ3NDEKTSV4RRFFQ69G5FAV/roles
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_admin}}
+}
+
+body:json {
+  "ENCORDER"
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 404", function() { expect(res.getStatus()).to.equal(404); });
+  test("Mensaje de error", function() { expect(data).to.have.property("message"); });
+}

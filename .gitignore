@@ -8,3 +8,5 @@ coverage-report/
 *.cobertura.xml
 */TestResults/
 coverage/
+html-report/
+*/bruno-report.html

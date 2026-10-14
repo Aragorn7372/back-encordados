@@ -1,0 +1,23 @@
+meta {
+  name: 05 - GiveRole Encorder
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{api-url}}/api/User/{{enc_t_user_id}}/roles
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_admin}}
+}
+
+body:json {
+  "ENCORDER"
+}
+
+script:post-response {
+  test("Status 204", function() { expect(res.getStatus()).to.equal(204); });
+}
