@@ -1,0 +1,21 @@
+meta {
+  name: 50 - GetByName - No encontrado
+  type: http
+  seq: 50
+}
+
+get {
+  url: {{api-url}}/api/Cuerdas/name/CuerdaQueNoExisteXYZ
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_t_owner}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 404", function() { expect(res.getStatus()).to.equal(404); });
+  test("Mensaje de error", function() { expect(data).to.have.property("message"); });
+}

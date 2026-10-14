@@ -1,0 +1,27 @@
+meta {
+  name: 04 - Login Owner
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{api-url}}/api/Auth/signin
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "Username": "{{owner_username}}",
+    "Password": "{{owner_password}}"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Token recibido", function() { expect(data).to.have.property("token"); });
+  test("Rol OWNER", function() { expect(data.user.role).to.equal("OWNER"); });
+  if (data.token) bru.setEnvVar("token_owner", data.token);
+  if (data.user && data.user.id) bru.setEnvVar("owner_user_id", data.user.id);
+}

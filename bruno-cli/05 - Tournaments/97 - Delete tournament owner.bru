@@ -1,0 +1,23 @@
+meta {
+  name: 97 - Delete tournament owner
+  type: http
+  seq: 97
+}
+
+delete {
+  url: {{api-url}}/api/User/{{t_own_user_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_admin}}
+}
+
+script:post-response {
+  test("Status 204", function() { expect(res.getStatus()).to.equal(204); });
+  bru.deleteEnvVar("t_own_user_id");
+  bru.deleteEnvVar("t_own_username");
+  bru.deleteEnvVar("t_own_password");
+  bru.deleteEnvVar("token_t_owner");
+}

@@ -1,0 +1,26 @@
+meta {
+  name: 03 - Username duplicado
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{api-url}}/api/Auth/signup
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "Username": "{{test_username}}",
+    "Email": "otro_email_cualquiera@test.com",
+    "Password": "Test123456!"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 409 Conflict", function() { expect(res.getStatus()).to.equal(409); });
+  test("Mensaje de conflicto", function() { expect(data).to.have.property("message"); });
+  test("Menciona username en uso", function() { expect(data.message).to.include("username"); });
+}

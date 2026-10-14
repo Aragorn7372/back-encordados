@@ -1,0 +1,24 @@
+meta {
+  name: 06 - GetMe - Exitoso
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{api-url}}/api/User/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tmp1_token}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Tiene username", function() { expect(data).to.have.property("username"); });
+  test("Tiene name", function() { expect(data).to.have.property("name"); });
+  test("Tiene imageUrl", function() { expect(data).to.have.property("imageUrl"); });
+  test("Tiene bonos", function() { expect(data).to.have.property("bonos"); });
+}

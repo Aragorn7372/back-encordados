@@ -1,0 +1,22 @@
+meta {
+  name: 49 - GetByName - Exitoso
+  type: http
+  seq: 49
+}
+
+get {
+  url: {{api-url}}/api/Cuerdas/name/{{cuerda_a_modelo}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_t_owner}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Tiene id", function() { expect(data).to.have.property("id"); });
+  test("Modelo coincide", function() { expect(data.modelo).to.equal(bru.getEnvVar("cuerda_a_modelo")); });
+}

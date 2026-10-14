@@ -1,0 +1,15 @@
+meta {
+  name: 96 - Manifest - Sin auth
+  type: http
+  seq: 93
+}
+
+post {
+  url: {{api-url}}/api/export/manifest
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status 401", function() { expect(res.getStatus()).to.equal(401); });
+}

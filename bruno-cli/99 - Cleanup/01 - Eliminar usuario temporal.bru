@@ -1,0 +1,24 @@
+meta {
+  name: 01 - Eliminar usuario temporal
+  type: http
+  seq: 1
+}
+
+delete {
+  url: {{api-url}}/api/User/{{test_user_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_admin}}
+}
+
+script:post-response {
+  test("Status 204 No Content", function() { expect(res.getStatus()).to.equal(204); });
+  bru.deleteEnvVar("test_username");
+  bru.deleteEnvVar("test_email");
+  bru.deleteEnvVar("test_password");
+  bru.deleteEnvVar("test_token");
+  bru.deleteEnvVar("test_user_id");
+}

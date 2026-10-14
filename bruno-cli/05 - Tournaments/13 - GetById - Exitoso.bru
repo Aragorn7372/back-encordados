@@ -1,0 +1,24 @@
+meta {
+  name: 10 - GetById - Exitoso
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{api-url}}/api/Tournaments/{{tournament_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_encorder}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Tiene id", function() { expect(data).to.have.property("id"); });
+  test("Nombre coincide", function() { expect(data.name).to.equal("Test Tournament"); });
+  test("Tiene owner", function() { expect(data).to.have.property("owner"); });
+  test("Tiene user", function() { expect(data).to.have.property("user"); });
+}

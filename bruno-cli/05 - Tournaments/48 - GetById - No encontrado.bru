@@ -1,0 +1,21 @@
+meta {
+  name: 48 - GetById - No encontrado
+  type: http
+  seq: 48
+}
+
+get {
+  url: {{api-url}}/api/Cuerdas/99999
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_t_owner}}
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 404", function() { expect(res.getStatus()).to.equal(404); });
+  test("Mensaje de error", function() { expect(data).to.have.property("message"); });
+}

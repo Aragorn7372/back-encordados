@@ -1,0 +1,25 @@
+meta {
+  name: 71 - ChangePaymentStatus - No encontrado
+  type: http
+  seq: 71
+}
+
+patch {
+  url: {{api-url}}/api/Purchased/change-payment-status/99999
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_encorder}}
+}
+
+body:json {
+  "PAID"
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 404", function() { expect(res.getStatus()).to.equal(404); });
+  test("Mensaje de error", function() { expect(data).to.have.property("error"); });
+}

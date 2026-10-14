@@ -1,0 +1,26 @@
+meta {
+  name: 17 - AddBonos - Exitoso
+  type: http
+  seq: 17
+}
+
+post {
+  url: {{api-url}}/api/User/{{tmp2_user_id}}/bonos
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token_owner}}
+}
+
+body:json {
+  50.0
+}
+
+script:post-response {
+  const data = res.getBody();
+  test("Status 200", function() { expect(res.getStatus()).to.equal(200); });
+  test("Bonos actualizados", function() { expect(data).to.have.property("bonos"); });
+  test("Bonos >= 50", function() { expect(data.bonos).to.be.at.least(50); });
+}
