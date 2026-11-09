@@ -1,4 +1,5 @@
-﻿using BackEncordados.Common.Dto;
+﻿using System.Globalization;
+using BackEncordados.Common.Dto;
 using BackEncordados.Common.Errors;
 using BackEncordados.Common.Service.Cache;
 using BackEncordados.Common.Service.Cache.keys;
@@ -239,7 +240,7 @@ public class PurchasedService(
     ///   <item><description><b>User resolution</b> — Lookup player and encorder by username (cache-first, then DB via <c>FindByUsernameAsync</c>). Cache resolved users using key <c>CacheKeys.UserKey + username</c>.</description></item>
     ///   <item><description><b>Validation</b> — Both users must exist; otherwise returns <see cref="Usuarios.Errors.UserNotFoundError"/>.</description></item>
     ///   <item><description><b>Entity mapping</b> — Map DTO to <see cref="Pedidos"/> aggregate via <see cref="Mapper.PurchasedMapper.ToEntity(PurchasedRequestDto, Ulid, Ulid)"/>.</description></item>
-    ///   <item><description><b>Auto-payment</b> — If <c>player.Bonos >= Price</c>: set <c>PayStatus = PAID</c>, deduct bonus, and persist user change with <see cref="UpdateUserWithRetryAsync"/> (up to 3 retries for <c>DbUpdateConcurrencyException</c>).</description></item>
+    ///   <item><description><b>Auto-payment</b> — If <c>player.Bonos >= Price</c>: set <c>PayStatus = PAID</c>, deduct bonus, and persist user change with <see cref="ChargeBonosAsync"/> (up to 3 retries for <c>DbUpdateConcurrencyException</c>).</description></item>
     ///   <item><description><b>Partial bonus</b> — If <c>0 &lt; player.Bonos &lt; Price</c>: append shortfall text to Comments ("Falta por pagar: ...").</description></item>
     ///   <item><description><b>Persistence</b> — Save the order aggregate (header + line items) via repository.</description></item>
     ///   <item><description><b>Caching</b> — Cache the resulting DTO (5-minute TTL).</description></item>
@@ -267,25 +268,33 @@ public class PurchasedService(
 
         var entity = request.ToEntity(player.Id, encorder.Id);
 
-        if (player.Bonos >= request.Price)
+        // El cobro se calcula sobre el saldo REAL del jugador: si otra petición cambia sus bonos mientras
+        // tanto (por ejemplo, el propietario le suma bonos), se recalcula en vez de pisar el saldo
+        var cobro = await ChargeBonosAsync(player, request.Price);
+        if (cobro.IsFailure)
+            return Result.Failure<PurchasedResponseDto, DomainErrors>(cobro.Error);
+
+        var cobrado = cobro.Value.Charged;
+        player = cobro.Value.Player;
+
+        // Si se han gastado bonos, el jugador guardado en la caché ya tiene un saldo viejo: se quita
+        // para que la próxima lectura venga de la base de datos
+        if (cobrado > 0)
+            await cache.RemoveAsync(CacheKeys.UserKey + request.PlayerName);
+
+        if (cobrado >= request.Price)
         {
             entity.PayStatus = PaymentStatus.PAID;
-            player.Bonos -= request.Price;
-            
-            // Usar reintentos para actualizar el usuario
-            var updateResult = await UpdateUserWithRetryAsync(player);
-            if (updateResult.IsFailure)
-                return Result.Failure<PurchasedResponseDto, DomainErrors>(updateResult.Error);
-            
             logger.LogInformation("Pedido pagado con bonos. Nuevo saldo de bonos: {Bonos}", player.Bonos);
         }
-        else if (player.Bonos > 0)
+        else if (cobrado > 0)
         {
-            var falta = request.Price - player.Bonos;
-            entity.Comments = string.IsNullOrEmpty(entity.Comments) 
-                ? $"Falta por pagar: {falta:C2}" 
-                : $"{entity.Comments} | Falta por pagar: {falta:C2}";
-            logger.LogInformation("Bonos insuficientes. Falta: {Falta}", falta);
+            var falta = request.Price - cobrado;
+            var textoFalta = $"Falta por pagar: {falta.ToString("C2", CultureInfo.GetCultureInfo("es-ES"))}";
+            entity.Comments = string.IsNullOrEmpty(entity.Comments)
+                ? textoFalta
+                : $"{entity.Comments} | {textoFalta}";
+            logger.LogInformation("Bonos insuficientes. Cobrado: {Cobrado}, falta: {Falta}", cobrado, falta);
         }
 
         await repository.CreatePurchasedAsync(entity);
@@ -817,70 +826,84 @@ public class PurchasedService(
     }
 
     /// <summary>
-    /// Updates the player's user record with retry logic for concurrency conflicts.
+    /// Cobra de los bonos del jugador lo que tenga, hasta el precio del pedido.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// This method is used when auto-paying an order with player bonuses.
-    /// The bonus deduction can fail with <see cref="DbUpdateConcurrencyException"/> if another
-    /// concurrent request modifies the same user record. The retry strategy:
+    /// <see cref="User"/> tiene un token de concurrencia (<c>Version</c>): si otra petición modifica el
+    /// saldo entre que se lee y se guarda, <c>UpdateAsync</c> lanza <see cref="DbUpdateConcurrencyException"/>.
+    /// En ese caso se <b>recarga al jugador y se vuelve a calcular</b> cuánto cobrar a partir de su saldo
+    /// actual. Nunca se copia el resultado del intento anterior, porque pisaría los bonos que acaban de sumarle.
     /// </para>
-    /// <list type="number">
-    ///   <item><description>Attempt to save the updated player (with deducted bonus).</description></item>
-    ///   <item><description>If <c>DbUpdateConcurrencyException</c> is thrown and retries remain, reload the player entity from DB.</description></item>
-    ///   <item><description>Re-apply the bonus deduction on the fresh entity.</description></item>
-    ///   <item><description>Retry the save (up to <paramref name="maxRetries"/> attempts).</description></item>
-    ///   <item><description>If all retries are exhausted, return <see cref="ConcurrencyError"/>.</description></item>
-    /// </list>
-    /// <para>If the player is not found after a concurrency conflict, return <see cref="UserNotFoundError"/>.</para>
+    /// <para>Tras <paramref name="maxRetries"/> intentos devuelve <see cref="ConcurrencyError"/>.
+    /// Si el jugador desaparece, <see cref="UserNotFoundError"/>.</para>
     /// </remarks>
-    /// <param name="player">The player entity with bonus already deducted.</param>
-    /// <param name="maxRetries">Maximum number of retry attempts (default 3).</param>
-    /// <returns><see cref="Unit"/> on success, or a <see cref="ConcurrencyError"/> / <see cref="UserNotFoundError"/>.</returns>
-    private async Task<Result<Unit, DomainErrors>> UpdateUserWithRetryAsync(
-        User player, 
+    /// <param name="player">Jugador, posiblemente de la caché: el saldo se vuelve a leer de la base de datos antes de cobrar.</param>
+    /// <param name="price">Precio del pedido.</param>
+    /// <param name="maxRetries">Intentos máximos (3 por defecto).</param>
+    /// <returns>Lo cobrado y el jugador con su saldo ya actualizado, o el error.</returns>
+    private async Task<Result<(double Charged, User Player), DomainErrors>> ChargeBonosAsync(
+        User player,
+        double price,
         int maxRetries = 3)
     {
-        int attempt = 0;
-        
-        while (attempt < maxRetries)
+        // El jugador puede venir de la caché con un saldo viejo (por ejemplo, si le sumaron bonos después):
+        // un saldo de 0 viejo no daría ningún conflicto, simplemente no se cobraría. El saldo manda desde la base de datos
+        player = await userRepository.FindByIdAsync(player.Id) ?? player;
+
+        double? previousCharge = null;
+        for (var attempt = 1; attempt <= maxRetries; attempt++)
         {
+            var charged = Math.Min(player.Bonos, price);
+
+            // Tras un conflicto, si el saldo real ya no llega para lo que se iba a cobrar (otra operación
+            // lo gastó), no se cambia el importe a escondidas: se devuelve un error y se repite el pedido
+            if (previousCharge is { } before && charged < before)
+                return Result.Failure<(double Charged, User Player), DomainErrors>(
+                    new ConcurrencyError("Los bonos del usuario han cambiado y ya no son suficientes. Inténtalo de nuevo."));
+
+            if (charged <= 0)
+                return Result.Success<(double Charged, User Player), DomainErrors>((0, player));
+
+            // Los bonos nunca pueden quedar negativos
+            if (player.Bonos - charged < 0)
+                return Result.Failure<(double Charged, User Player), DomainErrors>(
+                    new ConcurrencyError("Bonos insuficientes."));
+
+            previousCharge = charged;
+            player.Bonos -= charged;
             try
             {
                 await userRepository.UpdateAsync(player);
-                logger.LogInformation("Usuario actualizado exitosamente en intento {Attempt}", attempt + 1);
-                return Result.Success<Unit, DomainErrors>(Unit.Value);
+                logger.LogInformation("Bonos cobrados ({Cobrado}) en el intento {Attempt}", charged, attempt);
+                return Result.Success<(double Charged, User Player), DomainErrors>((charged, player));
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                attempt++;
-                logger.LogWarning("Conflicto de concurrencia al actualizar usuario. Intento {Attempt} de {MaxRetries}", 
+                logger.LogWarning("Conflicto de concurrencia al cobrar bonos. Intento {Attempt} de {MaxRetries}",
                     attempt, maxRetries);
 
                 if (attempt >= maxRetries)
                 {
-                    logger.LogError("Fallaron todos los reintentos para actualizar usuario. Error: {Error}", ex.Message);
-                    return Result.Failure<Unit, DomainErrors>(
-                        new ConcurrencyError("El usuario fue modificado por otra operación después de 3 reintentos. Intente de nuevo."));
+                    logger.LogError("Fallaron todos los reintentos al cobrar bonos. Error: {Error}", ex.Message);
+                    return Result.Failure<(double Charged, User Player), DomainErrors>(
+                        new ConcurrencyError("El saldo del usuario cambió mientras se cobraba tras 3 reintentos. Inténtalo de nuevo."));
                 }
 
-                // Recargar el usuario desde la base de datos para el siguiente intento
-                var reloadedPlayer = await userRepository.FindByIdAsync(player.Id);
-                if (reloadedPlayer is null)
+                // Saldo real de la base de datos: el siguiente intento recalcula desde aquí
+                var fresh = await userRepository.FindByIdAsync(player.Id);
+                if (fresh is null)
                 {
-                    logger.LogError("No se pudo recargar el usuario {PlayerId} para reintento", player.Id);
-                    return Result.Failure<Unit, DomainErrors>(
+                    logger.LogError("No se pudo recargar el usuario {PlayerId} para reintentar", player.Id);
+                    return Result.Failure<(double Charged, User Player), DomainErrors>(
                         new UserNotFoundError("Usuario no encontrado después de conflicto de concurrencia"));
                 }
-
-                // Aplicar los cambios de bonos al usuario recargado
-                reloadedPlayer.Bonos = player.Bonos;
-                player = reloadedPlayer;
+                player = fresh;
             }
         }
 
-        return Result.Failure<Unit, DomainErrors>(
-            new ConcurrencyError("No se pudo actualizar el usuario después de varios intentos."));
+        return Result.Failure<(double Charged, User Player), DomainErrors>(
+            new ConcurrencyError("No se pudo cobrar de los bonos después de varios intentos."));
     }
 
     /// <summary>

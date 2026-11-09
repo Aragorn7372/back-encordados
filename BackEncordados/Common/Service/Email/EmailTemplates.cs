@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace BackEncordados.Common.Service.Email;
 
 /// <summary>Representa un artículo dentro de un pedido para su inclusión en emails de resumen.</summary>
@@ -186,7 +188,7 @@ public static class EmailTemplates
         <p style='margin: 0 0 20px 0;'>Hemos recibido tu pago correctamente.</p>
         <div style='background-color: #ecfdf5; border-radius: 8px; padding: 24px; margin: 24px 0; text-align: center;'>
             <p style='margin: 0 0 8px 0; font-size: 14px; color: #059669;'>Importe pagado</p>
-            <p style='margin: 0; font-size: 32px; font-weight: 700; color: #059669;'>{amount:N2} €</p>
+            <p style='margin: 0; font-size: 32px; font-weight: 700; color: #059669;'>{amount.ToString("N2", CultureInfo.GetCultureInfo("es-ES"))} €</p>
         </div>
         <div style='background-color: {LightGray}; border-radius: 8px; padding: 20px; margin: 24px 0;'>
             <p style='margin: 0 0 4px 0; font-size: 14px; color: #6b7280;'>Número de pedido</p>

@@ -91,7 +91,7 @@ public interface IPurchasedService
     /// <list type="number">
     ///   <item><description>Lookup player and encorder by username (cache-first, then DB).</description></item>
     ///   <item><description>Map the request DTO to a <see cref="Pedidos"/> entity via <see cref="Mapper.PurchasedMapper.ToEntity(PurchasedRequestDto, Ulid, Ulid)"/>.</description></item>
-    ///   <item><description>If <c>player.Bonos >= Price</c>: set <c>PayStatus = PAID</c>, deduct bonus, retry DB update up to 3 times (<see cref="PurchasedService.UpdateUserWithRetryAsync"/>).</description></item>
+    ///   <item><description>If <c>player.Bonos >= Price</c>: set <c>PayStatus = PAID</c>, deduct bonus, retry DB update up to 3 times (<see cref="PurchasedService.ChargeBonosAsync"/>).</description></item>
     ///   <item><description>If <c>0 &lt; player.Bonos &lt; Price</c>: append a shortfall comment ("Falta por pagar: ...").</description></item>
     ///   <item><description>Persist the aggregate via the repository.</description></item>
     ///   <item><description>Cache the resulting DTO (5-minute TTL).</description></item>

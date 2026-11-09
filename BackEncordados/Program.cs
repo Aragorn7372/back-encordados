@@ -2,8 +2,9 @@ using System.Text;
 using BackEncordados.Infraestructure;
 using BackEncordados.Middleware;
 using FluentValidation;
-using FluentValidation.AspNetCore;
 using Serilog;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 
 Log.Logger= SerilogConfig.Configure().CreateLogger();
 Console.OutputEncoding = Encoding.UTF8;
@@ -52,7 +53,12 @@ app.UseGlobalExceptionHandler();
 app.UseCorsPolicy();
 app.UseRateLimiting();
 app.UseHttpsRedirection();
-
+// añado localizacion cultura invariante para que no haya problemas con fechas y numeros
+app.UseRequestLocalization(new RequestLocalizationOptions {
+    DefaultRequestCulture = new RequestCulture(CultureInfo.InvariantCulture),
+    SupportedCultures = [CultureInfo.InvariantCulture],
+    SupportedUICultures = [CultureInfo.InvariantCulture]
+});
 // archivos estaticos ANTES de routing 
 app.UseStaticFiles();
 app.UseRouting();

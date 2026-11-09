@@ -1,3 +1,4 @@
+using System.Globalization;
 using BackEncordados.Excel.Dto;
 using ClosedXML.Excel;
 
@@ -486,8 +487,8 @@ public class ExcelArchiveManager : IExcelArchiveManager
                 var startStr = row.Cell(4).GetString();
                 var endStr = row.Cell(5).GetString();
 
-                DateTime.TryParse(startStr, out var startDate);
-                DateTime.TryParse(endStr, out var endDate);
+                TryParseFecha(startStr, out var startDate);
+                TryParseFecha(endStr, out var endDate);
 
                 tournaments.Add(new ExcelTournamentDto
                 {
@@ -569,7 +570,7 @@ public class ExcelArchiveManager : IExcelArchiveManager
             if (!string.IsNullOrWhiteSpace(raquetModel))
             {
                 var dateStr = row.Cell(5).GetString();
-                DateTime.TryParse(dateStr, out var dateString);
+                TryParseFecha(dateStr, out var dateString);
 
                 lineas.Add(new ExcelPedidoLineasDto
                 {
@@ -591,5 +592,21 @@ public class ExcelArchiveManager : IExcelArchiveManager
             }
         }
         return lineas;
+    }
+
+    /// <summary>
+    /// Lee una fecha de una celda sin depender de la cultura del servidor. Primero el formato que
+    /// escribe la exportación (<c>yyyy-MM-dd HH:mm</c>); si no, la cultura española (día/mes/año, como
+    /// escribe una persona a mano) y por último la invariante.
+    /// </summary>
+    private static bool TryParseFecha(string? texto, out DateTime fecha)
+    {
+        fecha = default;
+        if (string.IsNullOrWhiteSpace(texto)) return false;
+        var s = texto.Trim();
+        return DateTime.TryParseExact(s, ["yyyy-MM-dd HH:mm", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd"],
+                   CultureInfo.InvariantCulture, DateTimeStyles.None, out fecha)
+               || DateTime.TryParse(s, CultureInfo.GetCultureInfo("es-ES"), DateTimeStyles.None, out fecha)
+               || DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out fecha);
     }
 }

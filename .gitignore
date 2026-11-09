@@ -10,3 +10,5 @@ coverage-report/
 coverage/
 html-report/
 */bruno-report.html
+# Rider
+*.DotSettings.user

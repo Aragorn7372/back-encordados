@@ -1405,7 +1405,9 @@ public class PurchasedServiceTests
         _mockRepo.Setup(r => r.CreatePurchasedAsync(It.IsAny<Pedidos>())).ReturnsAsync((Pedidos p) => p);
         
         _mockUserRepo.Setup(r => r.UpdateAsync(It.IsAny<User>())).ThrowsAsync(new DbUpdateConcurrencyException());
-        _mockUserRepo.Setup(r => r.FindByIdAsync(player.Id)).ReturnsAsync(player);
+        // Cada recarga devuelve el saldo real de la base de datos (100), no el objeto ya modificado
+        _mockUserRepo.Setup(r => r.FindByIdAsync(player.Id))
+            .ReturnsAsync(() => { var u = CreateUser("player1", User.UserRoles.USER, 100); u.Id = player.Id; return u; });
 
         var result = await _service.CreatePurchasedAsync(request);
 
@@ -1443,6 +1445,147 @@ public class PurchasedServiceTests
         result.IsFailure.Should().BeTrue();
         result.Error.Should().BeOfType<UserNotFoundError>();
         _mockUserRepo.Verify(r => r.UpdateAsync(It.IsAny<User>()), Times.Once);
+    }
+
+    private PurchasedRequestDto RequestConPrecio(double price) => new()
+    {
+        PlayerName = "player1",
+        AssignedToName = "encorder1",
+        TournamentId = Ulid.NewUlid(),
+        Machine = "Machine-1",
+        Comments = null,
+        PayStatus = PaymentStatus.PENDING_PAYMENT.ToString(),
+        Lineas = new List<PedidoLineaRequestDto>(),
+        Price = price
+    };
+
+    private static User CopiaDe(User u)
+    {
+        var c = CreateUser(u.Username, u.Role, u.Bonos);
+        c.Id = u.Id;
+        return c;
+    }
+
+    [Test]
+    public async Task CreatePurchasedAsync_CachedBalanceIsStale_ChargesFromDatabaseBalance()
+    {
+        // La caché dice 0 bonos, pero en la base de datos le han sumado 100 desde entonces
+        var cached = CreateUser("player1", User.UserRoles.USER, 0);
+        var real = CreateUser("player1", User.UserRoles.USER, 100);
+        real.Id = cached.Id;
+        var encorder = CreateUser("encorder1", User.UserRoles.ENCORDER, 0);
+        _mockCache.Setup(c => c.GetAsync<User>(CacheKeys.UserKey + "player1")).ReturnsAsync(cached);
+        _mockCache.Setup(c => c.GetAsync<User>(CacheKeys.UserKey + "encorder1")).ReturnsAsync(encorder);
+        _mockRepo.Setup(r => r.CreatePurchasedAsync(It.IsAny<Pedidos>())).ReturnsAsync((Pedidos p) => p);
+        _mockUserRepo.Setup(r => r.FindByIdAsync(cached.Id)).ReturnsAsync(real);
+        _mockUserRepo.Setup(r => r.UpdateAsync(It.IsAny<User>())).ReturnsAsync((User u) => u);
+
+        var result = await _service.CreatePurchasedAsync(RequestConPrecio(40));
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.PayStatus.Should().Be(PaymentStatus.PAID.ToString());
+        _mockUserRepo.Verify(r => r.UpdateAsync(It.Is<User>(u => u.Bonos == 60)), Times.Once);
+    }
+
+    [Test]
+    public async Task CreatePurchasedAsync_ChargesBonos_RemovesPlayerFromCache()
+    {
+        var player = CreateUser("player1", User.UserRoles.USER, 100);
+        var encorder = CreateUser("encorder1", User.UserRoles.ENCORDER, 0);
+        _mockCache.Setup(c => c.GetAsync<User>(CacheKeys.UserKey + "player1")).ReturnsAsync(player);
+        _mockCache.Setup(c => c.GetAsync<User>(CacheKeys.UserKey + "encorder1")).ReturnsAsync(encorder);
+        _mockRepo.Setup(r => r.CreatePurchasedAsync(It.IsAny<Pedidos>())).ReturnsAsync((Pedidos p) => p);
+        _mockUserRepo.Setup(r => r.UpdateAsync(It.IsAny<User>())).ReturnsAsync((User u) => u);
+
+        var result = await _service.CreatePurchasedAsync(RequestConPrecio(40));
+
+        result.IsSuccess.Should().BeTrue();
+        _mockCache.Verify(c => c.RemoveAsync(CacheKeys.UserKey + "player1"), Times.Once);
+    }
+
+    [Test]
+    public async Task CreatePurchasedAsync_NothingCharged_KeepsPlayerInCache()
+    {
+        var player = CreateUser("player1", User.UserRoles.USER, 0);
+        var encorder = CreateUser("encorder1", User.UserRoles.ENCORDER, 0);
+        _mockCache.Setup(c => c.GetAsync<User>(CacheKeys.UserKey + "player1")).ReturnsAsync(player);
+        _mockCache.Setup(c => c.GetAsync<User>(CacheKeys.UserKey + "encorder1")).ReturnsAsync(encorder);
+        _mockRepo.Setup(r => r.CreatePurchasedAsync(It.IsAny<Pedidos>())).ReturnsAsync((Pedidos p) => p);
+
+        var result = await _service.CreatePurchasedAsync(RequestConPrecio(40));
+
+        result.IsSuccess.Should().BeTrue();
+        _mockCache.Verify(c => c.RemoveAsync(CacheKeys.UserKey + "player1"), Times.Never);
+    }
+
+    [Test]
+    public async Task CreatePurchasedAsync_PartialBonos_SetsBonosToZeroAndSavesUser()
+    {
+        var player = CreateUser("player1", User.UserRoles.USER, 30);
+        var encorder = CreateUser("encorder1", User.UserRoles.ENCORDER, 0);
+        _mockCache.Setup(c => c.GetAsync<User>(CacheKeys.UserKey + "player1")).ReturnsAsync(player);
+        _mockCache.Setup(c => c.GetAsync<User>(CacheKeys.UserKey + "encorder1")).ReturnsAsync(encorder);
+        _mockRepo.Setup(r => r.CreatePurchasedAsync(It.IsAny<Pedidos>())).ReturnsAsync((Pedidos p) => p);
+        _mockUserRepo.Setup(r => r.UpdateAsync(It.IsAny<User>())).ReturnsAsync((User u) => u);
+
+        var result = await _service.CreatePurchasedAsync(RequestConPrecio(50));
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.PayStatus.Should().Be(PaymentStatus.PENDING_PAYMENT.ToString());
+        _mockUserRepo.Verify(r => r.UpdateAsync(It.Is<User>(u => u.Bonos == 0)), Times.Once);
+    }
+
+    [Test]
+    public async Task CreatePurchasedAsync_BonosAddedDuringCharge_RecalculatesFromFreshBalance()
+    {
+        // Leído con 30 bonos; mientras se cobra, el propietario le suma 50 (saldo real: 80)
+        var cached = CreateUser("player1", User.UserRoles.USER, 30);
+        var fresh = CreateUser("player1", User.UserRoles.USER, 80);
+        fresh.Id = cached.Id;
+        var encorder = CreateUser("encorder1", User.UserRoles.ENCORDER, 0);
+        _mockCache.Setup(c => c.GetAsync<User>(CacheKeys.UserKey + "player1")).ReturnsAsync(cached);
+        _mockCache.Setup(c => c.GetAsync<User>(CacheKeys.UserKey + "encorder1")).ReturnsAsync(encorder);
+        _mockRepo.Setup(r => r.CreatePurchasedAsync(It.IsAny<Pedidos>())).ReturnsAsync((Pedidos p) => p);
+        _mockUserRepo.SetupSequence(r => r.UpdateAsync(It.IsAny<User>()))
+            .ThrowsAsync(new DbUpdateConcurrencyException())
+            .ReturnsAsync(fresh);
+        // Primera lectura: 30 (antes de cobrar). Tras el conflicto, la recarga ya trae el saldo real
+        _mockUserRepo.SetupSequence(r => r.FindByIdAsync(cached.Id))
+            .ReturnsAsync(CopiaDe(cached))
+            .ReturnsAsync(fresh);
+
+        var result = await _service.CreatePurchasedAsync(RequestConPrecio(50));
+
+        // Con el saldo real (80) el pedido se paga entero y quedan 30; no se pisa con el cálculo viejo
+        result.IsSuccess.Should().BeTrue();
+        result.Value.PayStatus.Should().Be(PaymentStatus.PAID.ToString());
+        fresh.Bonos.Should().Be(30);
+        _mockUserRepo.Verify(r => r.UpdateAsync(It.Is<User>(u => u.Bonos == 30)), Times.Once);
+    }
+
+    [Test]
+    public async Task CreatePurchasedAsync_BalanceSpentDuringCharge_ReturnsErrorAndNeverNegative()
+    {
+        // Se iba a cobrar 50 de 100, pero al recargar solo quedan 20: error, no se cobra otra cantidad ni se pasa de 0
+        var cached = CreateUser("player1", User.UserRoles.USER, 100);
+        var fresh = CreateUser("player1", User.UserRoles.USER, 20);
+        fresh.Id = cached.Id;
+        var encorder = CreateUser("encorder1", User.UserRoles.ENCORDER, 0);
+        _mockCache.Setup(c => c.GetAsync<User>(CacheKeys.UserKey + "player1")).ReturnsAsync(cached);
+        _mockCache.Setup(c => c.GetAsync<User>(CacheKeys.UserKey + "encorder1")).ReturnsAsync(encorder);
+        _mockRepo.Setup(r => r.CreatePurchasedAsync(It.IsAny<Pedidos>())).ReturnsAsync((Pedidos p) => p);
+        _mockUserRepo.Setup(r => r.UpdateAsync(It.IsAny<User>())).ThrowsAsync(new DbUpdateConcurrencyException());
+        _mockUserRepo.SetupSequence(r => r.FindByIdAsync(cached.Id))
+            .ReturnsAsync(CopiaDe(cached))
+            .ReturnsAsync(fresh);
+
+        var result = await _service.CreatePurchasedAsync(RequestConPrecio(50));
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<ConcurrencyError>();
+        fresh.Bonos.Should().Be(20);
+        _mockUserRepo.Verify(r => r.UpdateAsync(It.IsAny<User>()), Times.Once);
+        _mockRepo.Verify(r => r.CreatePurchasedAsync(It.IsAny<Pedidos>()), Times.Never);
     }
 
     [Test]
@@ -1961,8 +2104,10 @@ public class PurchasedServiceTests
             .ThrowsAsync(new DbUpdateConcurrencyException())
             .ReturnsAsync(player2);
 
-        // FindByIdAsync to reload player for the retry
-        _mockUserRepo.Setup(r => r.FindByIdAsync(player1.Id)).ReturnsAsync(player2);
+        // FindByIdAsync: la primera lectura es el saldo antes de cobrar y la segunda la recarga del reintento
+        _mockUserRepo.SetupSequence(r => r.FindByIdAsync(player1.Id))
+            .ReturnsAsync(player1)
+            .ReturnsAsync(player2);
         _mockUserRepo.Setup(r => r.FindByUsernameAsync("player1")).ReturnsAsync(player1);
 
         var result = await _service.CreatePurchasedAsync(request);
