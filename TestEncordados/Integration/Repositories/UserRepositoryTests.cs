@@ -22,8 +22,7 @@ public class UserRepositoryTests
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        _postgres = new PostgreSqlBuilder()
-            .WithImage("postgres:16-alpine")
+        _postgres = new PostgreSqlBuilder("postgres:16-alpine")
             .WithDatabase("users_test_isolated")
             .Build();
         

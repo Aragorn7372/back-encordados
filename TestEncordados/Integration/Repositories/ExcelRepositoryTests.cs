@@ -34,8 +34,7 @@ public class ExcelRepositoryTests
     public async Task OneTimeSetUp()
     {
         // Start PostgreSQL container (only for UserDbContext and MaterialsDbContext)
-        _postgresContainer = new PostgreSqlBuilder()
-            .WithImage("postgres:16-alpine")
+        _postgresContainer = new PostgreSqlBuilder("postgres:16-alpine")
             .Build();
         
         await _postgresContainer.StartAsync();

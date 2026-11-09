@@ -22,8 +22,8 @@
         <PackageReference Include="NUnit" Version="4.3.2" />
         <PackageReference Include="NUnit.Analyzers" Version="4.7.0" />
         <PackageReference Include="NUnit3TestAdapter" Version="5.0.0" />
-        <PackageReference Include="Testcontainers.MongoDb" Version="4.1.0" />
-        <PackageReference Include="Testcontainers.PostgreSql" Version="4.1.0" />
+        <PackageReference Include="Testcontainers.MongoDb" Version="4.16.0" />
+        <PackageReference Include="Testcontainers.PostgreSql" Version="4.16.0" />
         <PackageReference Include="System.IO.Packaging" Version="8.0.1" />
         <packageReference Include="SharpCompress" Version="0.48.0" />
     </ItemGroup>

@@ -27,8 +27,7 @@ public class MailKitEmailServiceTests
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        _mailHogContainer = new ContainerBuilder()
-            .WithImage("mailhog/mailhog")
+        _mailHogContainer = new ContainerBuilder("mailhog/mailhog")
             .WithPortBinding(1025, true)
             .WithPortBinding(8025, true)
             .Build();

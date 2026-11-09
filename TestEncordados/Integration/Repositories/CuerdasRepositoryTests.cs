@@ -21,8 +21,7 @@ public class CuerdasRepositoryTests
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        _postgres = new PostgreSqlBuilder()
-            .WithImage("postgres:16-alpine")
+        _postgres = new PostgreSqlBuilder("postgres:16-alpine")
             .WithDatabase("cuerdas_test_isolated")
             .Build();
         

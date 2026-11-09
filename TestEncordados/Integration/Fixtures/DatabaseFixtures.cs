@@ -13,8 +13,7 @@ public abstract class PostgreSqlTestBase
     [OneTimeSetUp]
     public async Task BaseOneTimeSetUp()
     {
-        _postgres = new PostgreSqlBuilder()
-            .WithImage("postgres:16-alpine")
+        _postgres = new PostgreSqlBuilder("postgres:16-alpine")
             .WithDatabase(GetDatabaseName())
             .Build();
         
