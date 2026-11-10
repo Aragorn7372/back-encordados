@@ -494,3 +494,7 @@ Incluye entornos separados para `local` y `docker`.
     </tr>
   </table>
 </div>
+
+## Licencia
+
+Este proyecto se distribuye bajo la [PolyForm Noncommercial License 1.0.0](LICENSE): se puede ver, estudiar y modificar para fines **no comerciales**. Cualquier uso comercial requiere el permiso de la autora o el autor.
