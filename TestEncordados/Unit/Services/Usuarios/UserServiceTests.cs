@@ -248,6 +248,58 @@ public class UserServiceTests
         var result = await _service.CreateEncoderAsync(userId);
 
         result.IsSuccess.Should().BeTrue();
+        user.Role.Should().Be(User.UserRoles.ENCORDER);
+    }
+
+    [TestCase(User.UserRoles.ADMIN)]
+    [TestCase(User.UserRoles.OWNER)]
+    [TestCase(User.UserRoles.SUPERVISOR)]
+    public async Task CreateEncoderAsync_UserWithAnotherRole_ReturnsValidationErrorAndKeepsRole(string role)
+    {
+        // Un ADMIN, OWNER o SUPERVISOR no se convierte en encordador (perdería su rol)
+        var userId = Ulid.NewUlid();
+        var user = UserBuilder.Create(id: userId, role: role);
+
+        _mockRepo.Invocations.Clear(); // el mock se comparte entre los tests de la clase
+        _mockRepo.Setup(r => r.FindByIdAsync(userId)).ReturnsAsync(user);
+
+        var result = await _service.CreateEncoderAsync(userId);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<ValidationError>();
+        user.Role.Should().Be(role);
+        _mockRepo.Verify(r => r.UpdateAsync(It.IsAny<User>()), Times.Never);
+    }
+
+    [Test]
+    public async Task CreateEncoderAsync_UserInATournament_ReturnsValidationError()
+    {
+        var userId = Ulid.NewUlid();
+        var user = UserBuilder.Create(id: userId, role: User.UserRoles.USER, tournamentId: Ulid.NewUlid());
+
+        _mockRepo.Invocations.Clear(); // el mock se comparte entre los tests de la clase
+        _mockRepo.Setup(r => r.FindByIdAsync(userId)).ReturnsAsync(user);
+
+        var result = await _service.CreateEncoderAsync(userId);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<ValidationError>();
+        user.Role.Should().Be(User.UserRoles.USER);
+        _mockRepo.Verify(r => r.UpdateAsync(It.IsAny<User>()), Times.Never);
+    }
+
+    [Test]
+    public async Task CreateEncoderAsync_AlreadyEncorder_DoesNotSave()
+    {
+        var userId = Ulid.NewUlid();
+        var user = UserBuilder.EncorderUser(userId);
+
+        _mockRepo.Invocations.Clear(); // el mock se comparte entre los tests de la clase
+        _mockRepo.Setup(r => r.FindByIdAsync(userId)).ReturnsAsync(user);
+
+        await _service.CreateEncoderAsync(userId);
+
+        _mockRepo.Verify(r => r.UpdateAsync(It.IsAny<User>()), Times.Never);
     }
 
     [Test]

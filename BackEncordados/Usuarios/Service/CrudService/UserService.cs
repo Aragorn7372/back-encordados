@@ -279,26 +279,34 @@ public class UserService(
     /// Promociona un usuario existente al rol de Encordador (ENCORDER).
     /// </summary>
     /// <remarks>
-    /// <para><b>Flujo:</b></para>
+    /// <para>Solo puede ser encordador un usuario normal (<c>USER</c>) sin rol especial y que no sea un
+    /// contacto de un torneo. Un ADMIN, un OWNER o un SUPERVISOR no se convierten: perderían su rol.</para>
+    /// <para><b>Flujo (el orden importa: la primera comprobación que falla es la que se devuelve):</b></para>
     /// <list type="number">
     ///   <item><description>Busca el usuario por ID. Si no existe, retorna <see cref="UserNotFoundError"/>.</description></item>
+    ///   <item><description>Si está asociado a un torneo (es un contacto), retorna <see cref="ValidationError"/>.</description></item>
     ///   <item><description>Si ya tiene rol ENCORDER, retorna <see cref="ConflictError"/>.</description></item>
+    ///   <item><description>Si tiene cualquier otro rol que no sea <c>USER</c> (ADMIN, OWNER, SUPERVISOR), retorna <see cref="ValidationError"/>.</description></item>
     ///   <item><description>Asigna el rol <c>User.UserRoles.ENCORDER</c> y persiste mediante <c>repository.UpdateAsync</c>.</description></item>
     /// </list>
     /// </remarks>
     /// <param name="userId">Identificador ULID del usuario a promocionar.</param>
-    /// <returns>Unit en éxito, o error si el usuario no existe o ya es ENCORDER.</returns>
+    /// <returns>Unit en éxito, o error si el usuario no existe, es un contacto de torneo, ya es ENCORDER o tiene otro rol.</returns>
     public async Task<Result<Unit, AuthError>> CreateEncoderAsync(Ulid userId) {
         logger.LogInformation("Creando encordador para usuario con ID: {UserId}", userId);
         
         var user = await repository.FindByIdAsync(userId);
         if (user is null)
             return Result.Failure<Unit, AuthError>(new UserNotFoundError("User not found"));
+        
         if(user.TournamentId!= null)
             return Result.Failure<Unit, AuthError>(new ValidationError("User is already associated with a tournament"));
                 
         if (user.Role == User.UserRoles.ENCORDER)
             return Result.Failure<Unit, AuthError>(new ConflictError("User already is an encorder"));
+        
+        if(user.Role!= User.UserRoles.USER)
+            return Result.Failure<Unit, AuthError>(new ValidationError("User already has a role"));
         
         user.Role = User.UserRoles.ENCORDER;
         
