@@ -238,6 +238,58 @@ private readonly Mock<IMaterialsRepositoryType> _mockRepo;
     }
 
     [Test]
+    public void MaterialPatchDto_ByDefault_MarksPriceAndStockAsNotSent()
+    {
+        var patch = new MaterialPatchDto();
+
+        patch.Precio.Should().Be(-1);
+        patch.Stock.Should().Be(-1);
+    }
+
+    [Test]
+    public async Task UpdateAsync_OnlyModelo_KeepsPriceAndStock()
+    {
+        // Un PUT que no envía precio ni stock no debe ponerlos a 0
+        var id = 1L;
+        var existing = MaterialBuilder.Create(id: id);
+        existing.Precio = 50.0;
+        existing.Stock = 20;
+
+        var patch = new MaterialPatchDto { Modelo = "Nuevo" };
+
+        _mockRepo.Setup(r => r.FindByIdAsync(id)).ReturnsAsync(existing);
+        _mockRepo.Setup(r => r.UpdateAsync(It.IsAny<Material>(), id)).ReturnsAsync(existing);
+
+        var result = await _service.UpdateAsync(id, patch);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Modelo.Should().Be("Nuevo");
+        result.Value.Precio.Should().Be(50.0);
+        result.Value.Stock.Should().Be(20);
+    }
+
+    [Test]
+    public async Task UpdateAsync_ExplicitZeroStock_SetsStockToZero()
+    {
+        // 0 es un valor real (se acabó el stock), distinto de «no enviado»
+        var id = 1L;
+        var existing = MaterialBuilder.Create(id: id);
+        existing.Precio = 50.0;
+        existing.Stock = 20;
+
+        var patch = new MaterialPatchDto { Stock = 0 };
+
+        _mockRepo.Setup(r => r.FindByIdAsync(id)).ReturnsAsync(existing);
+        _mockRepo.Setup(r => r.UpdateAsync(It.IsAny<Material>(), id)).ReturnsAsync(existing);
+
+        var result = await _service.UpdateAsync(id, patch);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Stock.Should().Be(0);
+        result.Value.Precio.Should().Be(50.0);
+    }
+
+    [Test]
     public async Task UpdateAsync_WithNegativePricesAndStock_DoesNotUpdateThoseFields()
     {
         var id = 1L;
